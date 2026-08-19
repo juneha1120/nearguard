@@ -1,0 +1,138 @@
+# NearGuard Demo Plan
+
+## Demo Goal
+
+Show a complete agentic safety loop in under 10 minutes:
+
+```text
+observe -> normalize -> enrich -> validate -> predict -> decide -> act -> monitor -> reassess -> escalate or close -> show trace
+```
+
+The demo should make NearGuard feel like an intervention agent, not just a prediction dashboard.
+
+## Target Audience Takeaway
+
+NearGuard uses Prime Mover telematics and operational context to detect safety incident risk early, coordinate the right safety interventions, keep humans in control for disruptive actions and produce an auditable trace.
+
+Near-miss prevention is the headline use case, but the model target is broader: safety incident risk.
+
+The demo is designed for PSA Code Sprint 2.0: Agentic AI in Action. It should make the evaluation criteria visible: agentic reasoning, decision-making, tool orchestration, uncertainty handling, human oversight, auditability, responsible AI and clear presentation.
+
+## Demo Story
+
+Vehicle `PM-27` enters a high-risk zone during heavy traffic. The synthetic event stream shows repeated harsh braking and speeding. NearGuard predicts high safety incident risk, explains the risk, warns the driver, notifies the supervisor, handles a supervisor notification timeout, reassesses risk, asks for approval for a zone advisory and creates a safety case.
+
+The scenario is inspired by public PSA safety themes such as responsible driving, speed-limit compliance, pedestrian exposure, wharf movement caution and reporting of safety hazards. It does not use real PSA incident data or internal PSA policy.
+
+## 10-Minute Run Of Show
+
+| Time | Segment | What To Show |
+| --- | --- | --- |
+| 0:00-1:00 | Problem fit | Prime Mover safety incident risk, near-miss prevention and why threshold alerts are limited. |
+| 1:00-2:00 | NearGuard concept | Agent loop, telematics-first input and human-in-the-loop positioning. |
+| 2:00-3:00 | Event arrives | Dashboard receives `PM-27` harsh braking and speeding events. |
+| 3:00-4:00 | Context and risk analysis | Zone context, freshness check, risk score, confidence and top reasons appear. |
+| 4:00-5:00 | Agent decision | Agent compares response options and chooses driver warning plus supervisor notification. |
+| 5:00-6:00 | Tool failure | Supervisor notification times out and fallback is triggered. |
+| 6:00-7:00 | Monitoring and reassessment | New telemetry arrives and risk remains high after intervention. |
+| 7:00-8:00 | Human approval | Agent requests approval for zone advisory because stronger action is disruptive. |
+| 8:00-9:00 | Safety case | Approval is granted and safety case is created. |
+| 9:00-10:00 | Trace and evaluation fit | Show complete trace, responsible AI boundaries, public-reference limits and how the demo meets Code Sprint criteria. |
+
+## Required Demo Screens
+
+- Active Prime Movers list with safety incident risk level.
+- Selected case detail for `PM-27`.
+- Raw event, zone context and derived risk features.
+- Risk score, confidence, uncertainty and explanation.
+- Recommended action and authority class.
+- Tool call status list.
+- Approval request panel.
+- Execution trace timeline.
+- Created safety case summary.
+
+## Scripted Trace
+
+```text
+09:14:02  PM-27 harsh braking and speeding event received
+09:14:03  Event normalized to VehicleEvent schema
+09:14:04  Event window updated: recent_harsh_brake_count_10m = 4
+09:14:05  Zone context loaded: high traffic, caution restriction
+09:14:06  Freshness check passed: gps_freshness = fresh
+09:14:07  Risk model returned safety_incident_risk_score = 0.84
+09:14:08  Top reasons: speeding, repeated harsh braking, high traffic zone
+09:14:09  Policy decision: High risk, warn driver and notify supervisor
+09:14:09  notify_driver succeeded
+09:14:10  notify_supervisor failed: timeout
+09:14:12  Fallback supervisor notification succeeded
+09:18:30  New telemetry received for reassessment
+09:18:32  Reassessment: risk remains high at 0.79
+09:18:35  Agent requested approval for zone advisory
+09:19:10  Supervisor approved advisory
+09:19:11  Safety case SC-1007 created
+```
+
+## Scripted Scenarios
+
+| Scenario | Purpose | Public Context Link |
+| --- | --- | --- |
+| `PM-27 Persistent High Risk` | Main end-to-end demo: speeding, harsh braking, failure handling, approval and safety case. | Public PSA driver safety and safety infringement themes. |
+| `PPT Link Slow Down Zone` | Show speed-limit context and a 25km/h slow-down-zone example. | PSA Slow Down Zone (25km/h) along Pasir Panjang Terminal Link circular. |
+| `Wharf Pedestrian Exposure` | Show pedestrian exposure and lower-speed wharf caution context. | PSA Review of Pedestrian Movement at Wharf circular and HSS Rules. |
+| `Telemetry Uncertainty` | Show stale GPS or missing zone context reducing confidence and triggering cautious escalation. | Responsible AI and safety-boundary requirement. |
+
+## Failure Case To Include
+
+Use a supervisor notification timeout. This is simple to understand and directly proves that NearGuard handles tool failure instead of stopping.
+
+Expected behaviour:
+
+- record timeout in trace
+- retry or use fallback channel
+- keep case active
+- continue monitoring
+
+## Human Approval Case To Include
+
+Use zone advisory approval.
+
+Expected behaviour:
+
+- agent recommends the action
+- dashboard shows rationale
+- supervisor approves
+- trace records approver and decision
+- safety case includes approval evidence
+
+## Worker Report Mention
+
+Worker daily potential-risk reports should be presented as future enrichment, not the MVP core loop. In the pitch, say that worker-written safety observations could later be parsed by an LLM into structured zone or vehicle context, but the MVP remains telematics-first and no report directly triggers disruptive action without policy checks and human approval.
+
+## Demo Success Checklist
+
+- The audience sees a live or replayed synthetic event stream.
+- Safety incident risk changes from medium to high.
+- Near-miss is explained as a priority scenario, not the only model target.
+- At least three risk reasons are shown.
+- At least two tools are called.
+- One tool failure is visible and handled.
+- One human approval is required.
+- A safety case is created.
+- The final trace clearly covers decisions, tools, approvals, results and errors.
+- PSA public references and synthetic-data limitations are explicitly stated.
+- Security, safety and scalability considerations are covered before the final slide ends.
+
+## Slide Outline
+
+| Slide | Title | Content |
+| --- | --- | --- |
+| 1 | NearGuard | One-line concept and safety incident risk problem. |
+| 2 | Challenge Fit | How the solution addresses event logs, state changes, action selection, tool orchestration and human oversight. |
+| 3 | Agentic Workflow | Observe, normalize, enrich, predict, decide, act, monitor, reassess, escalate. |
+| 4 | Architecture | Components, state management and simulated tool orchestration. |
+| 5 | Data And Features | Vehicle events, zone context, derived features and model outputs. |
+| 6 | Risk Model | Tabular ML as decision-support tool, with confidence and uncertainty. |
+| 7 | Human Oversight | Approval boundaries and deterministic safety policy. |
+| 8 | Demo Scenario | PM-27 story, failure handling and expected trace. |
+| 9 | Responsible AI | Synthetic data limits, explainability, auditability and public-reference boundaries. |
+| 10 | Impact And Next Steps | Potential safety value, scalability path, worker-report enrichment and approved pilot requirements. |

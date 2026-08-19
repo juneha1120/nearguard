@@ -1,0 +1,42 @@
+[
+  {
+    "zone_id": "YARD-C4",
+    "zone_name": "Yard C4 Transfer Lane",
+    "traffic_level": "high",
+    "weather": "rain",
+    "zone_historical_risk": 0.72,
+    "restriction_level": "caution",
+    "slow_down_zone_active": false,
+    "pedestrian_exposure": "medium"
+  },
+  {
+    "zone_id": "PPT-LINK-25",
+    "zone_name": "Pasir Panjang Terminal Link Slow Down Zone",
+    "traffic_level": "medium",
+    "weather": "clear",
+    "zone_historical_risk": 0.6,
+    "restriction_level": "caution",
+    "slow_down_zone_active": true,
+    "pedestrian_exposure": "low"
+  },
+  {
+    "zone_id": "WHARF-C4",
+    "zone_name": "Wharf C4 Pedestrian Crossing",
+    "traffic_level": "medium",
+    "weather": "clear",
+    "zone_historical_risk": 0.78,
+    "restriction_level": "wharf",
+    "slow_down_zone_active": false,
+    "pedestrian_exposure": "high"
+  },
+  {
+    "zone_id": "YARD-U2",
+    "zone_name": "Yard U2 Restricted Lane",
+    "traffic_level": "high",
+    "weather": "rain",
+    "zone_historical_risk": 0.66,
+    "restriction_level": "restricted",
+    "slow_down_zone_active": false,
+    "pedestrian_exposure": "medium"
+  }
+]

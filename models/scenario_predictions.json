@@ -1,0 +1,471 @@
+{
+  "metrics": {
+    "mae": 0.0184,
+    "r2": 0.9851
+  },
+  "predictions": [
+    {
+      "scenario_id": "pm27-persistent-high-risk",
+      "event_id": "pm27-001",
+      "features": {
+        "speed": 22,
+        "speed_limit": 25,
+        "zone_historical_risk": 0.72,
+        "speed_over_limit": 0,
+        "recent_harsh_brake_count_10m": 0,
+        "recent_sharp_turn_count_10m": 0,
+        "previous_risk": 0.12,
+        "event_type": "normal_update",
+        "gps_freshness": "fresh",
+        "traffic_level": "high",
+        "weather": "rain",
+        "restriction_level": "caution",
+        "slow_down_zone_active": false,
+        "pedestrian_exposure": "medium",
+        "speed_over_limit_band": "none",
+        "risk_trend": "increasing"
+      },
+      "assessment": {
+        "safety_incident_risk_score": 0.57,
+        "risk_band": "Medium",
+        "confidence": "medium",
+        "uncertainty_reason": "sparse recent vehicle history",
+        "top_risk_reasons": [
+          "Vehicle is operating in a high-traffic zone.",
+          "Zone restriction level is caution."
+        ]
+      }
+    },
+    {
+      "scenario_id": "pm27-persistent-high-risk",
+      "event_id": "pm27-002",
+      "features": {
+        "speed": 32,
+        "speed_limit": 25,
+        "zone_historical_risk": 0.72,
+        "speed_over_limit": 7,
+        "recent_harsh_brake_count_10m": 0,
+        "recent_sharp_turn_count_10m": 0,
+        "previous_risk": 0.58,
+        "event_type": "speeding",
+        "gps_freshness": "fresh",
+        "traffic_level": "high",
+        "weather": "rain",
+        "restriction_level": "caution",
+        "slow_down_zone_active": false,
+        "pedestrian_exposure": "medium",
+        "speed_over_limit_band": "minor",
+        "risk_trend": "increasing"
+      },
+      "assessment": {
+        "safety_incident_risk_score": 0.65,
+        "risk_band": "Medium",
+        "confidence": "medium",
+        "uncertainty_reason": "sparse recent vehicle history",
+        "top_risk_reasons": [
+          "Speed is 7 km/h above the zone limit.",
+          "Vehicle is operating in a high-traffic zone.",
+          "Zone restriction level is caution."
+        ]
+      }
+    },
+    {
+      "scenario_id": "pm27-persistent-high-risk",
+      "event_id": "pm27-003",
+      "features": {
+        "speed": 29,
+        "speed_limit": 25,
+        "zone_historical_risk": 0.72,
+        "speed_over_limit": 4,
+        "recent_harsh_brake_count_10m": 1,
+        "recent_sharp_turn_count_10m": 0,
+        "previous_risk": 0.58,
+        "event_type": "harsh_brake",
+        "gps_freshness": "fresh",
+        "traffic_level": "high",
+        "weather": "rain",
+        "restriction_level": "caution",
+        "slow_down_zone_active": false,
+        "pedestrian_exposure": "medium",
+        "speed_over_limit_band": "minor",
+        "risk_trend": "increasing"
+      },
+      "assessment": {
+        "safety_incident_risk_score": 0.64,
+        "risk_band": "Medium",
+        "confidence": "high",
+        "uncertainty_reason": null,
+        "top_risk_reasons": [
+          "Speed is 4 km/h above the zone limit.",
+          "1 harsh-braking event(s) occurred within 10 minutes.",
+          "Vehicle is operating in a high-traffic zone.",
+          "Zone restriction level is caution."
+        ]
+      }
+    },
+    {
+      "scenario_id": "pm27-persistent-high-risk",
+      "event_id": "pm27-004",
+      "features": {
+        "speed": 27,
+        "speed_limit": 25,
+        "zone_historical_risk": 0.72,
+        "speed_over_limit": 2,
+        "recent_harsh_brake_count_10m": 2,
+        "recent_sharp_turn_count_10m": 0,
+        "previous_risk": 0.58,
+        "event_type": "harsh_brake",
+        "gps_freshness": "fresh",
+        "traffic_level": "high",
+        "weather": "rain",
+        "restriction_level": "caution",
+        "slow_down_zone_active": false,
+        "pedestrian_exposure": "medium",
+        "speed_over_limit_band": "minor",
+        "risk_trend": "increasing"
+      },
+      "assessment": {
+        "safety_incident_risk_score": 0.65,
+        "risk_band": "Medium",
+        "confidence": "high",
+        "uncertainty_reason": null,
+        "top_risk_reasons": [
+          "Speed is 2 km/h above the zone limit.",
+          "2 harsh-braking event(s) occurred within 10 minutes.",
+          "Vehicle is operating in a high-traffic zone.",
+          "Zone restriction level is caution."
+        ]
+      }
+    },
+    {
+      "scenario_id": "pm27-persistent-high-risk",
+      "event_id": "pm27-005",
+      "features": {
+        "speed": 26,
+        "speed_limit": 25,
+        "zone_historical_risk": 0.72,
+        "speed_over_limit": 1,
+        "recent_harsh_brake_count_10m": 2,
+        "recent_sharp_turn_count_10m": 0,
+        "previous_risk": 0.58,
+        "event_type": "risk_persistent",
+        "gps_freshness": "fresh",
+        "traffic_level": "high",
+        "weather": "rain",
+        "restriction_level": "caution",
+        "slow_down_zone_active": false,
+        "pedestrian_exposure": "medium",
+        "speed_over_limit_band": "minor",
+        "risk_trend": "increasing"
+      },
+      "assessment": {
+        "safety_incident_risk_score": 0.7,
+        "risk_band": "Persistent High",
+        "confidence": "high",
+        "uncertainty_reason": null,
+        "top_risk_reasons": [
+          "Speed is 1 km/h above the zone limit.",
+          "2 harsh-braking event(s) occurred within 10 minutes.",
+          "Vehicle is operating in a high-traffic zone.",
+          "Zone restriction level is caution."
+        ]
+      }
+    },
+    {
+      "scenario_id": "ppt-link-slow-down-zone",
+      "event_id": "ppt-001",
+      "features": {
+        "speed": 22,
+        "speed_limit": 25,
+        "zone_historical_risk": 0.6,
+        "speed_over_limit": 0,
+        "recent_harsh_brake_count_10m": 0,
+        "recent_sharp_turn_count_10m": 0,
+        "previous_risk": 0.12,
+        "event_type": "normal_update",
+        "gps_freshness": "fresh",
+        "traffic_level": "medium",
+        "weather": "clear",
+        "restriction_level": "caution",
+        "slow_down_zone_active": true,
+        "pedestrian_exposure": "low",
+        "speed_over_limit_band": "none",
+        "risk_trend": "increasing"
+      },
+      "assessment": {
+        "safety_incident_risk_score": 0.41,
+        "risk_band": "Medium",
+        "confidence": "medium",
+        "uncertainty_reason": "sparse recent vehicle history",
+        "top_risk_reasons": [
+          "Zone restriction level is caution.",
+          "Slow-down-zone speed context is active."
+        ]
+      }
+    },
+    {
+      "scenario_id": "ppt-link-slow-down-zone",
+      "event_id": "ppt-002",
+      "features": {
+        "speed": 34,
+        "speed_limit": 25,
+        "zone_historical_risk": 0.6,
+        "speed_over_limit": 9,
+        "recent_harsh_brake_count_10m": 0,
+        "recent_sharp_turn_count_10m": 0,
+        "previous_risk": 0.58,
+        "event_type": "speeding",
+        "gps_freshness": "fresh",
+        "traffic_level": "medium",
+        "weather": "clear",
+        "restriction_level": "caution",
+        "slow_down_zone_active": true,
+        "pedestrian_exposure": "low",
+        "speed_over_limit_band": "minor",
+        "risk_trend": "increasing"
+      },
+      "assessment": {
+        "safety_incident_risk_score": 0.52,
+        "risk_band": "Medium",
+        "confidence": "medium",
+        "uncertainty_reason": "sparse recent vehicle history",
+        "top_risk_reasons": [
+          "Speed is 9 km/h above the zone limit.",
+          "Zone restriction level is caution.",
+          "Slow-down-zone speed context is active."
+        ]
+      }
+    },
+    {
+      "scenario_id": "ppt-link-slow-down-zone",
+      "event_id": "ppt-003",
+      "features": {
+        "speed": 21,
+        "speed_limit": 25,
+        "zone_historical_risk": 0.6,
+        "speed_over_limit": 0,
+        "recent_harsh_brake_count_10m": 0,
+        "recent_sharp_turn_count_10m": 0,
+        "previous_risk": 0.58,
+        "event_type": "speed_normalized",
+        "gps_freshness": "fresh",
+        "traffic_level": "medium",
+        "weather": "clear",
+        "restriction_level": "caution",
+        "slow_down_zone_active": true,
+        "pedestrian_exposure": "low",
+        "speed_over_limit_band": "none",
+        "risk_trend": "decreasing"
+      },
+      "assessment": {
+        "safety_incident_risk_score": 0.16,
+        "risk_band": "Low",
+        "confidence": "medium",
+        "uncertainty_reason": "sparse recent vehicle history",
+        "top_risk_reasons": [
+          "Zone restriction level is caution.",
+          "Slow-down-zone speed context is active."
+        ]
+      }
+    },
+    {
+      "scenario_id": "wharf-pedestrian-exposure",
+      "event_id": "wharf-001",
+      "features": {
+        "speed": 12,
+        "speed_limit": 15,
+        "zone_historical_risk": 0.78,
+        "speed_over_limit": 0,
+        "recent_harsh_brake_count_10m": 0,
+        "recent_sharp_turn_count_10m": 0,
+        "previous_risk": 0.12,
+        "event_type": "normal_update",
+        "gps_freshness": "fresh",
+        "traffic_level": "medium",
+        "weather": "clear",
+        "restriction_level": "wharf",
+        "slow_down_zone_active": false,
+        "pedestrian_exposure": "high",
+        "speed_over_limit_band": "none",
+        "risk_trend": "increasing"
+      },
+      "assessment": {
+        "safety_incident_risk_score": 0.58,
+        "risk_band": "Medium",
+        "confidence": "medium",
+        "uncertainty_reason": "sparse recent vehicle history",
+        "top_risk_reasons": [
+          "Zone restriction level is wharf.",
+          "Pedestrian exposure is high in this operating area."
+        ]
+      }
+    },
+    {
+      "scenario_id": "wharf-pedestrian-exposure",
+      "event_id": "wharf-002",
+      "features": {
+        "speed": 18,
+        "speed_limit": 15,
+        "zone_historical_risk": 0.78,
+        "speed_over_limit": 3,
+        "recent_harsh_brake_count_10m": 0,
+        "recent_sharp_turn_count_10m": 1,
+        "previous_risk": 0.58,
+        "event_type": "sharp_turn",
+        "gps_freshness": "fresh",
+        "traffic_level": "medium",
+        "weather": "clear",
+        "restriction_level": "wharf",
+        "slow_down_zone_active": false,
+        "pedestrian_exposure": "high",
+        "speed_over_limit_band": "minor",
+        "risk_trend": "increasing"
+      },
+      "assessment": {
+        "safety_incident_risk_score": 0.67,
+        "risk_band": "High",
+        "confidence": "high",
+        "uncertainty_reason": null,
+        "top_risk_reasons": [
+          "Speed is 3 km/h above the zone limit.",
+          "1 sharp-turn event(s) occurred within 10 minutes.",
+          "Zone restriction level is wharf.",
+          "Pedestrian exposure is high in this operating area."
+        ]
+      }
+    },
+    {
+      "scenario_id": "wharf-pedestrian-exposure",
+      "event_id": "wharf-003",
+      "features": {
+        "speed": 9,
+        "speed_limit": 15,
+        "zone_historical_risk": 0.78,
+        "speed_over_limit": 0,
+        "recent_harsh_brake_count_10m": 0,
+        "recent_sharp_turn_count_10m": 1,
+        "previous_risk": 0.58,
+        "event_type": "speed_normalized",
+        "gps_freshness": "fresh",
+        "traffic_level": "medium",
+        "weather": "clear",
+        "restriction_level": "wharf",
+        "slow_down_zone_active": false,
+        "pedestrian_exposure": "high",
+        "speed_over_limit_band": "none",
+        "risk_trend": "decreasing"
+      },
+      "assessment": {
+        "safety_incident_risk_score": 0.33,
+        "risk_band": "Low",
+        "confidence": "high",
+        "uncertainty_reason": null,
+        "top_risk_reasons": [
+          "1 sharp-turn event(s) occurred within 10 minutes.",
+          "Zone restriction level is wharf.",
+          "Pedestrian exposure is high in this operating area."
+        ]
+      }
+    },
+    {
+      "scenario_id": "telemetry-uncertainty",
+      "event_id": "uncertain-001",
+      "features": {
+        "speed": 28,
+        "speed_limit": 25,
+        "zone_historical_risk": 0.66,
+        "speed_over_limit": 3,
+        "recent_harsh_brake_count_10m": 0,
+        "recent_sharp_turn_count_10m": 0,
+        "previous_risk": 0.12,
+        "event_type": "stale_gps",
+        "gps_freshness": "stale",
+        "traffic_level": "high",
+        "weather": "rain",
+        "restriction_level": "restricted",
+        "slow_down_zone_active": false,
+        "pedestrian_exposure": "medium",
+        "speed_over_limit_band": "minor",
+        "risk_trend": "increasing"
+      },
+      "assessment": {
+        "safety_incident_risk_score": 0.6,
+        "risk_band": "Medium",
+        "confidence": "low",
+        "uncertainty_reason": "missing zone context",
+        "top_risk_reasons": [
+          "Speed is 3 km/h above the zone limit.",
+          "Vehicle is operating in a high-traffic zone.",
+          "Zone restriction level is restricted.",
+          "Confidence is reduced because of missing zone context."
+        ]
+      }
+    },
+    {
+      "scenario_id": "telemetry-uncertainty",
+      "event_id": "uncertain-002",
+      "features": {
+        "speed": 27,
+        "speed_limit": 25,
+        "zone_historical_risk": 0.66,
+        "speed_over_limit": 2,
+        "recent_harsh_brake_count_10m": 0,
+        "recent_sharp_turn_count_10m": 0,
+        "previous_risk": 0.58,
+        "event_type": "normal_update",
+        "gps_freshness": "delayed",
+        "traffic_level": "high",
+        "weather": "rain",
+        "restriction_level": "restricted",
+        "slow_down_zone_active": false,
+        "pedestrian_exposure": "medium",
+        "speed_over_limit_band": "minor",
+        "risk_trend": "increasing"
+      },
+      "assessment": {
+        "safety_incident_risk_score": 0.63,
+        "risk_band": "Medium",
+        "confidence": "low",
+        "uncertainty_reason": "missing zone context",
+        "top_risk_reasons": [
+          "Speed is 2 km/h above the zone limit.",
+          "Vehicle is operating in a high-traffic zone.",
+          "Zone restriction level is restricted.",
+          "Confidence is reduced because of missing zone context."
+        ]
+      }
+    },
+    {
+      "scenario_id": "telemetry-uncertainty",
+      "event_id": "uncertain-003",
+      "features": {
+        "speed": 20,
+        "speed_limit": 25,
+        "zone_historical_risk": 0.66,
+        "speed_over_limit": 0,
+        "recent_harsh_brake_count_10m": 0,
+        "recent_sharp_turn_count_10m": 0,
+        "previous_risk": 0.58,
+        "event_type": "speed_normalized",
+        "gps_freshness": "fresh",
+        "traffic_level": "high",
+        "weather": "rain",
+        "restriction_level": "restricted",
+        "slow_down_zone_active": false,
+        "pedestrian_exposure": "medium",
+        "speed_over_limit_band": "none",
+        "risk_trend": "decreasing"
+      },
+      "assessment": {
+        "safety_incident_risk_score": 0.32,
+        "risk_band": "Low",
+        "confidence": "medium",
+        "uncertainty_reason": "sparse recent vehicle history",
+        "top_risk_reasons": [
+          "Vehicle is operating in a high-traffic zone.",
+          "Zone restriction level is restricted."
+        ]
+      }
+    }
+  ]
+}

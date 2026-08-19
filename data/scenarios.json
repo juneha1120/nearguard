@@ -1,0 +1,178 @@
+[
+  {
+    "scenario_id": "pm27-persistent-high-risk",
+    "name": "PM-27 Persistent High Risk",
+    "description": "Speeding and repeated harsh braking in a high-traffic caution zone, including supervisor timeout, fallback, approval and safety case creation.",
+    "primary_vehicle_id": "PM-27",
+    "highlights": ["speeding", "harsh braking", "tool failure", "approval", "safety case"],
+    "events": [
+      {
+        "event_id": "pm27-001",
+        "timestamp": "2026-08-19T09:14:02+08:00",
+        "vehicle_id": "PM-27",
+        "zone_id": "YARD-C4",
+        "event_type": "normal_update",
+        "speed": 22,
+        "speed_limit": 25,
+        "gps_freshness": "fresh"
+      },
+      {
+        "event_id": "pm27-002",
+        "timestamp": "2026-08-19T09:14:42+08:00",
+        "vehicle_id": "PM-27",
+        "zone_id": "YARD-C4",
+        "event_type": "speeding",
+        "speed": 32,
+        "speed_limit": 25,
+        "gps_freshness": "fresh"
+      },
+      {
+        "event_id": "pm27-003",
+        "timestamp": "2026-08-19T09:15:26+08:00",
+        "vehicle_id": "PM-27",
+        "zone_id": "YARD-C4",
+        "event_type": "harsh_brake",
+        "speed": 29,
+        "speed_limit": 25,
+        "gps_freshness": "fresh"
+      },
+      {
+        "event_id": "pm27-004",
+        "timestamp": "2026-08-19T09:16:05+08:00",
+        "vehicle_id": "PM-27",
+        "zone_id": "YARD-C4",
+        "event_type": "harsh_brake",
+        "speed": 27,
+        "speed_limit": 25,
+        "gps_freshness": "fresh"
+      },
+      {
+        "event_id": "pm27-005",
+        "timestamp": "2026-08-19T09:18:30+08:00",
+        "vehicle_id": "PM-27",
+        "zone_id": "YARD-C4",
+        "event_type": "risk_persistent",
+        "speed": 26,
+        "speed_limit": 25,
+        "gps_freshness": "fresh"
+      }
+    ]
+  },
+  {
+    "scenario_id": "ppt-link-slow-down-zone",
+    "name": "PPT Link Slow Down Zone",
+    "description": "Speeding in a 25 km/h slow-down zone followed by speed normalization and case stabilization.",
+    "primary_vehicle_id": "PM-14",
+    "highlights": ["slow-down zone", "speeding", "stabilization"],
+    "events": [
+      {
+        "event_id": "ppt-001",
+        "timestamp": "2026-08-19T10:02:00+08:00",
+        "vehicle_id": "PM-14",
+        "zone_id": "PPT-LINK-25",
+        "event_type": "normal_update",
+        "speed": 22,
+        "speed_limit": 25,
+        "gps_freshness": "fresh"
+      },
+      {
+        "event_id": "ppt-002",
+        "timestamp": "2026-08-19T10:03:15+08:00",
+        "vehicle_id": "PM-14",
+        "zone_id": "PPT-LINK-25",
+        "event_type": "speeding",
+        "speed": 34,
+        "speed_limit": 25,
+        "gps_freshness": "fresh"
+      },
+      {
+        "event_id": "ppt-003",
+        "timestamp": "2026-08-19T10:04:20+08:00",
+        "vehicle_id": "PM-14",
+        "zone_id": "PPT-LINK-25",
+        "event_type": "speed_normalized",
+        "speed": 21,
+        "speed_limit": 25,
+        "gps_freshness": "fresh"
+      }
+    ]
+  },
+  {
+    "scenario_id": "wharf-pedestrian-exposure",
+    "name": "Wharf Pedestrian Exposure",
+    "description": "Wharf-zone movement where pedestrian exposure combines with speed and a sharp turn.",
+    "primary_vehicle_id": "PM-31",
+    "highlights": ["wharf", "pedestrian exposure", "sharp turn"],
+    "events": [
+      {
+        "event_id": "wharf-001",
+        "timestamp": "2026-08-19T11:20:00+08:00",
+        "vehicle_id": "PM-31",
+        "zone_id": "WHARF-C4",
+        "event_type": "normal_update",
+        "speed": 12,
+        "speed_limit": 15,
+        "gps_freshness": "fresh"
+      },
+      {
+        "event_id": "wharf-002",
+        "timestamp": "2026-08-19T11:20:58+08:00",
+        "vehicle_id": "PM-31",
+        "zone_id": "WHARF-C4",
+        "event_type": "sharp_turn",
+        "speed": 18,
+        "speed_limit": 15,
+        "gps_freshness": "fresh"
+      },
+      {
+        "event_id": "wharf-003",
+        "timestamp": "2026-08-19T11:22:05+08:00",
+        "vehicle_id": "PM-31",
+        "zone_id": "WHARF-C4",
+        "event_type": "speed_normalized",
+        "speed": 9,
+        "speed_limit": 15,
+        "gps_freshness": "fresh"
+      }
+    ]
+  },
+  {
+    "scenario_id": "telemetry-uncertainty",
+    "name": "Telemetry Uncertainty",
+    "description": "Stale GPS and unavailable zone context reduce confidence and trigger human review.",
+    "primary_vehicle_id": "PM-09",
+    "highlights": ["stale GPS", "missing context", "low confidence"],
+    "events": [
+      {
+        "event_id": "uncertain-001",
+        "timestamp": "2026-08-19T13:05:00+08:00",
+        "vehicle_id": "PM-09",
+        "zone_id": "YARD-U2",
+        "event_type": "stale_gps",
+        "speed": 28,
+        "speed_limit": 25,
+        "gps_freshness": "stale"
+      },
+      {
+        "event_id": "uncertain-002",
+        "timestamp": "2026-08-19T13:06:10+08:00",
+        "vehicle_id": "PM-09",
+        "zone_id": "YARD-U2",
+        "event_type": "normal_update",
+        "speed": 27,
+        "speed_limit": 25,
+        "gps_freshness": "delayed"
+      },
+      {
+        "event_id": "uncertain-003",
+        "timestamp": "2026-08-19T13:07:30+08:00",
+        "vehicle_id": "PM-09",
+        "zone_id": "YARD-U2",
+        "event_type": "speed_normalized",
+        "speed": 20,
+        "speed_limit": 25,
+        "gps_freshness": "fresh"
+      }
+    ]
+  }
+]
