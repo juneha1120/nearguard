@@ -1,0 +1,40 @@
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+
+function csvRows() {
+  const [headerLine, ...lines] = readFileSync("data/synthetic_training_data.csv", "utf8").trim().split(/\r?\n/);
+  const headers = headerLine.split(",");
+  return lines.map((line) => {
+    const values = line.split(",");
+    return Object.fromEntries(headers.map((header, index) => [header, values[index]]));
+  });
+}
+
+describe("synthetic horizon dataset", () => {
+  it("uses future near-miss labels with both positive and negative examples", () => {
+    const rows = csvRows();
+    const labels = new Set(rows.map((row) => row.near_miss_within_next_15m));
+
+    expect(rows.length).toBeGreaterThan(1000);
+    expect(labels.has("0")).toBe(true);
+    expect(labels.has("1")).toBe(true);
+    expect(rows[0].prediction_horizon).toBe("15m");
+  });
+
+  it("exports horizon and evidence authority for scenario predictions", () => {
+    const payload = JSON.parse(readFileSync("models/scenario_predictions.json", "utf8"));
+    const prediction = payload.predictions[0];
+
+    expect(payload.target).toBe("near_miss_within_next_15m");
+    expect(payload.prediction_horizon).toBe("15m");
+    expect(prediction.assessment.prediction_horizon).toBe("15m");
+    expect(prediction.assessment.evidence_authority).toBe("SYNTHETIC_DATA");
+  });
+
+  it("keeps high-risk scenarios above stabilized replay outcomes", () => {
+    const payload = JSON.parse(readFileSync("models/scenario_predictions.json", "utf8"));
+    const byEvent = new Map(payload.predictions.map((item: any) => [item.event_id, item.assessment.safety_incident_risk_score]));
+
+    expect(byEvent.get("pm27-005")).toBeGreaterThan(byEvent.get("ppt-003"));
+  });
+});

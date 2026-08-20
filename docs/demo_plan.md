@@ -12,15 +12,15 @@ The demo should make NearGuard feel like an intervention agent, not just a predi
 
 ## Target Audience Takeaway
 
-NearGuard uses Prime Mover telematics and operational context to detect safety incident risk early, coordinate the right safety interventions, keep humans in control for disruptive actions and produce an auditable trace.
+NearGuard uses rolling Prime Mover telematics and operational context to detect elevated synthetic near-miss risk within a future horizon, coordinate the right safety interventions, keep humans in control for disruptive actions and produce an auditable trace.
 
-Near-miss prevention is the headline use case, but the model target is broader: safety incident risk.
+Near-miss prevention is the headline use case. In the MVP, the model target is `near_miss_within_next_15m`, a synthetic future outcome used to demonstrate the supervised learning pipeline.
 
 The demo is designed for PSA Code Sprint 2.0: Agentic AI in Action. It should make the evaluation criteria visible: agentic reasoning, decision-making, tool orchestration, uncertainty handling, human oversight, auditability, responsible AI and clear presentation.
 
 ## Demo Story
 
-Vehicle `PM-27` enters a high-risk zone during heavy traffic. The synthetic event stream shows repeated harsh braking and speeding. NearGuard predicts high safety incident risk, explains the risk, warns the driver, notifies the supervisor, handles a supervisor notification timeout, reassesses risk, asks for approval for a zone advisory and creates a safety case.
+Vehicle `PM-27` enters a high-risk zone during heavy traffic. The synthetic event stream shows repeated harsh braking and speeding. NearGuard predicts elevated synthetic near-miss risk within the next 15 minutes, explains the rolling telemetry drivers, warns the driver, notifies the supervisor, handles a supervisor notification timeout, reassesses risk, asks for approval for a zone advisory and creates a safety case.
 
 The scenario is inspired by public PSA safety themes such as responsible driving, speed-limit compliance, pedestrian exposure, wharf movement caution and reporting of safety hazards. It does not use real PSA incident data or internal PSA policy.
 
@@ -44,7 +44,7 @@ The scenario is inspired by public PSA safety themes such as responsible driving
 - Active Prime Movers list with safety incident risk level.
 - Selected case detail for `PM-27`.
 - Raw event, zone context and derived risk features.
-- Risk score, confidence, uncertainty and explanation.
+- Synthetic near-miss risk score, prediction horizon, confidence, uncertainty and explanation.
 - Recommended action and authority class.
 - Tool call status list.
 - Approval request panel.
@@ -59,8 +59,8 @@ The scenario is inspired by public PSA safety themes such as responsible driving
 09:14:04  Event window updated: recent_harsh_brake_count_10m = 4
 09:14:05  Zone context loaded: high traffic, caution restriction
 09:14:06  Freshness check passed: gps_freshness = fresh
-09:14:07  Risk model returned safety_incident_risk_score = 0.84
-09:14:08  Top reasons: speeding, repeated harsh braking, high traffic zone
+09:14:07  Telemetry model returned synthetic near-miss risk within next 15m = 0.84
+09:14:08  Top reasons: speeding ratio, repeated harsh braking, high traffic zone
 09:14:09  Policy decision: High risk, warn driver and notify supervisor
 09:14:09  notify_driver succeeded
 09:14:10  notify_supervisor failed: timeout
@@ -112,7 +112,7 @@ Worker daily potential-risk reports should be presented as future enrichment, no
 
 - The audience sees a live or replayed synthetic event stream.
 - Safety incident risk changes from medium to high.
-- Near-miss is explained as a priority scenario, not the only model target.
+- Near-miss is explained as a synthetic future label, not a production accident probability.
 - At least three risk reasons are shown.
 - At least two tools are called.
 - One tool failure is visible and handled.
@@ -130,8 +130,8 @@ Worker daily potential-risk reports should be presented as future enrichment, no
 | 2 | Challenge Fit | How the solution addresses event logs, state changes, action selection, tool orchestration and human oversight. |
 | 3 | Agentic Workflow | Observe, normalize, enrich, predict, decide, act, monitor, reassess, escalate. |
 | 4 | Architecture | Components, state management and simulated tool orchestration. |
-| 5 | Data And Features | Vehicle events, zone context, derived features and model outputs. |
-| 6 | Risk Model | Tabular ML as decision-support tool, with confidence and uncertainty. |
+| 5 | Data And Features | Vehicle events, rolling windows, future synthetic labels and model outputs. |
+| 6 | Risk Model | Tabular ML as decision-support tool for synthetic next-15m near-miss risk, with confidence and uncertainty. |
 | 7 | Human Oversight | Approval boundaries and deterministic safety policy. |
 | 8 | Demo Scenario | PM-27 story, failure handling and expected trace. |
 | 9 | Responsible AI | Synthetic data limits, explainability, auditability and public-reference boundaries. |

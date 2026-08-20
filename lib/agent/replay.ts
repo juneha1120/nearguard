@@ -116,6 +116,8 @@ function buildAssessment(state: ReplayState, event: VehicleEvent, vehicleCase: V
     assessment_id: nextAssessmentId(),
     case_id: vehicleCase.case_id,
     safety_incident_risk_score: score,
+    prediction_horizon: prediction.assessment.prediction_horizon,
+    evidence_authority: prediction.assessment.evidence_authority,
     risk_band: riskBandFor(score, confidence, vehicleCase.current_risk >= 0.65),
     confidence,
     uncertainty_reason: uncertaintyReason,
@@ -192,7 +194,7 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
       vehicleCase.case_id,
       event.timestamp,
       "risk_assessed",
-      `Risk model returned ${assessment.safety_incident_risk_score.toFixed(2)} (${assessment.risk_band}, ${assessment.confidence} confidence).`,
+      `Telemetry model returned ${assessment.safety_incident_risk_score.toFixed(2)} synthetic near-miss risk within next ${assessment.prediction_horizon} (${assessment.risk_band}, ${assessment.confidence} confidence).`,
       { assessment }
     )
   );

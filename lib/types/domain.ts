@@ -67,8 +67,23 @@ export interface DerivedFeatures {
   pedestrian_exposure: PedestrianExposure;
   speed_over_limit: number;
   speed_over_limit_band: "none" | "minor" | "moderate" | "severe";
+  speeding_ratio_5m: number;
+  speeding_ratio_10m: number;
+  mean_speed_5m: number;
+  mean_speed_30m: number;
+  max_speed_5m: number;
+  speed_std_10m: number;
+  speed_delta_last_3_events: number;
   recent_harsh_brake_count_10m: number;
   recent_sharp_turn_count_10m: number;
+  alert_density_30m: number;
+  risk_escalation_rate: number;
+  shift_hours: number;
+  night_flag: boolean;
+  time_since_last_intervention: number;
+  post_intervention_noncompliance: boolean;
+  traffic_weather_compound_index: number;
+  zone_transition_risk: number;
   previous_risk: number;
   risk_trend: "decreasing" | "stable" | "increasing";
 }
@@ -77,6 +92,8 @@ export interface RiskAssessment {
   assessment_id: string;
   case_id: string;
   safety_incident_risk_score: number;
+  prediction_horizon: "15m";
+  evidence_authority: "SYNTHETIC_DATA";
   risk_band: RiskBand;
   confidence: Confidence;
   uncertainty_reason: string | null;
@@ -151,7 +168,9 @@ export interface ScenarioPrediction {
   scenario_id: string;
   event_id: string;
   features: DerivedFeatures;
-  assessment: Omit<RiskAssessment, "assessment_id" | "case_id" | "created_at">;
+  assessment: Omit<RiskAssessment, "assessment_id" | "case_id" | "created_at"> & {
+    synthetic_near_miss_risk_score?: number;
+  };
 }
 
 export interface ReplayState {

@@ -116,7 +116,7 @@ export function NearGuardDashboard() {
           <div className="brand-mark">NG</div>
           <div>
             <h1>NearGuard</h1>
-            <p>Prime Mover safety incident risk agent</p>
+            <p>Prime Mover telemetry forecast safety agent</p>
           </div>
         </div>
         <div className="controls">
@@ -197,8 +197,14 @@ export function NearGuardDashboard() {
             <p className="muted">{state?.selectedScenario.description}</p>
             <div className="grid-two">
               <div className="metric">
-                <p className="metric-label">Risk Score</p>
+                <p className="metric-label">Synthetic Near-Miss Risk</p>
                 <p className="metric-value">{latestAssessment ? latestAssessment.safety_incident_risk_score.toFixed(2) : "--"}</p>
+              </div>
+              <div className="metric">
+                <p className="metric-label">Horizon / Evidence</p>
+                <p className="metric-value">
+                  {latestAssessment ? `${latestAssessment.prediction_horizon} / ${latestAssessment.evidence_authority}` : "--"}
+                </p>
               </div>
               <div className="metric">
                 <p className="metric-label">Confidence</p>
@@ -234,11 +240,19 @@ export function NearGuardDashboard() {
               </div>
             </div>
 
-            <h3 className="section-title">Derived Features</h3>
+            <h3 className="section-title">Rolling Telemetry Features</h3>
             <div className="kv-grid">
               <div className="kv">
                 <span>Over Limit</span>
                 <strong>{state?.latestFeatures ? `${state.latestFeatures.speed_over_limit} km/h` : "--"}</strong>
+              </div>
+              <div className="kv">
+                <span>Speeding Ratio 10m</span>
+                <strong>{state?.latestFeatures ? `${Math.round(state.latestFeatures.speeding_ratio_10m * 100)}%` : "--"}</strong>
+              </div>
+              <div className="kv">
+                <span>Speed Std 10m</span>
+                <strong>{state?.latestFeatures ? `${state.latestFeatures.speed_std_10m} km/h` : "--"}</strong>
               </div>
               <div className="kv">
                 <span>Harsh Brakes 10m</span>
@@ -261,6 +275,9 @@ export function NearGuardDashboard() {
                 <strong>{state?.latestFeatures?.risk_trend ?? "--"}</strong>
               </div>
             </div>
+            <p className="small muted">
+              ML evidence supports prioritization; deterministic safety policy and human approval control interventions.
+            </p>
 
             <h3 className="section-title">Risk Reasons</h3>
             {!latestAssessment ? (
