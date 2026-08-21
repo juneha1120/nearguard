@@ -24,6 +24,9 @@ The current implementation direction is a telemetry forecast safety model: rolli
 vehicle_id
 evaluation_timestamp
 prediction_horizon = 15m
+label_source
+review_status
+matched_normal_window
 rolling telemetry features
 context features
 operational history features
@@ -72,9 +75,20 @@ The target label is a synthetic future outcome, not a direct current-event score
 2. Compute 5/10/30-minute rolling features at each evaluation timestamp.
 3. Generate a latent synthetic risk pressure from temporal patterns, context and intervention response.
 4. Sample future synthetic near-miss events and label `near_miss_within_next_15m`.
-5. Train a scikit-learn `HistGradientBoostingClassifier`.
-6. Export the model artifact, basic holdout metrics and deterministic replay predictions.
-7. Preserve clear language: the output is synthetic risk evidence, not PSA production probability.
+5. Record label provenance and review metadata.
+6. Train a scikit-learn `HistGradientBoostingClassifier`.
+7. Export the model artifact, basic holdout metrics and deterministic replay predictions.
+8. Preserve clear language: the output is synthetic risk evidence, not PSA production probability.
+
+## Future Retraining Loop
+
+Do not implement online learning in the MVP. A production retraining loop would:
+
+- accept only safety-reviewed incident, near-miss and safe-operation labels
+- build positive examples from telemetry windows before reviewed incidents
+- sample matched normal windows from comparable zone, shift, traffic and weather conditions
+- rebuild and validate the full training dataset in batches
+- release a new model only after threshold, false-negative, false-alarm and lead-time checks pass
 
 ## Safety And Scope Boundaries
 

@@ -11,6 +11,7 @@ NearGuard uses synthetic data because real PSA production telemetry, reviewed ne
 - Generate Prime Mover telemetry time series first; this is the MVP live input.
 - Convert each vehicle history into evaluation snapshots using only data observed up to `evaluation_timestamp`.
 - Label each snapshot with a future synthetic outcome: `near_miss_within_next_15m`.
+- Preserve label provenance using `label_source`, `review_status` and `matched_normal_window`.
 - Keep scripted replay scenarios deterministic for demo reliability.
 - Use fixed random seeds for reproducible generated data and model artifacts.
 - Keep public PSA context and prototype assumptions separate.
@@ -83,6 +84,16 @@ NearGuard groups model inputs into four practical safety feature layers:
 
 Privacy-heavy signals such as eye tracking, HRV or driver biometrics are not part of the MVP. They remain future inputs only if approved and governed.
 
+### Label Governance Metadata
+
+Each row also carries label governance metadata:
+
+| Field | MVP Value | Future Production Meaning |
+| --- | --- | --- |
+| `label_source` | `SYNTHETIC_LATENT_PROCESS` | `SAFETY_REVIEWED_INCIDENT`, `SAFETY_REVIEWED_NEAR_MISS` or approved proxy source. |
+| `review_status` | `synthetic_reviewed` | Only `safety_reviewed` rows are eligible for production training. |
+| `matched_normal_window` | `false` for generated synthetic rows | `true` when a normal/safe window is deliberately sampled to match positive windows by zone, shift, traffic and weather. |
+
 ## Synthetic Label Recipe
 
 The generator creates a latent risk pressure over time rather than assigning a direct row-level score. Risk pressure increases when multiple conditions accumulate:
@@ -149,7 +160,22 @@ A production-grade version would replace synthetic labels with reviewed operatio
 
 - near-miss and incident records linked to prior telemetry windows
 - safety observations and supervisor-reviewed intervention outcomes
+- matched normal/safe telemetry windows from comparable zones, shifts, traffic and weather
 - approved feature definitions, threshold analysis and false-negative/false-alarm evaluation
 - subgroup checks across zones, shifts, weather and vehicle groups
+
+New operational incidents should not be streamed directly into the model as immediate online learning. Production learning should use batch retraining:
+
+```text
+new incident or near-miss
+-> safety review confirms label, time, vehicle, zone and severity
+-> label builder creates pre-incident positive windows
+-> matched normal windows are sampled for comparison
+-> training dataset is rebuilt
+-> model is retrained and validated
+-> approved model artifact is released
+```
+
+Raw incident reports, duplicate reports, unresolved investigations and ambiguous post-incident windows should remain outside the training set until review is complete.
 
 Real-time vehicle-person interaction risk remains a future optional lens if approved person-position data from CCTV analytics, RTLS or wearables becomes available. It should be deterministic and physics-based before any ML enhancement.

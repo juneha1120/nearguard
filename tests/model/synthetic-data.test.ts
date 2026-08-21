@@ -21,6 +21,14 @@ describe("synthetic horizon dataset", () => {
     expect(rows[0].prediction_horizon).toBe("15m");
   });
 
+  it("records synthetic label provenance and review metadata", () => {
+    const rows = csvRows();
+
+    expect(rows[0].label_source).toBe("SYNTHETIC_LATENT_PROCESS");
+    expect(rows[0].review_status).toBe("synthetic_reviewed");
+    expect(rows[0].matched_normal_window).toBe("False");
+  });
+
   it("exports horizon and evidence authority for scenario predictions", () => {
     const payload = JSON.parse(readFileSync("models/scenario_predictions.json", "utf8"));
     const prediction = payload.predictions[0];

@@ -40,6 +40,8 @@ Real-time vehicle-person interaction risk is not part of the MVP authority path.
 Before production use, NearGuard would require approved operational data and validation:
 
 - reviewed near-miss, incident and safe-operation labels
+- matched normal/safe windows sampled from comparable operating conditions
+- batch retraining, not immediate online learning from raw incident reports
 - documented label definitions and review workflow
 - train/test split by time, vehicle and zone where appropriate
 - ROC/PR threshold analysis
