@@ -6,6 +6,8 @@ import {
   ClipboardCheck,
   Clock3,
   FastForward,
+  Gauge,
+  MapPin,
   Pause,
   Play,
   RefreshCw,
@@ -22,6 +24,25 @@ type ScenarioMetadata = {
   primary_vehicle_id: string;
   highlights: string[];
 };
+
+type MapZoneView = {
+  zoneId: string;
+  name: string;
+  className: string;
+  bounds: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+};
+
+const MAP_ZONES: MapZoneView[] = [
+  { zoneId: "YARD-C4", name: "YARD-C4", className: "caution", bounds: { x: 12, y: 18, width: 30, height: 28 } },
+  { zoneId: "PPT-LINK-25", name: "PPT-LINK-25", className: "slow", bounds: { x: 58, y: 18, width: 30, height: 28 } },
+  { zoneId: "YARD-U2", name: "YARD-U2", className: "restricted", bounds: { x: 12, y: 58, width: 30, height: 28 } },
+  { zoneId: "WHARF-C4", name: "WHARF-C4", className: "wharf", bounds: { x: 58, y: 58, width: 30, height: 28 } }
+];
 
 function bandClass(band?: RiskBand) {
   if (!band) return "neutral";
@@ -47,6 +68,7 @@ export function NearGuardDashboard() {
   const [scenarioId, setScenarioId] = useState("pm27-persistent-high-risk");
   const [state, setState] = useState<ReplayState | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [selectedMapVehicle, setSelectedMapVehicle] = useState<string | null>(null);
   const timerRef = useRef<number | null>(null);
 
   async function start(id = scenarioId) {
@@ -57,6 +79,7 @@ export function NearGuardDashboard() {
     });
     setState(await response.json());
     setIsPlaying(false);
+    setSelectedMapVehicle(null);
   }
 
   async function step() {
@@ -102,6 +125,12 @@ export function NearGuardDashboard() {
 
   const selectedCase = state?.selectedCase ?? null;
   const latestAssessment = state?.latestRiskAssessment ?? null;
+  const currentEvent = state?.currentEvent ?? null;
+  const currentZone = state?.currentZone ?? null;
+  const vehiclePosition = currentEvent?.position ?? currentZone?.center ?? { x: 50, y: 50 };
+  const vehicleHeading = currentEvent?.heading_degrees ?? 90;
+  const accuracy = currentEvent?.accuracy_m ?? 10;
+  const showVehicleDetails = Boolean(selectedMapVehicle && selectedMapVehicle === currentEvent?.vehicle_id);
   const pendingApproval = state?.pendingApprovals.find((approval) => approval.status === "pending") ?? null;
   const safetyCase = state?.safetyCases.at(-1) ?? null;
   const progress = useMemo(() => {
@@ -195,6 +224,92 @@ export function NearGuardDashboard() {
           </div>
           <div className="panel-body">
             <p className="muted">{state?.selectedScenario.description}</p>
+            <div className={`prime-map ${currentEvent ? "live" : "waiting"}`} aria-label="Synthetic prime mover map">
+              <div className="map-grid" />
+              <div className="map-route route-top" />
+              <div className="map-route route-middle" />
+              <div className="map-route route-bottom" />
+              <div className="map-route route-left" />
+              <div className="map-route route-center" />
+              <div className="map-route route-right" />
+              {MAP_ZONES.map((zone) => (
+                <div
+                  className={`map-zone ${zone.className} ${zone.zoneId === currentEvent?.zone_id ? "current" : ""}`}
+                  key={zone.zoneId}
+                  style={{
+                    left: `${zone.bounds.x}%`,
+                    top: `${zone.bounds.y}%`,
+                    width: `${zone.bounds.width}%`,
+                    height: `${zone.bounds.height}%`
+                  }}
+                >
+                  <span>{zone.name}</span>
+                </div>
+              ))}
+              {latestAssessment ? (
+                <div
+                  className={`risk-horizon ${bandClass(latestAssessment.risk_band)}`}
+                  style={{
+                    left: `${vehiclePosition.x}%`,
+                    top: `${vehiclePosition.y}%`,
+                    transform: `translate(-50%, -50%) rotate(${vehicleHeading}deg) scale(${0.8 + latestAssessment.safety_incident_risk_score * 0.55})`
+                  }}
+                />
+              ) : null}
+              {currentEvent ? (
+                <>
+                  <div
+                    className={`gps-accuracy ${currentEvent.gps_freshness}`}
+                    style={{
+                      left: `${vehiclePosition.x}%`,
+                      top: `${vehiclePosition.y}%`,
+                      width: `${Math.max(34, accuracy * 2.1)}px`,
+                      height: `${Math.max(34, accuracy * 2.1)}px`
+                    }}
+                  />
+                  <button
+                    className={`vehicle-marker ${bandClass(latestAssessment?.risk_band)} ${currentEvent.event_type}`}
+                    style={{
+                      left: `${vehiclePosition.x}%`,
+                      top: `${vehiclePosition.y}%`
+                    }}
+                    type="button"
+                    title={`Open ${currentEvent.vehicle_id} telemetry`}
+                    onClick={() =>
+                      setSelectedMapVehicle((value) => (value === currentEvent.vehicle_id ? null : currentEvent.vehicle_id))
+                    }
+                  >
+                    <span className="vehicle-heading" style={{ transform: `rotate(${vehicleHeading}deg)` }}>
+                      <span className="topdown-truck active">
+                        <span className="truck-cab" />
+                        <span className="truck-trailer" />
+                      </span>
+                    </span>
+                    <span className="vehicle-label">{currentEvent.vehicle_id}</span>
+                  </button>
+                </>
+              ) : (
+                <div className="map-empty">Start replay to locate prime mover.</div>
+              )}
+              {showVehicleDetails ? (
+                <div className="map-popover">
+                  <div className="tool-row">
+                    <strong>{currentEvent?.vehicle_id}</strong>
+                    <span className={`badge ${bandClass(latestAssessment?.risk_band)}`}>{latestAssessment?.risk_band ?? "Monitoring"}</span>
+                  </div>
+                  <p className="small muted">{currentZone?.zone_name ?? "Zone context unavailable"}</p>
+                  <div className="map-popover-grid">
+                    <span>
+                      <Gauge size={13} /> {currentEvent?.speed}/{currentEvent?.speed_limit} km/h
+                    </span>
+                    <span>
+                      <MapPin size={13} /> {currentEvent?.gps_freshness}
+                    </span>
+                  </div>
+                  <p className="small">{selectedCase?.recommended_action ?? "Collecting telemetry."}</p>
+                </div>
+              ) : null}
+            </div>
             <div className="grid-two">
               <div className="metric">
                 <p className="metric-label">Synthetic Near-Miss Risk</p>

@@ -41,6 +41,11 @@ export interface VehicleEvent {
   speed: number;
   speed_limit: 15 | 25 | 40;
   gps_freshness: GpsFreshness;
+  position?: MapPosition;
+  heading_degrees?: number;
+  accuracy_m?: number;
+  lat?: number;
+  lng?: number;
 }
 
 export interface ZoneContext {
@@ -52,6 +57,21 @@ export interface ZoneContext {
   restriction_level: RestrictionLevel;
   slow_down_zone_active: boolean;
   pedestrian_exposure: PedestrianExposure;
+  map_region?: string;
+  center?: MapPosition;
+  bounds?: MapBounds;
+}
+
+export interface MapPosition {
+  x: number;
+  y: number;
+}
+
+export interface MapBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 export interface DerivedFeatures {
