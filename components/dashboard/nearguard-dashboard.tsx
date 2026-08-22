@@ -7,6 +7,7 @@ import {
   Clock3,
   FastForward,
   Gauge,
+  Layers,
   MapPin,
   Pause,
   Play,
@@ -15,7 +16,7 @@ import {
   StepForward
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { ReplayState, RiskBand } from "@/lib/types/domain";
+import type { EventType, ReplayState, RiskBand, VehicleEvent } from "@/lib/types/domain";
 
 type ScenarioMetadata = {
   scenario_id: string;
@@ -44,6 +45,8 @@ const MAP_ZONES: MapZoneView[] = [
   { zoneId: "WHARF-C4", name: "WHARF-C4", className: "wharf", bounds: { x: 58, y: 58, width: 30, height: 28 } }
 ];
 
+const ABNORMAL_EVENTS: EventType[] = ["speeding", "harsh_brake", "sharp_turn", "stale_gps", "risk_persistent"];
+
 function bandClass(band?: RiskBand) {
   if (!band) return "neutral";
   if (band === "Low") return "low";
@@ -61,6 +64,22 @@ function timeLabel(timestamp?: string | null) {
     second: "2-digit",
     hour12: false
   }).format(new Date(timestamp));
+}
+
+function eventSeverityClass(event: VehicleEvent) {
+  if (event.event_type === "risk_persistent") return "persistent";
+  if (event.event_type === "stale_gps") return "uncertain";
+  if (event.event_type === "speed_normalized") return "resolved";
+  if (ABNORMAL_EVENTS.includes(event.event_type)) return "abnormal";
+  return "normal";
+}
+
+function formatEventLabel(eventType: EventType) {
+  return eventType.replaceAll("_", " ");
+}
+
+function eventKey(event: VehicleEvent) {
+  return event.event_id;
 }
 
 export function NearGuardDashboard() {
@@ -131,6 +150,38 @@ export function NearGuardDashboard() {
   const vehicleHeading = currentEvent?.heading_degrees ?? 90;
   const accuracy = currentEvent?.accuracy_m ?? 10;
   const showVehicleDetails = Boolean(selectedMapVehicle && selectedMapVehicle === currentEvent?.vehicle_id);
+  const evidenceEvents = useMemo(() => {
+    if (!state?.currentEvent) return [];
+    const currentTime = new Date(state.currentEvent.timestamp).getTime();
+    const tenMinutes = 10 * 60 * 1000;
+    return state.selectedScenario.events
+      .slice(0, state.currentEventIndex)
+      .filter((event) => {
+        if (event.vehicle_id !== state.currentEvent?.vehicle_id || !event.position) return false;
+        const eventTime = new Date(event.timestamp).getTime();
+        return eventTime <= currentTime && currentTime - eventTime <= tenMinutes;
+      });
+  }, [state]);
+  const behaviorEvidence = useMemo(() => {
+    const abnormalEvents = evidenceEvents.filter((event) => ABNORMAL_EVENTS.includes(event.event_type));
+    return {
+      abnormalEvents,
+      hasBehaviorSignal: abnormalEvents.length > 0 || currentEvent?.event_type === "speed_normalized"
+    };
+  }, [currentEvent?.event_type, evidenceEvents]);
+  const contextChips = useMemo(() => {
+    if (!currentEvent) return [];
+    const chips: { label: string; tone: "neutral" | "warning" | "critical" | "low" }[] = [];
+    if (!currentZone) chips.push({ label: "zone context missing", tone: "critical" });
+    if (currentZone?.slow_down_zone_active) chips.push({ label: "slow-down zone", tone: "warning" });
+    if (currentZone?.restriction_level === "restricted") chips.push({ label: "restricted zone", tone: "critical" });
+    if (currentZone?.restriction_level === "wharf") chips.push({ label: "wharf context", tone: "warning" });
+    if (currentZone?.pedestrian_exposure === "high") chips.push({ label: "pedestrian exposure high", tone: "critical" });
+    if (currentZone?.traffic_level === "high") chips.push({ label: "traffic high", tone: "warning" });
+    if (currentEvent.gps_freshness !== "fresh") chips.push({ label: `${currentEvent.gps_freshness} GPS`, tone: "critical" });
+    if (latestAssessment?.uncertainty_reason) chips.push({ label: "low confidence context", tone: "critical" });
+    return chips.length ? chips : [{ label: "context normal", tone: "low" }];
+  }, [currentEvent, currentZone, latestAssessment?.uncertainty_reason]);
   const pendingApproval = state?.pendingApprovals.find((approval) => approval.status === "pending") ?? null;
   const safetyCase = state?.safetyCases.at(-1) ?? null;
   const progress = useMemo(() => {
@@ -224,7 +275,19 @@ export function NearGuardDashboard() {
           </div>
           <div className="panel-body">
             <p className="muted">{state?.selectedScenario.description}</p>
-            <div className={`prime-map ${currentEvent ? "live" : "waiting"}`} aria-label="Synthetic prime mover map">
+            <div className="evidence-map-heading">
+              <div>
+                <h3>Risk Evidence Replay</h3>
+                <p className="small muted">
+                  Recent telemetry window and zone context used to explain the current risk event.
+                </p>
+              </div>
+              <span className="badge neutral">
+                <Layers size={13} />
+                {currentEvent ? `${evidenceEvents.length} evidence points` : "quiet"}
+              </span>
+            </div>
+            <div className={`prime-map evidence-replay ${currentEvent ? "live" : "waiting"}`} aria-label="Risk evidence replay map">
               <div className="map-grid" />
               <div className="map-route route-top" />
               <div className="map-route route-middle" />
@@ -234,7 +297,7 @@ export function NearGuardDashboard() {
               <div className="map-route route-right" />
               {MAP_ZONES.map((zone) => (
                 <div
-                  className={`map-zone ${zone.className} ${zone.zoneId === currentEvent?.zone_id ? "current" : ""}`}
+                  className={`map-zone ${zone.className} ${zone.zoneId === currentEvent?.zone_id ? "current evidence-zone" : ""}`}
                   key={zone.zoneId}
                   style={{
                     left: `${zone.bounds.x}%`,
@@ -246,6 +309,41 @@ export function NearGuardDashboard() {
                   <span>{zone.name}</span>
                 </div>
               ))}
+              {evidenceEvents.slice(0, -1).map((event, index) => {
+                const nextEvent = evidenceEvents[index + 1];
+                if (!event.position || !nextEvent?.position) return null;
+                const left = Math.min(event.position.x, nextEvent.position.x);
+                const top = Math.min(event.position.y, nextEvent.position.y);
+                const width = Math.max(Math.abs(nextEvent.position.x - event.position.x), 1);
+                const height = Math.max(Math.abs(nextEvent.position.y - event.position.y), 1);
+                return (
+                  <div
+                    className={`evidence-segment ${eventSeverityClass(nextEvent)}`}
+                    key={`${event.event_id}-${nextEvent.event_id}`}
+                    style={{
+                      left: `${left}%`,
+                      top: `${top}%`,
+                      width: `${width}%`,
+                      height: `${height}%`
+                    }}
+                  />
+                );
+              })}
+              {evidenceEvents.map((event) =>
+                event.position ? (
+                  <div
+                    className={`evidence-point ${eventSeverityClass(event)} ${event.event_id === currentEvent?.event_id ? "trigger" : ""}`}
+                    key={eventKey(event)}
+                    style={{
+                      left: `${event.position.x}%`,
+                      top: `${event.position.y}%`
+                    }}
+                    title={`${event.vehicle_id} ${formatEventLabel(event.event_type)}`}
+                  >
+                    <span>{formatEventLabel(event.event_type)}</span>
+                  </div>
+                ) : null
+              )}
               {latestAssessment ? (
                 <div
                   className={`risk-horizon ${bandClass(latestAssessment.risk_band)}`}
@@ -268,7 +366,7 @@ export function NearGuardDashboard() {
                     }}
                   />
                   <button
-                    className={`vehicle-marker ${bandClass(latestAssessment?.risk_band)} ${currentEvent.event_type}`}
+                    className={`vehicle-marker evidence-trigger ${bandClass(latestAssessment?.risk_band)} ${currentEvent.event_type}`}
                     style={{
                       left: `${vehiclePosition.x}%`,
                       top: `${vehiclePosition.y}%`
@@ -286,11 +384,21 @@ export function NearGuardDashboard() {
                       </span>
                     </span>
                     <span className="vehicle-label">{currentEvent.vehicle_id}</span>
+                    <span className="trigger-label">{formatEventLabel(currentEvent.event_type)}</span>
                   </button>
                 </>
               ) : (
-                <div className="map-empty">Start replay to locate prime mover.</div>
+                <div className="map-empty">Evidence replay starts after a risk assessment.</div>
               )}
+              {currentEvent ? (
+                <div className="context-chip-row">
+                  {contextChips.map((chip) => (
+                    <span className={`context-chip ${chip.tone}`} key={chip.label}>
+                      {chip.label}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
               {showVehicleDetails ? (
                 <div className="map-popover">
                   <div className="tool-row">
@@ -305,7 +413,16 @@ export function NearGuardDashboard() {
                     <span>
                       <MapPin size={13} /> {currentEvent?.gps_freshness}
                     </span>
+                    <span>Over limit {state?.latestFeatures?.speed_over_limit ?? 0} km/h</span>
+                    <span>{behaviorEvidence.abnormalEvents.length} abnormal events</span>
                   </div>
+                  {latestAssessment?.top_risk_reasons.length ? (
+                    <ul className="popover-reasons">
+                      {latestAssessment.top_risk_reasons.slice(0, 3).map((reason) => (
+                        <li key={reason}>{reason}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                   <p className="small">{selectedCase?.recommended_action ?? "Collecting telemetry."}</p>
                 </div>
               ) : null}
