@@ -102,20 +102,30 @@ def confidence_and_reason(features: dict[str, object], missing_context: bool) ->
 def reasons(features: dict[str, object], confidence: str, uncertainty: str | None) -> list[str]:
     output: list[str] = []
     speed_over = int(features["speed_over_limit"])
-    if float(features["speeding_ratio_10m"]) >= 0.35:
-        output.append(f"Speeding occurred in {round(float(features['speeding_ratio_10m']) * 100)}% of the recent 10-minute window.")
-    elif speed_over > 0:
-        output.append(f"Current speed is {speed_over} km/h above the zone limit.")
-    if int(features["harsh_brake_count_10m"]) > 0:
-        output.append(f"{features['harsh_brake_count_10m']} harsh-braking event(s) occurred within 10 minutes.")
-    if int(features["sharp_turn_count_10m"]) > 0:
-        output.append(f"{features['sharp_turn_count_10m']} sharp-turn event(s) occurred within 10 minutes.")
+    instability_count = int(features["harsh_brake_count_10m"]) + int(features["sharp_turn_count_10m"])
     if float(features["traffic_weather_compound_index"]) >= 0.5:
-        output.append("Traffic and weather compound the telemetry risk.")
+        if instability_count > 0:
+            output.append("Rolling telemetry instability is occurring under compound traffic and weather risk.")
+        else:
+            output.append("Traffic and weather compound the telemetry risk.")
+    if instability_count >= 2:
+        output.append(
+            f"Recent 10-minute window combines {features['harsh_brake_count_10m']} harsh-brake and {features['sharp_turn_count_10m']} sharp-turn signal(s)."
+        )
+    elif int(features["harsh_brake_count_10m"]) > 0:
+        output.append(f"{features['harsh_brake_count_10m']} harsh-braking event(s) occurred within 10 minutes.")
+    elif int(features["sharp_turn_count_10m"]) > 0:
+        output.append(f"{features['sharp_turn_count_10m']} sharp-turn event(s) occurred within 10 minutes.")
+    if float(features["alert_density_30m"]) >= 4:
+        output.append("Alert density is rising across the recent rolling telemetry window.")
     if features["pedestrian_exposure"] == "high":
         output.append("Pedestrian exposure is high in this operating area.")
     if bool(features["post_intervention_noncompliance"]):
         output.append("Risk remained elevated after a prior intervention signal.")
+    if float(features["speeding_ratio_10m"]) >= 0.35:
+        output.append(f"Speed exposure appeared in {round(float(features['speeding_ratio_10m']) * 100)}% of the recent 10-minute window.")
+    elif speed_over > 0:
+        output.append(f"Current speed is {speed_over} km/h above the zone limit.")
     if confidence == "low" and uncertainty:
         output.append(f"Confidence is reduced because of {uncertainty}.")
     if not output:
@@ -169,7 +179,8 @@ def scenario_features() -> list[dict[str, object]]:
             traffic_index = {"low": 0.0, "medium": 0.5, "high": 1.0}[zone["traffic_level"]]
             restriction_index = {"normal": 0.0, "caution": 0.35, "restricted": 0.7, "wharf": 1.0}[zone["restriction_level"]]
             time_since_last_intervention = 999 if intervention_time is None else (event_time - intervention_time).total_seconds() / 60
-            post_intervention_noncompliance = previous_action_taken and speed_over > 0
+            unstable_after_intervention = event["event_type"] in {"speeding", "harsh_brake", "sharp_turn", "risk_persistent"}
+            post_intervention_noncompliance = previous_action_taken and unstable_after_intervention
             feature = {
                 "speed": event["speed"],
                 "speed_limit": event["speed_limit"],

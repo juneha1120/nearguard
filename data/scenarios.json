@@ -2,9 +2,9 @@
   {
     "scenario_id": "pm27-persistent-high-risk",
     "name": "PM-27 Persistent High Risk",
-    "description": "Speeding and repeated harsh braking in a high-traffic caution zone, including supervisor timeout, fallback, approval and safety case creation.",
+    "description": "A compound rolling telemetry pattern in a rainy high-traffic caution zone: near-limit speed, sharp turning, repeated harsh braking and persistent risk after intervention, including supervisor timeout, fallback, approval and safety case creation.",
     "primary_vehicle_id": "PM-27",
-    "highlights": ["speeding", "harsh braking", "tool failure", "approval", "safety case"],
+    "highlights": ["compound telemetry", "harsh braking", "sharp turn", "tool failure", "approval", "safety case"],
     "events": [
       {
         "event_id": "pm27-001",
@@ -21,8 +21,8 @@
         "timestamp": "2026-08-19T09:14:42+08:00",
         "vehicle_id": "PM-27",
         "zone_id": "YARD-C4",
-        "event_type": "speeding",
-        "speed": 32,
+        "event_type": "sharp_turn",
+        "speed": 24,
         "speed_limit": 25,
         "gps_freshness": "fresh"
       },
@@ -32,7 +32,7 @@
         "vehicle_id": "PM-27",
         "zone_id": "YARD-C4",
         "event_type": "harsh_brake",
-        "speed": 29,
+        "speed": 26,
         "speed_limit": 25,
         "gps_freshness": "fresh"
       },
@@ -42,7 +42,7 @@
         "vehicle_id": "PM-27",
         "zone_id": "YARD-C4",
         "event_type": "harsh_brake",
-        "speed": 27,
+        "speed": 24,
         "speed_limit": 25,
         "gps_freshness": "fresh"
       },
@@ -52,7 +52,7 @@
         "vehicle_id": "PM-27",
         "zone_id": "YARD-C4",
         "event_type": "risk_persistent",
-        "speed": 26,
+        "speed": 24,
         "speed_limit": 25,
         "gps_freshness": "fresh"
       }

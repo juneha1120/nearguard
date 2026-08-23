@@ -59,4 +59,22 @@ describe("derived features", () => {
     expect(features.recent_harsh_brake_count_10m).toBe(1);
     expect(features.recent_sharp_turn_count_10m).toBe(1);
   });
+
+  it("treats persistent unsafe telemetry after intervention as noncompliance even without speeding", () => {
+    const event: VehicleEvent = {
+      event_id: "pm27-005",
+      timestamp: "2026-08-19T09:18:30+08:00",
+      vehicle_id: "PM-27",
+      zone_id: "YARD-C4",
+      event_type: "risk_persistent",
+      speed: 24,
+      speed_limit: 25,
+      gps_freshness: "fresh"
+    };
+
+    const features = deriveFeatures(event, zone, [], vehicleCase);
+
+    expect(features.speed_over_limit).toBe(0);
+    expect(features.post_intervention_noncompliance).toBe(true);
+  });
 });

@@ -247,7 +247,7 @@ export function NearGuardDashboard() {
                 <strong>{state?.latestFeatures ? `${state.latestFeatures.speed_over_limit} km/h` : "--"}</strong>
               </div>
               <div className="kv">
-                <span>Speeding Ratio 10m</span>
+                <span>Limit Exposure 10m</span>
                 <strong>{state?.latestFeatures ? `${Math.round(state.latestFeatures.speeding_ratio_10m * 100)}%` : "--"}</strong>
               </div>
               <div className="kv">

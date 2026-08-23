@@ -63,9 +63,9 @@
       "scenario_id": "pm27-persistent-high-risk",
       "event_id": "pm27-002",
       "features": {
-        "speed": 32,
+        "speed": 24,
         "speed_limit": 25,
-        "event_type": "speeding",
+        "event_type": "sharp_turn",
         "gps_freshness": "fresh",
         "traffic_level": "high",
         "weather": "rain",
@@ -73,19 +73,19 @@
         "restriction_level": "caution",
         "slow_down_zone_active": false,
         "pedestrian_exposure": "medium",
-        "speed_over_limit": 7,
-        "speed_over_limit_band": "minor",
-        "speeding_ratio_5m": 0.5,
-        "speeding_ratio_10m": 0.5,
-        "mean_speed_5m": 27.0,
-        "mean_speed_30m": 27.0,
-        "max_speed_5m": 32.0,
-        "speed_std_10m": 5.0,
-        "speed_delta_last_3_events": 10.0,
+        "speed_over_limit": 0,
+        "speed_over_limit_band": "none",
+        "speeding_ratio_5m": 0.0,
+        "speeding_ratio_10m": 0.0,
+        "mean_speed_5m": 23.0,
+        "mean_speed_30m": 23.0,
+        "max_speed_5m": 24.0,
+        "speed_std_10m": 1.0,
+        "speed_delta_last_3_events": 2.0,
         "harsh_brake_count_10m": 0,
-        "sharp_turn_count_10m": 0,
+        "sharp_turn_count_10m": 1,
         "recent_harsh_brake_count_10m": 0,
-        "recent_sharp_turn_count_10m": 0,
+        "recent_sharp_turn_count_10m": 1,
         "alert_density_30m": 2.0,
         "risk_escalation_rate": 0,
         "shift_hours": 4.2,
@@ -106,8 +106,8 @@
         "confidence": "high",
         "uncertainty_reason": null,
         "top_risk_reasons": [
-          "Speeding occurred in 50% of the recent 10-minute window.",
-          "Traffic and weather compound the telemetry risk."
+          "Rolling telemetry instability is occurring under compound traffic and weather risk.",
+          "1 sharp-turn event(s) occurred within 10 minutes."
         ]
       }
     },
@@ -115,7 +115,7 @@
       "scenario_id": "pm27-persistent-high-risk",
       "event_id": "pm27-003",
       "features": {
-        "speed": 29,
+        "speed": 26,
         "speed_limit": 25,
         "event_type": "harsh_brake",
         "gps_freshness": "fresh",
@@ -125,19 +125,19 @@
         "restriction_level": "caution",
         "slow_down_zone_active": false,
         "pedestrian_exposure": "medium",
-        "speed_over_limit": 4,
+        "speed_over_limit": 1,
         "speed_over_limit_band": "minor",
-        "speeding_ratio_5m": 0.667,
-        "speeding_ratio_10m": 0.667,
-        "mean_speed_5m": 27.67,
-        "mean_speed_30m": 27.67,
-        "max_speed_5m": 32.0,
-        "speed_std_10m": 4.19,
-        "speed_delta_last_3_events": 7.0,
+        "speeding_ratio_5m": 0.333,
+        "speeding_ratio_10m": 0.333,
+        "mean_speed_5m": 24.0,
+        "mean_speed_30m": 24.0,
+        "max_speed_5m": 26.0,
+        "speed_std_10m": 1.63,
+        "speed_delta_last_3_events": 4.0,
         "harsh_brake_count_10m": 1,
-        "sharp_turn_count_10m": 0,
+        "sharp_turn_count_10m": 1,
         "recent_harsh_brake_count_10m": 1,
-        "recent_sharp_turn_count_10m": 0,
+        "recent_sharp_turn_count_10m": 1,
         "alert_density_30m": 4.0,
         "risk_escalation_rate": 0,
         "shift_hours": 4.2,
@@ -158,9 +158,9 @@
         "confidence": "high",
         "uncertainty_reason": null,
         "top_risk_reasons": [
-          "Speeding occurred in 67% of the recent 10-minute window.",
-          "1 harsh-braking event(s) occurred within 10 minutes.",
-          "Traffic and weather compound the telemetry risk.",
+          "Rolling telemetry instability is occurring under compound traffic and weather risk.",
+          "Recent 10-minute window combines 1 harsh-brake and 1 sharp-turn signal(s).",
+          "Alert density is rising across the recent rolling telemetry window.",
           "Risk remained elevated after a prior intervention signal."
         ]
       }
@@ -169,7 +169,7 @@
       "scenario_id": "pm27-persistent-high-risk",
       "event_id": "pm27-004",
       "features": {
-        "speed": 27,
+        "speed": 24,
         "speed_limit": 25,
         "event_type": "harsh_brake",
         "gps_freshness": "fresh",
@@ -179,19 +179,19 @@
         "restriction_level": "caution",
         "slow_down_zone_active": false,
         "pedestrian_exposure": "medium",
-        "speed_over_limit": 2,
-        "speed_over_limit_band": "minor",
-        "speeding_ratio_5m": 0.75,
-        "speeding_ratio_10m": 0.75,
-        "mean_speed_5m": 27.5,
-        "mean_speed_30m": 27.5,
-        "max_speed_5m": 32.0,
-        "speed_std_10m": 3.64,
-        "speed_delta_last_3_events": -5.0,
+        "speed_over_limit": 0,
+        "speed_over_limit_band": "none",
+        "speeding_ratio_5m": 0.25,
+        "speeding_ratio_10m": 0.25,
+        "mean_speed_5m": 24.0,
+        "mean_speed_30m": 24.0,
+        "max_speed_5m": 26.0,
+        "speed_std_10m": 1.41,
+        "speed_delta_last_3_events": 0.0,
         "harsh_brake_count_10m": 2,
-        "sharp_turn_count_10m": 0,
+        "sharp_turn_count_10m": 1,
         "recent_harsh_brake_count_10m": 2,
-        "recent_sharp_turn_count_10m": 0,
+        "recent_sharp_turn_count_10m": 1,
         "alert_density_30m": 6.0,
         "risk_escalation_rate": 0,
         "shift_hours": 4.2,
@@ -212,9 +212,9 @@
         "confidence": "high",
         "uncertainty_reason": null,
         "top_risk_reasons": [
-          "Speeding occurred in 75% of the recent 10-minute window.",
-          "2 harsh-braking event(s) occurred within 10 minutes.",
-          "Traffic and weather compound the telemetry risk.",
+          "Rolling telemetry instability is occurring under compound traffic and weather risk.",
+          "Recent 10-minute window combines 2 harsh-brake and 1 sharp-turn signal(s).",
+          "Alert density is rising across the recent rolling telemetry window.",
           "Risk remained elevated after a prior intervention signal."
         ]
       }
@@ -223,7 +223,7 @@
       "scenario_id": "pm27-persistent-high-risk",
       "event_id": "pm27-005",
       "features": {
-        "speed": 26,
+        "speed": 24,
         "speed_limit": 25,
         "event_type": "risk_persistent",
         "gps_freshness": "fresh",
@@ -233,19 +233,19 @@
         "restriction_level": "caution",
         "slow_down_zone_active": false,
         "pedestrian_exposure": "medium",
-        "speed_over_limit": 1,
-        "speed_over_limit_band": "minor",
-        "speeding_ratio_5m": 0.8,
-        "speeding_ratio_10m": 0.8,
-        "mean_speed_5m": 27.2,
-        "mean_speed_30m": 27.2,
-        "max_speed_5m": 32.0,
-        "speed_std_10m": 3.31,
-        "speed_delta_last_3_events": -3.0,
+        "speed_over_limit": 0,
+        "speed_over_limit_band": "none",
+        "speeding_ratio_5m": 0.2,
+        "speeding_ratio_10m": 0.2,
+        "mean_speed_5m": 24.0,
+        "mean_speed_30m": 24.0,
+        "max_speed_5m": 26.0,
+        "speed_std_10m": 1.26,
+        "speed_delta_last_3_events": -2.0,
         "harsh_brake_count_10m": 2,
-        "sharp_turn_count_10m": 0,
+        "sharp_turn_count_10m": 1,
         "recent_harsh_brake_count_10m": 2,
-        "recent_sharp_turn_count_10m": 0,
+        "recent_sharp_turn_count_10m": 1,
         "alert_density_30m": 8.0,
         "risk_escalation_rate": 0,
         "shift_hours": 4.2,
@@ -266,9 +266,9 @@
         "confidence": "high",
         "uncertainty_reason": null,
         "top_risk_reasons": [
-          "Speeding occurred in 80% of the recent 10-minute window.",
-          "2 harsh-braking event(s) occurred within 10 minutes.",
-          "Traffic and weather compound the telemetry risk.",
+          "Rolling telemetry instability is occurring under compound traffic and weather risk.",
+          "Recent 10-minute window combines 2 harsh-brake and 1 sharp-turn signal(s).",
+          "Alert density is rising across the recent rolling telemetry window.",
           "Risk remained elevated after a prior intervention signal."
         ]
       }
@@ -371,7 +371,7 @@
         "confidence": "high",
         "uncertainty_reason": null,
         "top_risk_reasons": [
-          "Speeding occurred in 50% of the recent 10-minute window."
+          "Speed exposure appeared in 50% of the recent 10-minute window."
         ]
       }
     },
@@ -524,9 +524,9 @@
         "confidence": "high",
         "uncertainty_reason": null,
         "top_risk_reasons": [
-          "Speeding occurred in 50% of the recent 10-minute window.",
           "1 sharp-turn event(s) occurred within 10 minutes.",
-          "Pedestrian exposure is high in this operating area."
+          "Pedestrian exposure is high in this operating area.",
+          "Speed exposure appeared in 50% of the recent 10-minute window."
         ]
       }
     },
@@ -629,8 +629,8 @@
         "confidence": "low",
         "uncertainty_reason": "missing zone context",
         "top_risk_reasons": [
-          "Speeding occurred in 100% of the recent 10-minute window.",
           "Traffic and weather compound the telemetry risk.",
+          "Speed exposure appeared in 100% of the recent 10-minute window.",
           "Confidence is reduced because of missing zone context."
         ]
       }
@@ -682,8 +682,8 @@
         "confidence": "low",
         "uncertainty_reason": "missing zone context",
         "top_risk_reasons": [
-          "Speeding occurred in 100% of the recent 10-minute window.",
           "Traffic and weather compound the telemetry risk.",
+          "Speed exposure appeared in 100% of the recent 10-minute window.",
           "Confidence is reduced because of missing zone context."
         ]
       }
@@ -735,8 +735,8 @@
         "confidence": "high",
         "uncertainty_reason": null,
         "top_risk_reasons": [
-          "Speeding occurred in 67% of the recent 10-minute window.",
-          "Traffic and weather compound the telemetry risk."
+          "Traffic and weather compound the telemetry risk.",
+          "Speed exposure appeared in 67% of the recent 10-minute window."
         ]
       }
     }

@@ -45,4 +45,13 @@ describe("synthetic horizon dataset", () => {
 
     expect(byEvent.get("pm27-005")).toBeGreaterThan(byEvent.get("ppt-003"));
   });
+
+  it("frames the primary demo as compound telemetry risk instead of a speeding-only alert", () => {
+    const payload = JSON.parse(readFileSync("models/scenario_predictions.json", "utf8"));
+    const pm27 = payload.predictions.find((item: any) => item.event_id === "pm27-003");
+
+    expect(pm27.features.speeding_ratio_10m).toBeLessThan(0.35);
+    expect(pm27.assessment.top_risk_reasons[0]).toMatch(/Rolling telemetry instability/);
+    expect(pm27.assessment.top_risk_reasons.join(" ")).not.toMatch(/Speeding occurred/);
+  });
 });

@@ -22,7 +22,7 @@ NearGuard should be narrated as a rolling-window risk predictor, not a single-ev
 
 ## Demo Story
 
-Vehicle `PM-27` enters a high-risk zone during heavy traffic. The synthetic event stream shows repeated harsh braking and speeding. NearGuard predicts elevated synthetic near-miss risk within the next 15 minutes, explains the rolling telemetry drivers, warns the driver, notifies the supervisor, handles a supervisor notification timeout, reassesses risk, asks for approval for a zone advisory and creates a safety case.
+Vehicle `PM-27` enters a rainy high-risk zone during heavy traffic. The synthetic event stream shows near-limit speed, a sharp turn, repeated harsh braking and persistent risk after intervention. NearGuard predicts elevated synthetic near-miss risk within the next 15 minutes, explains the compound rolling telemetry drivers, warns the driver, notifies the supervisor, handles a supervisor notification timeout, reassesses risk, asks for approval for a zone advisory and creates a safety case.
 
 The scenario is inspired by public PSA safety themes such as responsible driving, speed-limit compliance, pedestrian exposure, wharf movement caution and reporting of safety hazards. It does not use real PSA incident data or internal PSA policy.
 
@@ -32,7 +32,7 @@ The scenario is inspired by public PSA safety themes such as responsible driving
 | --- | --- | --- |
 | 0:00-1:00 | Problem fit | Prime Mover safety incident risk, near-miss prevention and why threshold alerts are limited. |
 | 1:00-2:00 | NearGuard concept | Agent loop, telematics-first input and human-in-the-loop positioning. |
-| 2:00-3:00 | Event arrives | Dashboard receives `PM-27` harsh braking and speeding events. |
+| 2:00-3:00 | Event arrives | Dashboard receives `PM-27` sharp-turn and harsh-braking events in rainy high-traffic context. |
 | 3:00-4:00 | Context and risk analysis | Zone context, freshness check, risk score, confidence and top reasons appear. |
 | 4:00-5:00 | Agent decision | Agent compares response options and chooses driver warning plus supervisor notification. |
 | 5:00-6:00 | Tool failure | Supervisor notification times out and fallback is triggered. |
@@ -56,13 +56,13 @@ The scenario is inspired by public PSA safety themes such as responsible driving
 ## Scripted Trace
 
 ```text
-09:14:02  PM-27 harsh braking and speeding event received
+09:14:02  PM-27 rolling telemetry event received
 09:14:03  Event normalized to VehicleEvent schema
-09:14:04  Event window updated: recent_harsh_brake_count_10m = 4
-09:14:05  Zone context loaded: high traffic, caution restriction
+09:14:04  Event window updated: sharp-turn and harsh-brake signals are present
+09:14:05  Zone context loaded: high traffic, rain, caution restriction
 09:14:06  Freshness check passed: gps_freshness = fresh
 09:14:07  Telemetry model returned synthetic near-miss risk within next 15m = 0.84
-09:14:08  Top reasons: speeding ratio, repeated harsh braking, high traffic zone
+09:14:08  Top reasons: rolling instability, traffic-weather compound risk, prior intervention persistence
 09:14:09  Policy decision: High risk, warn driver and notify supervisor
 09:14:09  notify_driver succeeded
 09:14:10  notify_supervisor failed: timeout
