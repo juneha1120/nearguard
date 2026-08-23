@@ -258,6 +258,24 @@ button:disabled {
   margin: 4px 0 0;
 }
 
+.replay-status-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.replay-status-strip span {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+  padding: 7px 9px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
 .prime-map {
   position: relative;
   min-height: 320px;
@@ -383,6 +401,61 @@ button:disabled {
   box-shadow:
     inset 0 0 0 2px rgba(34, 107, 74, 0.18),
     0 10px 22px rgba(30, 45, 38, 0.12);
+}
+
+.map-zone.baseline-low {
+  border-color: rgba(34, 107, 74, 0.36);
+}
+
+.map-zone.baseline-medium {
+  border-color: rgba(165, 91, 18, 0.42);
+}
+
+.map-zone.baseline-high {
+  border-color: rgba(180, 35, 24, 0.42);
+}
+
+.zone-risk-overlay {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  border: 1px solid rgba(216, 222, 215, 0.8);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 8px;
+}
+
+.zone-risk-overlay strong,
+.zone-risk-overlay small {
+  display: block;
+}
+
+.zone-risk-overlay strong {
+  font-size: 16px;
+}
+
+.zone-risk-overlay small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.zone-risk-overlay div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 7px;
+}
+
+.zone-risk-overlay em {
+  border-radius: 999px;
+  background: #edf1f7;
+  color: #465466;
+  padding: 2px 5px;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 800;
 }
 
 .map-zone.evidence-zone {
@@ -904,6 +977,54 @@ button:disabled {
   padding: 12px;
 }
 
+.priority-panel .panel-body {
+  padding-top: 12px;
+}
+
+.priority-action {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+  padding: 12px;
+}
+
+.priority-action strong {
+  display: block;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.priority-action p {
+  margin: 8px 0 0;
+}
+
+.priority-approval {
+  margin-top: 10px;
+}
+
+.compact-empty {
+  padding: 12px;
+}
+
+.rationale-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rationale-list li {
+  border-left: 3px solid var(--green);
+  padding: 7px 9px;
+  margin-bottom: 7px;
+  border-radius: 0 8px 8px 0;
+  background: #fbfcfa;
+  font-size: 12px;
+}
+
+.rationale-tools li {
+  margin-bottom: 7px;
+}
+
 .approval-actions {
   display: flex;
   gap: 8px;
@@ -911,7 +1032,7 @@ button:disabled {
 }
 
 .trace-list {
-  max-height: 72vh;
+  max-height: 42vh;
   overflow: auto;
   padding-right: 4px;
 }
@@ -971,7 +1092,8 @@ button:disabled {
   }
 
   .grid-two,
-  .kv-grid {
+  .kv-grid,
+  .replay-status-strip {
     grid-template-columns: 1fr;
   }
 }

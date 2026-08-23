@@ -16,7 +16,7 @@ import {
   StepForward
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { EventType, ReplayState, RiskBand, VehicleEvent } from "@/lib/types/domain";
+import type { ApprovalRequest, EventType, ReplayState, RiskAssessment, RiskBand, ToolCall, VehicleCase, VehicleEvent, ZoneContext } from "@/lib/types/domain";
 
 type ScenarioMetadata = {
   scenario_id: string;
@@ -36,6 +36,13 @@ type MapZoneView = {
     width: number;
     height: number;
   };
+};
+
+type ZoneRiskCard = {
+  zone: ZoneContext;
+  level: "Low" | "Medium" | "High";
+  className: "low" | "medium" | "high";
+  flags: string[];
 };
 
 const MAP_ZONES: MapZoneView[] = [
@@ -82,8 +89,69 @@ function eventKey(event: VehicleEvent) {
   return event.event_id;
 }
 
+function baselineZoneRiskLevel(score: number): ZoneRiskCard["level"] {
+  if (score < 0.45) return "Low";
+  if (score < 0.7) return "Medium";
+  return "High";
+}
+
+function zoneRiskClass(level: ZoneRiskCard["level"]): ZoneRiskCard["className"] {
+  if (level === "Low") return "low";
+  if (level === "Medium") return "medium";
+  return "high";
+}
+
+function zoneFlags(zone: ZoneContext) {
+  const flags: string[] = [];
+  if (zone.slow_down_zone_active) flags.push("slow-down");
+  if (zone.restriction_level === "restricted") flags.push("restricted");
+  if (zone.restriction_level === "wharf") flags.push("wharf");
+  if (zone.pedestrian_exposure === "high") flags.push("pedestrian high");
+  if (zone.traffic_level === "high") flags.push("traffic high");
+  if (zone.weather !== "clear") flags.push(zone.weather.replace("_", " "));
+  return flags;
+}
+
+function explainAction(
+  selectedCase: VehicleCase | null,
+  assessment: RiskAssessment | null,
+  pendingApproval: ApprovalRequest | null
+) {
+  if (!selectedCase || !assessment) {
+    return {
+      title: "Awaiting telemetry",
+      summary: "No risk action is active. The dashboard is showing baseline zone context until replay evidence arrives.",
+      rationale: ["Replay has not produced a risk assessment yet."],
+      statusClass: "neutral"
+    };
+  }
+
+  const leadReason = assessment.top_risk_reasons[0] ?? "Risk evidence crossed the policy threshold.";
+  const actionPrefix = pendingApproval ? "Approval required" : selectedCase.authority_class;
+  return {
+    title: selectedCase.recommended_action,
+    summary: `${actionPrefix}: ${leadReason}`,
+    rationale: [
+      `${assessment.risk_band} risk at ${assessment.safety_incident_risk_score.toFixed(2)} with ${assessment.confidence} confidence.`,
+      ...assessment.top_risk_reasons.slice(0, 3)
+    ],
+    statusClass: bandClass(assessment.risk_band)
+  };
+}
+
+function toolRationale(tool: ToolCall, assessment: RiskAssessment | null) {
+  const reason = assessment?.top_risk_reasons[0] ?? "Current policy response required operational follow-up.";
+  if (tool.tool_name === "notify_driver") return `Driver advisory was triggered by ${assessment?.risk_band ?? "elevated"} risk: ${reason}`;
+  if (tool.tool_name === "notify_supervisor") return `Supervisor notification was triggered because policy requires awareness for ${assessment?.risk_band ?? "high"} risk.`;
+  if (tool.tool_name === "fallback_notify_supervisor") return "Fallback notification was sent because the primary supervisor notification timed out.";
+  if (tool.tool_name === "request_human_approval") return "Human approval was requested because the policy does not allow stronger zone intervention automatically.";
+  if (tool.tool_name === "recommend_zone_advisory") return "Zone advisory was recorded after human approval.";
+  return `Tool was called as part of the ${assessment?.risk_band ?? "current"} policy response.`;
+}
+
 export function NearGuardDashboard() {
   const [scenarios, setScenarios] = useState<ScenarioMetadata[]>([]);
+  const [zones, setZones] = useState<ZoneContext[]>([]);
   const [scenarioId, setScenarioId] = useState("pm27-persistent-high-risk");
   const [state, setState] = useState<ReplayState | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -123,6 +191,9 @@ export function NearGuardDashboard() {
     fetch("/api/scenarios")
       .then((response) => response.json())
       .then((payload) => setScenarios(payload.scenarios));
+    fetch("/api/zones")
+      .then((response) => response.json())
+      .then((payload) => setZones(payload.zones));
     start(scenarioId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -182,8 +253,26 @@ export function NearGuardDashboard() {
     if (latestAssessment?.uncertainty_reason) chips.push({ label: "low confidence context", tone: "critical" });
     return chips.length ? chips : [{ label: "context normal", tone: "low" }];
   }, [currentEvent, currentZone, latestAssessment?.uncertainty_reason]);
+  const zoneRiskCards = useMemo<ZoneRiskCard[]>(
+    () =>
+      zones.map((zone) => {
+        const level = baselineZoneRiskLevel(zone.zone_historical_risk);
+        return {
+          zone,
+          level,
+          className: zoneRiskClass(level),
+          flags: zoneFlags(zone)
+        };
+      }),
+    [zones]
+  );
+  const actionExplanation = useMemo(
+    () => explainAction(selectedCase, latestAssessment, state?.pendingApprovals.find((approval) => approval.status === "pending") ?? null),
+    [latestAssessment, selectedCase, state?.pendingApprovals]
+  );
   const pendingApproval = state?.pendingApprovals.find((approval) => approval.status === "pending") ?? null;
   const safetyCase = state?.safetyCases.at(-1) ?? null;
+  const recentTraceEvents = state?.traceEvents.slice(-5) ?? [];
   const progress = useMemo(() => {
     if (!state) return "0 / 0";
     return `${Math.min(state.currentEventIndex, state.selectedScenario.events.length)} / ${state.selectedScenario.events.length}`;
@@ -277,15 +366,23 @@ export function NearGuardDashboard() {
             <p className="muted">{state?.selectedScenario.description}</p>
             <div className="evidence-map-heading">
               <div>
-                <h3>Risk Evidence Replay</h3>
+                <h3>{currentEvent ? "Risk Evidence Replay" : "Idle Zone Risk"}</h3>
                 <p className="small muted">
-                  Recent telemetry window and zone context used to explain the current risk event.
+                  {currentEvent
+                    ? "Recent telemetry window and zone context used to explain the current risk event."
+                    : "Baseline synthetic zone context shown until replay evidence arrives."}
                 </p>
               </div>
               <span className="badge neutral">
                 <Layers size={13} />
                 {currentEvent ? `${evidenceEvents.length} evidence points` : "quiet"}
               </span>
+            </div>
+            <div className="replay-status-strip">
+              <span>{currentEvent ? "Risk Evidence Replay" : "Idle Zone Risk"}</span>
+              <span>{progress}</span>
+              <span>{currentEvent ? formatEventLabel(currentEvent.event_type) : "No active event"}</span>
+              <span>{currentEvent ? `${evidenceEvents.length} window points` : `${zoneRiskCards.length} baseline zones`}</span>
             </div>
             <div className={`prime-map evidence-replay ${currentEvent ? "live" : "waiting"}`} aria-label="Risk evidence replay map">
               <div className="map-grid" />
@@ -295,20 +392,34 @@ export function NearGuardDashboard() {
               <div className="map-route route-left" />
               <div className="map-route route-center" />
               <div className="map-route route-right" />
-              {MAP_ZONES.map((zone) => (
-                <div
-                  className={`map-zone ${zone.className} ${zone.zoneId === currentEvent?.zone_id ? "current evidence-zone" : ""}`}
-                  key={zone.zoneId}
-                  style={{
-                    left: `${zone.bounds.x}%`,
-                    top: `${zone.bounds.y}%`,
-                    width: `${zone.bounds.width}%`,
-                    height: `${zone.bounds.height}%`
-                  }}
-                >
-                  <span>{zone.name}</span>
-                </div>
-              ))}
+              {MAP_ZONES.map((zone) => {
+                const zoneRisk = zoneRiskCards.find((item) => item.zone.zone_id === zone.zoneId);
+                return (
+                  <div
+                    className={`map-zone ${zone.className} ${zoneRisk ? `baseline-${zoneRisk.className}` : ""} ${zone.zoneId === currentEvent?.zone_id ? "current evidence-zone" : ""}`}
+                    key={zone.zoneId}
+                    style={{
+                      left: `${zone.bounds.x}%`,
+                      top: `${zone.bounds.y}%`,
+                      width: `${zone.bounds.width}%`,
+                      height: `${zone.bounds.height}%`
+                    }}
+                  >
+                    <span>{zone.name}</span>
+                    {!currentEvent && zoneRisk ? (
+                      <div className="zone-risk-overlay">
+                        <strong>{zoneRisk.level}</strong>
+                        <small>{zoneRisk.zone.zone_historical_risk.toFixed(2)} baseline</small>
+                        <div>
+                          {zoneRisk.flags.slice(0, 3).map((flag) => (
+                            <em key={flag}>{flag}</em>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
               {evidenceEvents.slice(0, -1).map((event, index) => {
                 const nextEvent = evidenceEvents[index + 1];
                 if (!event.position || !nextEvent?.position) return null;
@@ -388,7 +499,7 @@ export function NearGuardDashboard() {
                   </button>
                 </>
               ) : (
-                <div className="map-empty">Evidence replay starts after a risk assessment.</div>
+                <div className="map-empty">Zone baseline risk is shown until a replay event is assessed.</div>
               )}
               {currentEvent ? (
                 <div className="context-chip-row">
@@ -534,44 +645,22 @@ export function NearGuardDashboard() {
         </section>
 
         <aside className="right-column">
-          <section className="panel">
+          <section className="panel priority-panel">
             <div className="panel-header">
-              <h3>Interventions</h3>
-              <FastForward size={16} />
+              <h3>Priority Action</h3>
+              <span className={`badge ${actionExplanation.statusClass}`}>
+                <FastForward size={14} />
+                {pendingApproval ? "Approval" : selectedCase?.authority_class ?? "Idle"}
+              </span>
             </div>
             <div className="panel-body">
-              <div className="kv">
-                <span>Recommended Action</span>
-                <strong>{selectedCase?.recommended_action ?? "Awaiting telemetry."}</strong>
-              </div>
-              <div className="kv" style={{ marginTop: 8 }}>
-                <span>Authority</span>
-                <strong>{selectedCase?.authority_class ?? "--"}</strong>
+              <div className="priority-action">
+                <strong>{actionExplanation.title}</strong>
+                <p className="small muted">{actionExplanation.summary}</p>
               </div>
 
-              <h3 className="section-title">Tool Calls</h3>
-              {!state?.toolCalls.length ? (
-                <div className="empty">No tools called yet.</div>
-              ) : (
-                <ul className="tool-list">
-                  {state.toolCalls.map((tool) => (
-                    <li key={tool.tool_call_id}>
-                      <div className="tool-row">
-                        <strong>{tool.tool_name}</strong>
-                        <span className={`badge ${tool.status === "failed" ? "critical" : "low"}`}>
-                          {tool.status === "failed" ? <AlertTriangle size={13} /> : <CheckCircle2 size={13} />}
-                          {tool.status}
-                        </span>
-                      </div>
-                      <p className="small muted">{tool.error ?? tool.result}</p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              <h3 className="section-title">Approval</h3>
               {pendingApproval ? (
-                <div className="approval">
+                <div className="approval priority-approval">
                   <strong>{pendingApproval.requested_action}</strong>
                   <p className="small muted">{pendingApproval.rationale}</p>
                   <div className="approval-actions">
@@ -584,9 +673,45 @@ export function NearGuardDashboard() {
                   </div>
                 </div>
               ) : (
-                <div className="empty">No pending approval.</div>
+                <div className="empty compact-empty">No pending approval.</div>
               )}
 
+              <h3 className="section-title">Action Rationale</h3>
+              <ul className="rationale-list">
+                {actionExplanation.rationale.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+
+              <h3 className="section-title">Tool Rationale</h3>
+              {!state?.toolCalls.length ? (
+                <div className="empty compact-empty">No tools called yet.</div>
+              ) : (
+                <ul className="tool-list rationale-tools">
+                  {state.toolCalls.slice(-4).map((tool) => (
+                    <li key={tool.tool_call_id}>
+                      <div className="tool-row">
+                        <strong>{tool.tool_name}</strong>
+                        <span className={`badge ${tool.status === "failed" ? "critical" : "low"}`}>
+                          {tool.status === "failed" ? <AlertTriangle size={13} /> : <CheckCircle2 size={13} />}
+                          {tool.status}
+                        </span>
+                      </div>
+                      <p className="small">{toolRationale(tool, latestAssessment)}</p>
+                      <p className="small muted">{tool.error ? `Failure: ${tool.error}` : tool.result}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </section>
+
+          <section className="panel" style={{ marginTop: 14 }}>
+            <div className="panel-header">
+              <h3>Safety Case</h3>
+              <ClipboardCheck size={16} />
+            </div>
+            <div className="panel-body">
               <h3 className="section-title">Safety Case</h3>
               {safetyCase ? (
                 <div className="approval">
@@ -602,7 +727,7 @@ export function NearGuardDashboard() {
 
           <section className="panel" style={{ marginTop: 14 }}>
             <div className="panel-header">
-              <h3>Execution Trace</h3>
+              <h3>Recent Trace</h3>
               <Clock3 size={16} />
             </div>
             <div className="panel-body">
@@ -610,7 +735,7 @@ export function NearGuardDashboard() {
                 <div className="empty">Trace starts when replay begins.</div>
               ) : (
                 <ul className="trace-list">
-                  {state.traceEvents.map((item) => (
+                  {recentTraceEvents.map((item) => (
                     <li className="trace-item" key={item.trace_id}>
                       <span className="trace-time">{timeLabel(item.timestamp)}</span>
                       <p className="trace-message">{item.message}</p>

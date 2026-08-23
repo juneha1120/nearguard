@@ -18,6 +18,10 @@ export function getZone(zoneId: string): ZoneContext | null {
   return zones.find((zone) => zone.zone_id === zoneId) ?? null;
 }
 
+export function listZones(): ZoneContext[] {
+  return zones;
+}
+
 export function getScenarioPrediction(scenarioId: string, eventId: string): ScenarioPrediction | null {
   return (
     scenarioPredictions.find(
