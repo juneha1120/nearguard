@@ -6,13 +6,13 @@ This document preserves the core product context for NearGuard so future design,
 
 ## One-Sentence Concept
 
-NearGuard is a human-in-the-loop safety agent for PSA Prime Mover operations that observes telematics events, predicts Prime Mover safety incident risk, chooses the least disruptive effective intervention, coordinates tools and people, handles failures and records an auditable execution trace.
+NearGuard is a human-in-the-loop safety agent for PSA Prime Mover operations that observes rolling telematics patterns, predicts elevated synthetic near-miss risk within a future horizon, chooses the least disruptive effective intervention, coordinates tools and people, handles failures and records an auditable execution trace.
 
 ## Problem Context
 
 Prime Movers operate in dense, time-sensitive port environments. Safety incident risk can emerge from combinations of driver behaviour, vehicle state, traffic density, zone risk, weather, shift duration, recent alerts and public safety constraints such as speed limits or wharf movement rules. A simple rule such as "speeding detected" does not capture these interacting risk signals or decide what should happen next.
 
-NearGuard adds a predictive and agentic intervention layer on top of telematics and safety workflows. The prototype demonstrates proactive prevention rather than post-incident reporting. Near-miss prevention remains a key use case, but the broader model target is safety incident risk, including near-miss, speeding infringement, pedestrian exposure, collision and unsafe operating condition scenarios.
+NearGuard adds a predictive and agentic intervention layer on top of telematics and safety workflows. The prototype demonstrates proactive prevention rather than post-incident reporting. Its MVP model target is a synthetic future near-miss label generated from rolling telemetry and context. Broader safety incident handling remains part of the workflow through deterministic policy, human approval and safety cases.
 
 ## Public PSA Context
 
@@ -39,8 +39,8 @@ These sources support the design focus on driver safety, speed-limit awareness, 
 
 ## How NearGuard Uses AI
 
-- A tabular ML model predicts `safety_incident_risk_score` from Prime Mover telemetry and structured context.
-- Explainability outputs identify top risk reasons, such as speeding above a zone limit, repeated harsh braking, high traffic, wharf exposure or stale GPS.
+- A tabular ML model predicts synthetic near-miss risk within the next 15 minutes from Prime Mover telemetry windows and structured context.
+- Explainability outputs identify top risk reasons, such as speeding ratio, repeated harsh braking, speed volatility, high traffic, wharf exposure or stale GPS.
 - A deterministic safety policy maps risk, confidence, uncertainty and operational impact to allowed actions.
 - A large language model may be used only for optional support tasks, such as summarising safety cases or parsing future worker-written risk reports into structured context.
 - The LLM does not make final safety policy decisions or approve disruptive actions.
@@ -55,6 +55,7 @@ These sources support the design focus on driver safety, speed-limit awareness, 
 
 - Do not claim production-grade safety incident prediction accuracy.
 - Do not claim the model is trained on real PSA near-miss or incident labels.
+- Do not describe the synthetic score as a PSA production accident probability.
 - Do not integrate with real PSA operational systems.
 - Do not implement or claim PSA's internal RAM, HEMP or ALARP process.
 - Do not perform fully autonomous rerouting or shutdown.

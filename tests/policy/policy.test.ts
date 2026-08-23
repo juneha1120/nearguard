@@ -7,6 +7,8 @@ function assessment(risk_band: RiskAssessment["risk_band"]): RiskAssessment {
     assessment_id: "risk-1",
     case_id: "case-PM-27",
     safety_incident_risk_score: 0.7,
+    prediction_horizon: "15m",
+    evidence_authority: "SYNTHETIC_DATA",
     risk_band,
     confidence: "high",
     uncertainty_reason: null,

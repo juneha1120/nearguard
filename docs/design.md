@@ -11,7 +11,7 @@
 
 ## 1. Project Overview And Goals
 
-NearGuard is a prototype human-in-the-loop safety agent for Prime Mover safety incident risk prevention. It consumes synthetic telematics events, enriches them with zone and operational context, predicts safety incident risk, decides the appropriate intervention, orchestrates simulated operational tools and records a complete execution trace.
+NearGuard is a prototype human-in-the-loop safety agent for Prime Mover safety incident risk prevention. It consumes synthetic telematics events, enriches them with zone and operational context, predicts elevated synthetic near-miss risk over a future horizon, applies deterministic safety policy, orchestrates simulated operational tools and records a complete execution trace.
 
 Near-miss prevention is one high-priority use case. The broader risk target is safety incident risk, covering near-miss, speeding infringement, pedestrian exposure, collision and unsafe operating condition scenarios.
 
@@ -19,6 +19,7 @@ Design goals:
 
 - Make the agentic loop visible end to end.
 - Keep synthetic Prime Mover telemetry as the MVP primary live input.
+- Use rolling telemetry windows to demonstrate future-horizon risk prediction.
 - Use public PSA safety materials as context and scenario inspiration.
 - Keep safety-sensitive actions approval-gated.
 - Make risk explanations and trace logs inspectable.
@@ -105,9 +106,9 @@ flowchart LR
 | Synthetic Event Stream | Generates realistic Prime Mover events for scripted demo scenarios. |
 | Event Ingestion | Validates event shape, normalizes fields and attaches events to active vehicle cases. |
 | Context Enricher | Joins vehicle events with zone context, public-PSA-inspired restrictions and recent vehicle history. |
-| Feature Aggregator | Builds model-ready features from recent 5/10/30-minute behavioural windows and case state. |
-| Risk Prediction Service | Produces safety incident risk score, confidence, uncertainty reason and top risk reasons. |
-| Safety Policy Engine | Maps risk, confidence, uncertainty and operational impact to allowed action classes. |
+| Feature Aggregator | Builds model-ready features from recent 5/10/30-minute behavioural windows, context and case state. |
+| Risk Prediction Service | Produces synthetic near-miss risk evidence for the next 15 minutes, confidence, uncertainty reason and top risk reasons. |
+| Safety Policy Engine | Maps model evidence, confidence, uncertainty and operational impact to allowed action classes. It remains the intervention authority. |
 | Agent Controller | Runs observe, normalize, enrich, validate, predict, decide, act, monitor, reassess and escalate loop. |
 | Tool Layer | Provides simulated external actions and intentional failure paths. |
 | Trace Logger | Persists chronological trace events for audit and demo display. |
@@ -126,7 +127,7 @@ flowchart TB
     Freshness[Check freshness<br/>and completeness]
     Patterns[Compare similar<br/>synthetic reference patterns]
     PolicyLookup[Check applicable<br/>safety policy]
-    Predict[Calculate current<br/>safety incident risk]
+    Predict[Predict synthetic<br/>near-miss risk<br/>within next 15m]
     Confidence[Assess confidence<br/>and uncertainty]
     Options[Generate candidate<br/>responses]
     Compare[Compare safety effect<br/>and operational impact]
@@ -190,7 +191,7 @@ erDiagram
 | `VehicleEvent` | Primary synthetic live telemetry event input. | Yes, after validation and aggregation. |
 | `ZoneContext` | Zone-level operational and public-PSA-inspired context. | Yes, joined by `zone_id`. |
 | `VehicleCase` | Current case state managed by the agent. | Partly; previous risk and trend may be used. |
-| `RiskAssessment` | Prediction output for a specific point in time. | No. |
+| `RiskAssessment` | Prediction output for a specific evaluation time and future horizon. | No. |
 | `TraceEvent` | Audit trail for decisions, model outputs, tool calls, approvals and failures. | No. |
 | `ToolCall` | Simulated operational tool execution record. | No. |
 | `ApprovalRequest` | Human approval state. | No. |
@@ -306,9 +307,11 @@ extraction_confidence
 
 ### 6.1 Tabular Risk Model
 
-The primary model is a tabular ML risk model, such as XGBoost or scikit-learn gradient boosting. It predicts `safety_incident_risk_score` from telemetry, enriched context and derived features. In the prototype, training data and labels are synthetic demo constructs.
+The primary model is a tabular ML risk model using scikit-learn gradient boosting. It predicts `near_miss_within_next_15m` from rolling telemetry windows, enriched context and derived features. The served `safety_incident_risk_score` is synthetic decision-support evidence for app compatibility, not a validated accident probability. In the prototype, training data and labels are synthetic demo constructs.
 
 `docs/ai_and_data.md` is the source of truth for the prototype training recipe, feature encoding, synthetic label approach, confidence handling, explanation strategy and production-readiness boundaries.
+
+The model is a decision-tree-family gradient boosting classifier. It is used for rolling multi-variable risk prioritization, not single-event rule alerting. Deterministic rules still handle obvious violations and hard safety boundaries.
 
 Model outputs:
 
@@ -353,6 +356,19 @@ The safety policy engine is deterministic. It uses the model output and operatio
 | Persistent high risk | Request human approval for stronger intervention. |
 | Critical or low-confidence high risk | Urgently escalate with uncertainty reason. |
 
+### 6.4 Responsibility Separation
+
+NearGuard keeps model evidence, policy authority and human authority separate:
+
+| Layer | Role |
+| --- | --- |
+| Rule checks | Detect clear violations, data-quality failures and hard safety boundaries. |
+| ML risk model | Prioritize emerging synthetic near-miss risk from rolling telemetry and context patterns. |
+| Safety policy | Map model evidence and confidence to allowed action classes. |
+| Human supervisor | Approve disruptive recommendations and review uncertain cases. |
+
+This separation is deliberate: ML output can raise concern, but it cannot authorize disruptive action or convert unknown outcomes into success.
+
 ## 7. Tool Design
 
 | Tool | Input | Output | Failure To Demonstrate |
@@ -377,7 +393,7 @@ NearGuard should not stop silently when a tool call fails. The demo must include
 
 ### 8.3 Safety
 
-NearGuard avoids over-autonomy. Driver advisories and supervisor notifications can be automated in the prototype. Disruptive actions such as zone advisory, rerouting or operational changes require approval.
+NearGuard avoids over-autonomy. Driver advisories and supervisor notifications can be automated in the prototype. Disruptive actions such as zone advisory, rerouting or operational changes require approval. ML output is evidence only; deterministic safety policy and human authorization control interventions.
 
 ### 8.4 Claim Discipline
 
@@ -390,6 +406,10 @@ The prototype uses synthetic vehicle, case, report and user identifiers. It does
 ### 8.6 Scalability
 
 The architecture separates event ingestion, context enrichment, feature aggregation, risk prediction, safety policy, tool orchestration and trace logging. This keeps the prototype aligned with larger operational volumes because event processing can be batched or streamed, tabular model inference can remain bounded, and LLM use can be limited to optional report parsing or summarisation rather than every telemetry event.
+
+### 8.6 Future Vehicle-Person Interaction Lens
+
+The MVP does not assume real-time person localization. If approved person-position data becomes available later through CCTV analytics, RTLS or wearables, NearGuard can add a deterministic interaction-risk lens for distance, trajectory conflict, TTC and stopping margin. That future lens should be labelled separately from the telemetry model and must not claim live PSA integration in the current prototype.
 
 ## 9. Main Sequence Flow
 

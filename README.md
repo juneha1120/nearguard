@@ -2,6 +2,8 @@
 
 NearGuard is a local hackathon MVP for Prime Mover safety incident risk prevention. It replays synthetic telematics scenarios, uses a local scikit-learn risk model pipeline, runs an agentic safety loop, simulates tool calls and approvals, and shows an auditable supervisor dashboard.
 
+The model uses rolling telemetry windows and context to estimate synthetic near-miss risk within the next 15 minutes; it is not a single-event alert or a validated production accident predictor.
+
 ## Prerequisites
 
 - Node.js 20+ or 22+
@@ -14,13 +16,13 @@ On Windows PowerShell, use `npm.cmd` if `npm` is blocked by execution policy.
 
 ```powershell
 npm.cmd install
-python -m pip install -r requirements.txt
+py -m pip install -r requirements.txt
 ```
 
 ## Generate AI Model Artifacts
 
 ```powershell
-python scripts\train_model.py
+py scripts\train_model.py
 ```
 
 This writes:
