@@ -18,6 +18,8 @@ Near-miss prevention is the headline use case. In the MVP, the model target is `
 
 The demo is designed for PSA Code Sprint 2.0: Agentic AI in Action. It should make the evaluation criteria visible: agentic reasoning, decision-making, tool orchestration, uncertainty handling, human oversight, auditability, responsible AI and clear presentation.
 
+NearGuard should be narrated as a rolling-window risk predictor, not a single-event alert. The model uses recent telemetry and context to prioritize synthetic next-15-minute near-miss risk, while deterministic policy and human approval control intervention authority.
+
 ## Demo Story
 
 Vehicle `PM-27` enters a high-risk zone during heavy traffic. The synthetic event stream shows repeated harsh braking and speeding. NearGuard predicts elevated synthetic near-miss risk within the next 15 minutes, explains the rolling telemetry drivers, warns the driver, notifies the supervisor, handles a supervisor notification timeout, reassesses risk, asks for approval for a zone advisory and creates a safety case.
@@ -76,14 +78,14 @@ The scenario is inspired by public PSA safety themes such as responsible driving
 
 | Scenario | Purpose | Public Context Link |
 | --- | --- | --- |
-| `PM-27 Persistent High Risk` | Main end-to-end demo: speeding, harsh braking, failure handling, approval and safety case. | Public PSA driver safety and safety infringement themes. |
-| `PPT Link Slow Down Zone` | Show speed-limit context and a 25km/h slow-down-zone example. | PSA Slow Down Zone (25km/h) along Pasir Panjang Terminal Link circular. |
-| `Wharf Pedestrian Exposure` | Show pedestrian exposure and lower-speed wharf caution context. | PSA Review of Pedestrian Movement at Wharf circular and HSS Rules. |
-| `Telemetry Uncertainty` | Show stale GPS or missing zone context reducing confidence and triggering cautious escalation. | Responsible AI and safety-boundary requirement. |
+| `PM-27 Persistent High Risk` | Main end-to-end demo: rolling telemetry risk rises, supervisor notification intentionally times out, fallback succeeds, human approval is requested and a safety case is created. | Public PSA driver safety and safety infringement themes. |
+| `PPT Link Slow Down Zone` | Successful intervention case: speeding appears in a slow-down zone, speed normalizes and the case stabilizes. | PSA Slow Down Zone (25km/h) along Pasir Panjang Terminal Link circular. |
+| `Wharf Pedestrian Exposure` | Context case: wharf and pedestrian-exposure context raise risk without claiming real-time person tracking. | PSA Review of Pedestrian Movement at Wharf circular and HSS Rules. |
+| `Telemetry Uncertainty` | Responsible-AI case: stale GPS and missing context reduce confidence, avoid hallucinated certainty and trigger human review. | Responsible AI and safety-boundary requirement. |
 
 ## Failure Case To Include
 
-Use a supervisor notification timeout. This is simple to understand and directly proves that NearGuard handles tool failure instead of stopping.
+Use a supervisor notification timeout in `PM-27 Persistent High Risk`. This is an intentional scripted failure, not a bug. It directly proves that NearGuard handles tool failure instead of stopping or marking the case successful.
 
 Expected behaviour:
 

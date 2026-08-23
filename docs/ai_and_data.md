@@ -70,6 +70,19 @@ Each training row represents an evaluation snapshot. Features are computed from 
 
 Future telemetry rows must not be used to compute these features. Future outcomes are used only to create labels.
 
+### Feature Taxonomy
+
+NearGuard groups model inputs into four practical safety feature layers:
+
+| Layer | NearGuard Features | Purpose |
+| --- | --- | --- |
+| Vehicle dynamics | `speed`, `speed_over_limit`, `speeding_ratio_5m`, `speeding_ratio_10m`, `mean_speed_5m`, `speed_std_10m`, `harsh_brake_count_10m`, `sharp_turn_count_10m` | Captures recent vehicle behaviour and instability. |
+| Operational context | `zone_historical_risk`, `traffic_level`, `weather`, `restriction_level`, `pedestrian_exposure`, `slow_down_zone_active` | Adds where and under what operating conditions the vehicle is moving. |
+| Human / behaviour proxy | `shift_hours`, `night_flag`, `time_since_last_intervention`, `post_intervention_noncompliance` | Represents fatigue-like and response-to-advisory signals without using private biometrics. |
+| Engineered risk signals | `alert_density_30m`, `risk_escalation_rate`, `traffic_weather_compound_index`, `zone_transition_risk`, `previous_risk`, `risk_trend` | Summarizes temporal accumulation and compound risk. |
+
+Privacy-heavy signals such as eye tracking, HRV or driver biometrics are not part of the MVP. They remain future inputs only if approved and governed.
+
 ## Synthetic Label Recipe
 
 The generator creates a latent risk pressure over time rather than assigning a direct row-level score. Risk pressure increases when multiple conditions accumulate:
@@ -94,7 +107,23 @@ The MVP trains a local scikit-learn tabular classifier:
 - Output: synthetic near-miss risk score, risk band, confidence, reasons, `prediction_horizon = 15m`, `evidence_authority = SYNTHETIC_DATA`.
 - Runtime: checked-in model artifact and exported scenario predictions for deterministic demo playback.
 
+`HistGradientBoostingClassifier` is a decision-tree-family gradient boosting model. It does not react to one isolated event as a single rule. It learns from engineered rolling-window features and context so the MVP can demonstrate how weak signals combine over time.
+
+Simple safety violations can be handled by rules. For example, a speed-limit breach can trigger a deterministic advisory. The ML model is used for the harder prioritization problem: recent speeding ratio, harsh braking, speed volatility, traffic, weather, pedestrian exposure and intervention response may be individually tolerable but jointly indicate elevated near-miss risk.
+
 The model is useful in the MVP because it demonstrates the supervised pipeline that would later use reviewed real labels. It does not prove real-world causality or PSA production accuracy.
+
+## Rule, Model And Policy Separation
+
+NearGuard deliberately separates three responsibilities:
+
+| Layer | Responsibility |
+| --- | --- |
+| Rule checks | Catch obvious violations, data-quality problems and hard safety boundaries. |
+| ML model | Estimate synthetic near-miss risk from rolling multi-variable telemetry and context patterns. |
+| Safety policy and human approval | Decide permitted intervention class and gate disruptive actions. |
+
+The model score informs the policy, but it does not approve actions, execute interventions or become the safety authority.
 
 ## Confidence And Explanations
 

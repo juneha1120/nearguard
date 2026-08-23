@@ -311,6 +311,8 @@ The primary model is a tabular ML risk model using scikit-learn gradient boostin
 
 `docs/ai_and_data.md` is the source of truth for the prototype training recipe, feature encoding, synthetic label approach, confidence handling, explanation strategy and production-readiness boundaries.
 
+The model is a decision-tree-family gradient boosting classifier. It is used for rolling multi-variable risk prioritization, not single-event rule alerting. Deterministic rules still handle obvious violations and hard safety boundaries.
+
 Model outputs:
 
 - `safety_incident_risk_score`: 0.0-1.0 score.
@@ -353,6 +355,19 @@ The safety policy engine is deterministic. It uses the model output and operatio
 | High risk | Notify driver and supervisor. |
 | Persistent high risk | Request human approval for stronger intervention. |
 | Critical or low-confidence high risk | Urgently escalate with uncertainty reason. |
+
+### 6.4 Responsibility Separation
+
+NearGuard keeps model evidence, policy authority and human authority separate:
+
+| Layer | Role |
+| --- | --- |
+| Rule checks | Detect clear violations, data-quality failures and hard safety boundaries. |
+| ML risk model | Prioritize emerging synthetic near-miss risk from rolling telemetry and context patterns. |
+| Safety policy | Map model evidence and confidence to allowed action classes. |
+| Human supervisor | Approve disruptive recommendations and review uncertain cases. |
+
+This separation is deliberate: ML output can raise concern, but it cannot authorize disruptive action or convert unknown outcomes into success.
 
 ## 7. Tool Design
 
