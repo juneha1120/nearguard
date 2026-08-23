@@ -16,13 +16,13 @@ On Windows PowerShell, use `npm.cmd` if `npm` is blocked by execution policy.
 
 ```powershell
 npm.cmd install
-python -m pip install -r requirements.txt
+py -m pip install -r requirements.txt
 ```
 
 ## Generate AI Model Artifacts
 
 ```powershell
-python scripts\train_model.py
+py scripts\train_model.py
 ```
 
 This writes:

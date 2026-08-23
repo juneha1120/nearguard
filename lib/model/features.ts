@@ -59,6 +59,8 @@ export function deriveFeatures(
     max_speed_5m: Math.max(...speeds),
     speed_std_10m: Number(speedStd.toFixed(2)),
     speed_delta_last_3_events: speedDeltaLastThreeEvents,
+    harsh_brake_count_10m: recentHarshBrakeCount,
+    sharp_turn_count_10m: recentSharpTurnCount,
     recent_harsh_brake_count_10m: recentHarshBrakeCount,
     recent_sharp_turn_count_10m: recentSharpTurnCount,
     alert_density_30m: Number((alertEvents / 0.5).toFixed(2)),

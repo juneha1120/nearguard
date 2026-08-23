@@ -74,6 +74,8 @@ export interface DerivedFeatures {
   max_speed_5m: number;
   speed_std_10m: number;
   speed_delta_last_3_events: number;
+  harsh_brake_count_10m: number;
+  sharp_turn_count_10m: number;
   recent_harsh_brake_count_10m: number;
   recent_sharp_turn_count_10m: number;
   alert_density_30m: number;
