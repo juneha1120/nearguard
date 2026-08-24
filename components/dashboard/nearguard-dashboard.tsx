@@ -175,7 +175,7 @@ function buildScenarioLiveSample(
 
     return {
       ...zone,
-      updated_at: activeEvent.timestamp,
+      updated_at: baseSample.timestamp,
       live_risk: Number(Math.max(zone.live_risk, eventRisk, zoneContext?.zone_historical_risk ?? 0).toFixed(3)),
       active_prime_movers: primeMovers.length,
       avg_speed: Number((primeMovers.reduce((total, mover) => total + mover.speed, 0) / primeMovers.length).toFixed(1)),
@@ -195,7 +195,7 @@ function buildScenarioLiveSample(
 
   return {
     sample_id: `${baseSample.sample_id}-${selectedScenario.scenario_id}-${activeEvent.event_id}`,
-    timestamp: activeEvent.timestamp,
+    timestamp: baseSample.timestamp,
     zones: zoneSnapshots
   };
 }
