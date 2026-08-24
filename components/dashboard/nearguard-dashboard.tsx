@@ -1,17 +1,22 @@
 "use client";
 
 import {
+  Activity,
   AlertTriangle,
+  Bell,
   CheckCircle2,
   ClipboardCheck,
   Clock3,
   FastForward,
+  Gauge,
   Layers,
   Pause,
   Play,
+  Radio,
   RefreshCw,
   ShieldAlert,
-  StepForward
+  StepForward,
+  Users
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type {
@@ -290,6 +295,18 @@ export function NearGuardDashboard() {
     [liveSample?.zones, zones]
   );
   const pendingApproval = state?.pendingApprovals.find((approval) => approval.status === "pending") ?? null;
+  const pendingApprovalCount = state?.pendingApprovals.filter((approval) => approval.status === "pending").length ?? 0;
+  const activeZoneCount = liveSample?.zones.filter((zone) => zone.active_prime_movers > 0).length ?? 0;
+  const activePrimeMoverCount =
+    liveSample?.zones.reduce((total, zone) => total + zone.active_prime_movers, 0) ?? 0;
+  const highestRiskZone = useMemo(() => {
+    if (!zoneRiskCards.length) return null;
+    return zoneRiskCards.reduce((highest, card) => {
+      const currentRisk = card.live?.live_risk ?? card.zone.zone_historical_risk;
+      const highestRisk = highest.live?.live_risk ?? highest.zone.zone_historical_risk;
+      return currentRisk > highestRisk ? card : highest;
+    }, zoneRiskCards[0]);
+  }, [zoneRiskCards]);
   const hasIntervention = Boolean(
     pendingApproval ||
       state?.toolCalls.length ||
@@ -359,6 +376,40 @@ export function NearGuardDashboard() {
           </button>
         </div>
       </header>
+
+      <section className="ops-strip" aria-label="Operational status">
+        <div className="ops-item">
+          <Activity size={15} />
+          <span>Mode</span>
+          <strong>{hasIntervention ? "Intervention Review" : isPlaying ? "Scenario Warm-up" : "Live Monitoring"}</strong>
+        </div>
+        <div className="ops-item">
+          <Users size={15} />
+          <span>Prime Movers</span>
+          <strong>
+            {activePrimeMoverCount || "--"} across {activeZoneCount || "--"} zones
+          </strong>
+        </div>
+        <div className="ops-item">
+          <Gauge size={15} />
+          <span>Highest Zone Risk</span>
+          <strong>
+            {highestRiskZone
+              ? `${highestRiskZone.zone.zone_id} ${(highestRiskZone.live?.live_risk ?? highestRiskZone.zone.zone_historical_risk).toFixed(2)}`
+              : "--"}
+          </strong>
+        </div>
+        <div className="ops-item">
+          <Bell size={15} />
+          <span>Approvals</span>
+          <strong>{pendingApprovalCount ? `${pendingApprovalCount} pending` : "none pending"}</strong>
+        </div>
+        <div className="ops-item">
+          <Radio size={15} />
+          <span>Telemetry</span>
+          <strong>{liveSample ? `updated ${timeLabel(liveSample.timestamp)}` : "loading stream"}</strong>
+        </div>
+      </section>
 
       <section className="dashboard">
         <aside className="panel">
@@ -435,6 +486,18 @@ export function NearGuardDashboard() {
                 </div>
                 <span className={`live-dot ${isPlaying ? "active" : ""}`} />
               </div>
+              <div className="risk-legend" aria-label="Zone risk legend">
+                <span>
+                  <i className="legend-dot low" /> Low &lt; 0.45
+                </span>
+                <span>
+                  <i className="legend-dot medium" /> Medium 0.45-0.67
+                </span>
+                <span>
+                  <i className="legend-dot high" /> High &gt;= 0.68
+                </span>
+                <em>Zone risk is operating context; intervention requires event evidence.</em>
+              </div>
               <div className="zone-risk-board">
                 {zoneRiskCards.map((card) => (
                   <article
@@ -482,7 +545,7 @@ export function NearGuardDashboard() {
                         <li className={mover.state.replaceAll(" ", "-")} key={mover.vehicle_id}>
                           <span>{mover.vehicle_id}</span>
                           <strong>{mover.speed} km/h</strong>
-                          <small>limit {mover.speed_limit} km/h · {mover.state}</small>
+                          <small>limit {mover.speed_limit} km/h | {mover.state}</small>
                         </li>
                       ))}
                     </ul>
@@ -501,11 +564,14 @@ export function NearGuardDashboard() {
                     {zoneRiskCards.slice(0, 4).map((card) => (
                       <li key={card.zone.zone_id}>
                         <span className="trace-time">{timeLabel(card.live?.updated_at ?? liveSample?.timestamp)}</span>
-                        <p>
-                          {card.zone.zone_id}: {card.live?.active_prime_movers ?? 0} Prime Movers, live risk{" "}
-                          {(card.live?.live_risk ?? card.zone.zone_historical_risk).toFixed(2)}, compliance{" "}
-                          {card.live ? riskPercent(card.live.speed_compliance) : "--"}.
-                        </p>
+                        <div>
+                          <span className={`event-code ${card.className}`}>{card.zone.zone_id}</span>
+                          <p>
+                            {card.live?.active_prime_movers ?? 0} Prime Movers, live risk{" "}
+                            {(card.live?.live_risk ?? card.zone.zone_historical_risk).toFixed(2)}, compliance{" "}
+                            {card.live ? riskPercent(card.live.speed_compliance) : "--"}.
+                          </p>
+                        </div>
                       </li>
                     ))}
                   </ul>
@@ -514,16 +580,22 @@ export function NearGuardDashboard() {
                     {evidenceEvents.map((event) => (
                       <li className={eventSeverityClass(event)} key={event.event_id}>
                         <span className="trace-time">{timeLabel(event.timestamp)}</span>
-                        <p>
-                          <strong>{formatEventLabel(event.event_type)}</strong> for {event.vehicle_id} in {event.zone_id}:{" "}
-                          {event.speed}/{event.speed_limit} km/h, GPS {event.gps_freshness}.
-                        </p>
+                        <div>
+                          <span className={`event-code ${eventSeverityClass(event)}`}>{formatEventLabel(event.event_type)}</span>
+                          <p>
+                            {event.vehicle_id} in {event.zone_id}: {event.speed}/{event.speed_limit} km/h, GPS{" "}
+                            {event.gps_freshness}.
+                          </p>
+                        </div>
                       </li>
                     ))}
                     {interventionEvidence.map((trace) => (
                       <li key={trace.trace_id}>
                         <span className="trace-time">{timeLabel(trace.timestamp)}</span>
-                        <p>{trace.message}</p>
+                        <div>
+                          <span className="event-code neutral">{trace.event_type.replaceAll("_", " ")}</span>
+                          <p>{trace.message}</p>
+                        </div>
                       </li>
                     ))}
                   </ul>
