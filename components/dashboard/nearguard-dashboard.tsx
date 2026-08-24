@@ -105,9 +105,9 @@ function zoneRiskClass(level: ZoneRiskCard["level"]): ZoneRiskCard["className"] 
 
 function zoneFlags(zone: ZoneContext) {
   const flags: string[] = [];
-  if (zone.slow_down_zone_active) flags.push("slow-down");
+  if (zone.slow_down_zone_active) flags.push("25km/h slow-down");
   if (zone.restriction_level === "restricted") flags.push("restricted");
-  if (zone.restriction_level === "wharf") flags.push("wharf");
+  if (zone.restriction_level === "wharf") flags.push("wharf access");
   if (zone.pedestrian_exposure === "high") flags.push("pedestrian high");
   if (zone.traffic_level === "high") flags.push("traffic high");
   if (zone.weather !== "clear") flags.push(zone.weather.replace("_", " "));

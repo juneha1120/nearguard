@@ -367,8 +367,16 @@ button:disabled {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--green), var(--amber), var(--red));
+  background: var(--green);
   transition: width 850ms ease;
+}
+
+.zone-live-card.medium .risk-meter span {
+  background: var(--amber);
+}
+
+.zone-live-card.high .risk-meter span {
+  background: var(--red);
 }
 
 .zone-live-grid {

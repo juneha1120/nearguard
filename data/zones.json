@@ -14,7 +14,7 @@
   },
   {
     "zone_id": "PPT-LINK-25",
-    "zone_name": "Pasir Panjang Terminal Link Slow Down Zone",
+    "zone_name": "Pasir Panjang Terminal Link",
     "traffic_level": "medium",
     "weather": "clear",
     "zone_historical_risk": 0.6,
@@ -27,7 +27,7 @@
   },
   {
     "zone_id": "WHARF-C4",
-    "zone_name": "Wharf C4 Pedestrian Crossing",
+    "zone_name": "Wharf C4 Access",
     "traffic_level": "medium",
     "weather": "clear",
     "zone_historical_risk": 0.78,
@@ -40,7 +40,7 @@
   },
   {
     "zone_id": "YARD-U2",
-    "zone_name": "Yard U2 Restricted Lane",
+    "zone_name": "Yard U2 Service Lane",
     "traffic_level": "high",
     "weather": "rain",
     "zone_historical_risk": 0.66,
