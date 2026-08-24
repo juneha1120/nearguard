@@ -22,6 +22,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   ApprovalRequest,
   EventType,
+  LivePrimeMoverSnapshot,
   LiveTelemetrySample,
   LiveZoneSnapshot,
   ReplayState,
@@ -100,6 +101,103 @@ function liveRiskLevel(score: number): ZoneRiskCard["level"] {
 
 function riskPercent(score?: number | null) {
   return `${Math.round((score ?? 0) * 100)}%`;
+}
+
+function riskScoreFromEvent(event: VehicleEvent) {
+  const overLimit = Math.max(0, event.speed - event.speed_limit);
+  const eventBoost: Record<EventType, number> = {
+    normal_update: 0.2,
+    speed_normalized: 0.18,
+    speeding: 0.58,
+    harsh_brake: 0.68,
+    sharp_turn: 0.6,
+    stale_gps: 0.62,
+    risk_persistent: 0.78
+  };
+  const gpsBoost = event.gps_freshness === "stale" ? 0.16 : event.gps_freshness === "delayed" ? 0.08 : 0;
+  return Math.min(0.96, eventBoost[event.event_type] + overLimit * 0.035 + gpsBoost);
+}
+
+function liveStateFromEvent(event: VehicleEvent): LivePrimeMoverSnapshot["state"] {
+  if (event.event_type === "speeding") return "speeding";
+  if (event.event_type === "harsh_brake") return "harsh brake";
+  if (event.event_type === "sharp_turn") return "sharp turn";
+  if (event.event_type === "stale_gps") return "stale GPS";
+  if (event.event_type === "speed_normalized") return "recovering";
+  return event.speed > event.speed_limit * 0.9 ? "watching" : "normal";
+}
+
+function eventCounts(events: VehicleEvent[], zoneId: string, currentTime: number) {
+  const fiveMinutes = 5 * 60 * 1000;
+  const recent = events.filter((event) => {
+    const eventTime = new Date(event.timestamp).getTime();
+    return event.zone_id === zoneId && eventTime <= currentTime && currentTime - eventTime <= fiveMinutes;
+  });
+  return {
+    harshBrake: recent.filter((event) => event.event_type === "harsh_brake").length,
+    sharpTurn: recent.filter((event) => event.event_type === "sharp_turn").length
+  };
+}
+
+function buildScenarioLiveSample(
+  baseSample: LiveTelemetrySample | null,
+  selectedScenario: ReplayState["selectedScenario"] | null,
+  currentEventIndex: number,
+  zones: ZoneContext[]
+): LiveTelemetrySample | null {
+  if (!baseSample || !selectedScenario?.events.length) return baseSample;
+
+  const eventCursor = Math.max(0, Math.min(currentEventIndex - 1, selectedScenario.events.length - 1));
+  const activeEvent = selectedScenario.events[eventCursor] ?? selectedScenario.events[0];
+  const scenarioEventsToDate = selectedScenario.events.slice(0, eventCursor + 1);
+  const activeTime = new Date(activeEvent.timestamp).getTime();
+  const eventRisk = riskScoreFromEvent(activeEvent);
+  const baseZones = baseSample.zones.map((zone) => ({
+    ...zone,
+    prime_movers: zone.prime_movers.filter((mover) => mover.vehicle_id !== selectedScenario.primary_vehicle_id)
+  }));
+
+  const zoneSnapshots = baseZones.map((zone) => {
+    if (zone.zone_id !== activeEvent.zone_id) return zone;
+
+    const zoneContext = zones.find((item) => item.zone_id === activeEvent.zone_id);
+    const scenarioMover: LivePrimeMoverSnapshot = {
+      vehicle_id: activeEvent.vehicle_id,
+      speed: activeEvent.speed,
+      speed_limit: activeEvent.speed_limit,
+      gps_freshness: activeEvent.gps_freshness,
+      state: liveStateFromEvent(activeEvent),
+      rolling_risk_contribution: Number(eventRisk.toFixed(2))
+    };
+    const primeMovers = [scenarioMover, ...zone.prime_movers].slice(0, 4);
+    const complianceCount = primeMovers.filter((mover) => mover.speed <= mover.speed_limit).length;
+    const counts = eventCounts(scenarioEventsToDate, activeEvent.zone_id, activeTime);
+
+    return {
+      ...zone,
+      updated_at: activeEvent.timestamp,
+      live_risk: Number(Math.max(zone.live_risk, eventRisk, zoneContext?.zone_historical_risk ?? 0).toFixed(3)),
+      active_prime_movers: primeMovers.length,
+      avg_speed: Number((primeMovers.reduce((total, mover) => total + mover.speed, 0) / primeMovers.length).toFixed(1)),
+      speed_compliance: Number((complianceCount / primeMovers.length).toFixed(2)),
+      stale_gps_count: primeMovers.filter((mover) => mover.gps_freshness === "stale").length,
+      delayed_gps_count: primeMovers.filter((mover) => mover.gps_freshness === "delayed").length,
+      harsh_brake_count_5m: Math.max(zone.harsh_brake_count_5m, counts.harshBrake),
+      sharp_turn_count_5m: Math.max(zone.sharp_turn_count_5m, counts.sharpTurn),
+      traffic_pressure: Number(Math.max(zone.traffic_pressure, eventRisk - 0.08).toFixed(2)),
+      weather: zoneContext?.weather ?? zone.weather,
+      restriction_level: zoneContext?.restriction_level ?? zone.restriction_level,
+      pedestrian_exposure: zoneContext?.pedestrian_exposure ?? zone.pedestrian_exposure,
+      slow_down_zone_active: zoneContext?.slow_down_zone_active ?? zone.slow_down_zone_active,
+      prime_movers: primeMovers
+    };
+  });
+
+  return {
+    sample_id: `${baseSample.sample_id}-${selectedScenario.scenario_id}-${activeEvent.event_id}`,
+    timestamp: activeEvent.timestamp,
+    zones: zoneSnapshots
+  };
 }
 
 function zoneRiskClass(level: ZoneRiskCard["level"]): ZoneRiskCard["className"] {
@@ -266,7 +364,11 @@ export function NearGuardDashboard() {
   const latestAssessment = state?.latestRiskAssessment ?? null;
   const currentEvent = state?.currentEvent ?? null;
   const currentZone = state?.currentZone ?? null;
-  const liveSample = liveSamples[liveSampleIndex] ?? null;
+  const rawLiveSample = liveSamples[liveSampleIndex] ?? null;
+  const liveSample = useMemo(
+    () => buildScenarioLiveSample(rawLiveSample, state?.selectedScenario ?? null, state?.currentEventIndex ?? 0, zones),
+    [rawLiveSample, state?.currentEventIndex, state?.selectedScenario, zones]
+  );
   const evidenceEvents = useMemo(() => {
     if (!state?.currentEvent) return [];
     const currentTime = new Date(state.currentEvent.timestamp).getTime();
