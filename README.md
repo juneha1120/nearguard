@@ -33,6 +33,14 @@ This writes:
 
 The web app uses `models/scenario_predictions.json` for reliable demo replay while keeping the trained `.joblib` artifact as the local AI model output.
 
+## Demo Data Layout
+
+- `data/live_zone_telemetry.json` drives the idle 1-second zone monitoring stream.
+- `data/scenarios.json` defines sparse decision evidence anchors for replay and policy/tool steps.
+- `data/scenario_telemetry/{scenario}.json` provides dense 1-second Prime Mover telemetry during a selected scenario.
+- `data/scenario_zone_telemetry/{scenario}.json` provides matching 1-second dynamic zone telemetry during a selected scenario.
+- `data/zones.json` is static zone registry/context, such as zone names, baseline risk, restrictions and pedestrian exposure.
+
 ## Run The App
 
 ```powershell
@@ -55,7 +63,7 @@ npm.cmd run build
 
 ## Demo Flow
 
-Use the scenario selector in the dashboard, then click `Step` or `Play`.
+Use the scenario selector in the dashboard, then click `Next Evidence` or `Play`.
 
 Recommended first demo:
 

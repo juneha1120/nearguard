@@ -42,7 +42,7 @@ It must not be described as a PSA production probability or accident probability
 
 ## Core Inputs
 
-`VehicleEvent` remains the replay input:
+`VehicleEvent` remains the sparse decision-evidence replay input:
 
 | Field | Notes |
 | --- | --- |
@@ -50,12 +50,23 @@ It must not be described as a PSA production probability or accident probability
 | `event_type` | `normal_update`, `speeding`, `harsh_brake`, `sharp_turn`, `stale_gps`, `speed_normalized`, `risk_persistent`. |
 | `speed`, `speed_limit`, `gps_freshness` | Primary telemetry and confidence signals. |
 
-`ZoneContext` provides synthetic operating context:
+`ZoneContext` provides static synthetic operating context:
 
 | Field | Notes |
 | --- | --- |
 | `traffic_level`, `weather`, `zone_historical_risk` | Contextual risk modifiers. |
 | `restriction_level`, `slow_down_zone_active`, `pedestrian_exposure` | Public-PSA-inspired context and prototype assumptions. |
+
+The dashboard uses four checked-in demo data layers:
+
+| Layer | Files | Purpose |
+| --- | --- | --- |
+| Idle zone stream | `data/live_zone_telemetry.json` | Loopable 1-second zone/Prime Mover monitoring when no intervention evidence is active. |
+| Decision anchors | `data/scenarios.json` | Sparse evidence events consumed by replay, risk assessment, policy and tool simulation. |
+| Scenario PM stream | `data/scenario_telemetry/{scenario}.json` | Dense 1-second primary Prime Mover telemetry for visual scenario playback between evidence anchors. |
+| Scenario zone stream | `data/scenario_zone_telemetry/{scenario}.json` | Dense 1-second dynamic zone risk/context telemetry aligned to the selected scenario. |
+
+Dense scenario telemetry is presentation/demo input. It makes the dashboard feel continuous, but only sparse decision anchors are traced as risk evidence and policy/tool events.
 
 ## Rolling Features
 
@@ -117,6 +128,8 @@ The MVP trains a local scikit-learn tabular classifier:
 - Target: `near_miss_within_next_15m`.
 - Output: synthetic near-miss risk score, risk band, confidence, reasons, `prediction_horizon = 15m`, `evidence_authority = SYNTHETIC_DATA`.
 - Runtime: checked-in model artifact and exported scenario predictions for deterministic demo playback.
+
+`data/synthetic_training_data.csv` is the model training/evaluation table. It is not the dashboard replay stream. Replay uses `data/scenarios.json` for evidence anchors plus scenario-specific dense telemetry JSON for visual continuity.
 
 `HistGradientBoostingClassifier` is a decision-tree-family gradient boosting model. It does not react to one isolated event as a single rule. It learns from engineered rolling-window features and context so the MVP can demonstrate how weak signals combine over time.
 
