@@ -147,10 +147,12 @@ function buildScenarioLiveSample(
   baseSample: LiveTelemetrySample | null,
   selectedScenario: ReplayState["selectedScenario"] | null,
   currentEventIndex: number,
-  zones: ZoneContext[]
+  zones: ZoneContext[],
+  scenarioTimestamp?: string | null
 ): LiveTelemetrySample | null {
   if (!baseSample || !selectedScenario?.events.length) return baseSample;
 
+  const displayTimestamp = scenarioTimestamp ?? baseSample.timestamp;
   const eventCursor = Math.max(0, Math.min(currentEventIndex - 1, selectedScenario.events.length - 1));
   const activeEvent = selectedScenario.events[eventCursor] ?? selectedScenario.events[0];
   const scenarioEventsToDate = selectedScenario.events.slice(0, eventCursor + 1);
@@ -179,7 +181,7 @@ function buildScenarioLiveSample(
 
     return {
       ...zone,
-      updated_at: baseSample.timestamp,
+      updated_at: displayTimestamp,
       live_risk: Number(Math.max(zone.live_risk, eventRisk, zoneContext?.zone_historical_risk ?? 0).toFixed(3)),
       active_prime_movers: primeMovers.length,
       avg_speed: Number((primeMovers.reduce((total, mover) => total + mover.speed, 0) / primeMovers.length).toFixed(1)),
@@ -199,7 +201,7 @@ function buildScenarioLiveSample(
 
   return {
     sample_id: `${baseSample.sample_id}-${selectedScenario.scenario_id}-${activeEvent.event_id}`,
-    timestamp: baseSample.timestamp,
+    timestamp: displayTimestamp,
     zones: zoneSnapshots
   };
 }
@@ -284,6 +286,7 @@ export function NearGuardDashboard() {
   const [liveSamples, setLiveSamples] = useState<LiveTelemetrySample[]>([]);
   const [liveSampleIndex, setLiveSampleIndex] = useState(0);
   const [warmupRemaining, setWarmupRemaining] = useState(0);
+  const [scenarioClockMs, setScenarioClockMs] = useState<number | null>(null);
   const [scenarioId, setScenarioId] = useState("pm27-persistent-high-risk");
   const [state, setState] = useState<ReplayState | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -296,15 +299,21 @@ export function NearGuardDashboard() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ scenario_id: id })
     });
-    setState(await response.json());
+    const nextState = (await response.json()) as ReplayState;
+    setState(nextState);
     setIsPlaying(false);
     setWarmupRemaining(0);
+    setLiveSampleIndex(0);
+    setScenarioClockMs(nextState.selectedScenario.events[0] ? new Date(nextState.selectedScenario.events[0].timestamp).getTime() : null);
   }
 
   async function step() {
     const response = await fetch("/api/replay/step", { method: "POST" });
     const nextState = (await response.json()) as ReplayState;
     setState(nextState);
+    if (nextState.currentEvent) {
+      setScenarioClockMs(new Date(nextState.currentEvent.timestamp).getTime());
+    }
     if (nextState.isComplete) {
       setIsPlaying(false);
     }
@@ -339,6 +348,7 @@ export function NearGuardDashboard() {
         if (!liveSamples.length) return 0;
         return (index + 1) % liveSamples.length;
       });
+      setScenarioClockMs((timestamp) => (timestamp === null ? timestamp : timestamp + 1000));
     }, 1000);
     return () => {
       if (liveTimerRef.current) window.clearInterval(liveTimerRef.current);
@@ -369,9 +379,10 @@ export function NearGuardDashboard() {
   const currentEvent = state?.currentEvent ?? null;
   const currentZone = state?.currentZone ?? null;
   const rawLiveSample = liveSamples[liveSampleIndex] ?? null;
+  const scenarioClockTimestamp = scenarioClockMs === null ? null : new Date(scenarioClockMs).toISOString();
   const liveSample = useMemo(
-    () => buildScenarioLiveSample(rawLiveSample, state?.selectedScenario ?? null, state?.currentEventIndex ?? 0, zones),
-    [rawLiveSample, state?.currentEventIndex, state?.selectedScenario, zones]
+    () => buildScenarioLiveSample(rawLiveSample, state?.selectedScenario ?? null, state?.currentEventIndex ?? 0, zones, scenarioClockTimestamp),
+    [rawLiveSample, scenarioClockTimestamp, state?.currentEventIndex, state?.selectedScenario, zones]
   );
   const evidenceEvents = useMemo(() => {
     if (!state?.currentEvent) return [];
