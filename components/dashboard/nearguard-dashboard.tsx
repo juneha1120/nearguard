@@ -29,6 +29,7 @@ import type {
   RiskAssessment,
   RiskBand,
   ScenarioTelemetrySample,
+  ScenarioZoneTelemetrySample,
   ToolCall,
   TraceEvent,
   VehicleCase,
@@ -150,7 +151,8 @@ function buildScenarioLiveSample(
   currentEventIndex: number,
   zones: ZoneContext[],
   scenarioTimestamp?: string | null,
-  scenarioTelemetrySample?: ScenarioTelemetrySample | null
+  scenarioTelemetrySample?: ScenarioTelemetrySample | null,
+  scenarioZoneTelemetrySample?: ScenarioZoneTelemetrySample | null
 ): LiveTelemetrySample | null {
   if (!baseSample || !selectedScenario?.events.length) return baseSample;
 
@@ -158,6 +160,7 @@ function buildScenarioLiveSample(
   const eventCursor = Math.max(0, Math.min(currentEventIndex - 1, selectedScenario.events.length - 1));
   const activeEvent = selectedScenario.events[eventCursor] ?? selectedScenario.events[0];
   const displayEvent = scenarioTelemetrySample ?? activeEvent;
+  const displayZone = scenarioZoneTelemetrySample;
   const scenarioEventsToDate = selectedScenario.events.slice(0, eventCursor + 1);
   const activeTime = new Date(displayEvent.timestamp).getTime();
   const eventRisk = "rolling_risk_contribution" in displayEvent ? displayEvent.rolling_risk_contribution : riskScoreFromEvent(activeEvent);
@@ -185,19 +188,22 @@ function buildScenarioLiveSample(
     return {
       ...zone,
       updated_at: displayTimestamp,
-      live_risk: Number(Math.max(zone.live_risk, eventRisk, zoneContext?.zone_historical_risk ?? 0).toFixed(3)),
-      active_prime_movers: primeMovers.length,
-      avg_speed: Number((primeMovers.reduce((total, mover) => total + mover.speed, 0) / primeMovers.length).toFixed(1)),
-      speed_compliance: Number((complianceCount / primeMovers.length).toFixed(2)),
-      stale_gps_count: primeMovers.filter((mover) => mover.gps_freshness === "stale").length,
-      delayed_gps_count: primeMovers.filter((mover) => mover.gps_freshness === "delayed").length,
-      harsh_brake_count_5m: Math.max(zone.harsh_brake_count_5m, counts.harshBrake),
-      sharp_turn_count_5m: Math.max(zone.sharp_turn_count_5m, counts.sharpTurn),
-      traffic_pressure: Number(Math.max(zone.traffic_pressure, eventRisk - 0.08).toFixed(2)),
-      weather: zoneContext?.weather ?? zone.weather,
-      restriction_level: zoneContext?.restriction_level ?? zone.restriction_level,
-      pedestrian_exposure: zoneContext?.pedestrian_exposure ?? zone.pedestrian_exposure,
-      slow_down_zone_active: zoneContext?.slow_down_zone_active ?? zone.slow_down_zone_active,
+      live_risk: Number(
+        Math.max(displayZone?.live_risk ?? zone.live_risk, eventRisk, zoneContext?.zone_historical_risk ?? 0).toFixed(3)
+      ),
+      active_prime_movers: displayZone?.active_prime_movers ?? primeMovers.length,
+      avg_speed:
+        displayZone?.avg_speed ?? Number((primeMovers.reduce((total, mover) => total + mover.speed, 0) / primeMovers.length).toFixed(1)),
+      speed_compliance: displayZone?.speed_compliance ?? Number((complianceCount / primeMovers.length).toFixed(2)),
+      stale_gps_count: displayZone?.stale_gps_count ?? primeMovers.filter((mover) => mover.gps_freshness === "stale").length,
+      delayed_gps_count: displayZone?.delayed_gps_count ?? primeMovers.filter((mover) => mover.gps_freshness === "delayed").length,
+      harsh_brake_count_5m: Math.max(displayZone?.harsh_brake_count_5m ?? zone.harsh_brake_count_5m, counts.harshBrake),
+      sharp_turn_count_5m: Math.max(displayZone?.sharp_turn_count_5m ?? zone.sharp_turn_count_5m, counts.sharpTurn),
+      traffic_pressure: displayZone?.traffic_pressure ?? Number(Math.max(zone.traffic_pressure, eventRisk - 0.08).toFixed(2)),
+      weather: displayZone?.weather ?? zoneContext?.weather ?? zone.weather,
+      restriction_level: displayZone?.restriction_level ?? zoneContext?.restriction_level ?? zone.restriction_level,
+      pedestrian_exposure: displayZone?.pedestrian_exposure ?? zoneContext?.pedestrian_exposure ?? zone.pedestrian_exposure,
+      slow_down_zone_active: displayZone?.slow_down_zone_active ?? zoneContext?.slow_down_zone_active ?? zone.slow_down_zone_active,
       prime_movers: primeMovers
     };
   });
@@ -288,6 +294,7 @@ export function NearGuardDashboard() {
   const [zones, setZones] = useState<ZoneContext[]>([]);
   const [liveSamples, setLiveSamples] = useState<LiveTelemetrySample[]>([]);
   const [scenarioTelemetrySamples, setScenarioTelemetrySamples] = useState<ScenarioTelemetrySample[]>([]);
+  const [scenarioZoneTelemetrySamples, setScenarioZoneTelemetrySamples] = useState<ScenarioZoneTelemetrySample[]>([]);
   const [liveSampleIndex, setLiveSampleIndex] = useState(0);
   const [warmupRemaining, setWarmupRemaining] = useState(0);
   const [scenarioClockMs, setScenarioClockMs] = useState<number | null>(null);
@@ -312,6 +319,9 @@ export function NearGuardDashboard() {
     fetch(`/api/scenario-telemetry?scenario_id=${encodeURIComponent(id)}`)
       .then((telemetryResponse) => telemetryResponse.json())
       .then((payload) => setScenarioTelemetrySamples(payload.samples));
+    fetch(`/api/scenario-zone-telemetry?scenario_id=${encodeURIComponent(id)}`)
+      .then((telemetryResponse) => telemetryResponse.json())
+      .then((payload) => setScenarioZoneTelemetrySamples(payload.samples));
   }
 
   async function step() {
@@ -395,6 +405,14 @@ export function NearGuardDashboard() {
       null
     );
   }, [scenarioClockMs, scenarioTelemetrySamples]);
+  const scenarioZoneTelemetrySample = useMemo(() => {
+    if (scenarioClockMs === null || !scenarioZoneTelemetrySamples.length) return null;
+    return (
+      scenarioZoneTelemetrySamples.find((sample) => new Date(sample.timestamp).getTime() >= scenarioClockMs) ??
+      scenarioZoneTelemetrySamples.at(-1) ??
+      null
+    );
+  }, [scenarioClockMs, scenarioZoneTelemetrySamples]);
   const liveSample = useMemo(
     () =>
       buildScenarioLiveSample(
@@ -403,9 +421,18 @@ export function NearGuardDashboard() {
         state?.currentEventIndex ?? 0,
         zones,
         scenarioClockTimestamp,
-        scenarioTelemetrySample
+        scenarioTelemetrySample,
+        scenarioZoneTelemetrySample
       ),
-    [rawLiveSample, scenarioClockTimestamp, scenarioTelemetrySample, state?.currentEventIndex, state?.selectedScenario, zones]
+    [
+      rawLiveSample,
+      scenarioClockTimestamp,
+      scenarioTelemetrySample,
+      scenarioZoneTelemetrySample,
+      state?.currentEventIndex,
+      state?.selectedScenario,
+      zones
+    ]
   );
   const evidenceEvents = useMemo(() => {
     if (!state?.currentEvent) return [];

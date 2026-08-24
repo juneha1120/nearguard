@@ -85,4 +85,15 @@ describe("synthetic horizon dataset", () => {
     expect(new Set(betweenAnchors.map((sample: any) => sample.vehicle_id))).toEqual(new Set(["PM-27"]));
     expect(betweenAnchors.some((sample: any) => sample.event_anchor_id === null)).toBe(true);
   });
+
+  it("provides matching dense dynamic zone telemetry for scenarios", () => {
+    const vehiclePayload = JSON.parse(readFileSync("data/scenario_telemetry/pm27-persistent-high-risk.json", "utf8"));
+    const zonePayload = JSON.parse(readFileSync("data/scenario_zone_telemetry/pm27-persistent-high-risk.json", "utf8"));
+
+    expect(zonePayload.samples).toHaveLength(vehiclePayload.samples.length);
+    expect(zonePayload.samples[0].timestamp).toBe(vehiclePayload.samples[0].timestamp);
+    expect(zonePayload.samples[1].timestamp).toBe(vehiclePayload.samples[1].timestamp);
+    expect(zonePayload.samples.some((sample: any) => sample.harsh_brake_count_5m > 0)).toBe(true);
+    expect(zonePayload.samples.every((sample: any) => sample.zone_id === "YARD-C4")).toBe(true);
+  });
 });

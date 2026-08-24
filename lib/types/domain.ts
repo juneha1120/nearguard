@@ -114,6 +114,26 @@ export interface ScenarioTelemetrySample {
   heading_degrees?: number;
 }
 
+export interface ScenarioZoneTelemetrySample {
+  sample_id: string;
+  timestamp: string;
+  scenario_id: string;
+  zone_id: string;
+  live_risk: number;
+  active_prime_movers: number;
+  avg_speed: number;
+  speed_compliance: number;
+  stale_gps_count: number;
+  delayed_gps_count: number;
+  harsh_brake_count_5m: number;
+  sharp_turn_count_5m: number;
+  traffic_pressure: number;
+  weather: Weather;
+  restriction_level: RestrictionLevel;
+  pedestrian_exposure: PedestrianExposure;
+  slow_down_zone_active: boolean;
+}
+
 export interface MapPosition {
   x: number;
   y: number;

@@ -6,7 +6,18 @@ import pm27ScenarioTelemetryData from "@/data/scenario_telemetry/pm27-persistent
 import pptScenarioTelemetryData from "@/data/scenario_telemetry/ppt-link-slow-down-zone.json";
 import uncertaintyScenarioTelemetryData from "@/data/scenario_telemetry/telemetry-uncertainty.json";
 import wharfScenarioTelemetryData from "@/data/scenario_telemetry/wharf-pedestrian-exposure.json";
-import type { LiveTelemetrySample, Scenario, ScenarioPrediction, ScenarioTelemetrySample, ZoneContext } from "@/lib/types/domain";
+import pm27ScenarioZoneTelemetryData from "@/data/scenario_zone_telemetry/pm27-persistent-high-risk.json";
+import pptScenarioZoneTelemetryData from "@/data/scenario_zone_telemetry/ppt-link-slow-down-zone.json";
+import uncertaintyScenarioZoneTelemetryData from "@/data/scenario_zone_telemetry/telemetry-uncertainty.json";
+import wharfScenarioZoneTelemetryData from "@/data/scenario_zone_telemetry/wharf-pedestrian-exposure.json";
+import type {
+  LiveTelemetrySample,
+  Scenario,
+  ScenarioPrediction,
+  ScenarioTelemetrySample,
+  ScenarioZoneTelemetrySample,
+  ZoneContext
+} from "@/lib/types/domain";
 
 export const scenarios = scenarioData as Scenario[];
 export const zones = zoneData as ZoneContext[];
@@ -17,6 +28,12 @@ export const scenarioTelemetrySamplesByScenario: Record<string, ScenarioTelemetr
   "ppt-link-slow-down-zone": pptScenarioTelemetryData.samples as ScenarioTelemetrySample[],
   "telemetry-uncertainty": uncertaintyScenarioTelemetryData.samples as ScenarioTelemetrySample[],
   "wharf-pedestrian-exposure": wharfScenarioTelemetryData.samples as ScenarioTelemetrySample[]
+};
+export const scenarioZoneTelemetrySamplesByScenario: Record<string, ScenarioZoneTelemetrySample[]> = {
+  "pm27-persistent-high-risk": pm27ScenarioZoneTelemetryData.samples as ScenarioZoneTelemetrySample[],
+  "ppt-link-slow-down-zone": pptScenarioZoneTelemetryData.samples as ScenarioZoneTelemetrySample[],
+  "telemetry-uncertainty": uncertaintyScenarioZoneTelemetryData.samples as ScenarioZoneTelemetrySample[],
+  "wharf-pedestrian-exposure": wharfScenarioZoneTelemetryData.samples as ScenarioZoneTelemetrySample[]
 };
 
 export function getScenario(scenarioId?: string): Scenario {
@@ -40,6 +57,10 @@ export function listLiveTelemetrySamples(): LiveTelemetrySample[] {
 
 export function listScenarioTelemetrySamples(scenarioId: string): ScenarioTelemetrySample[] {
   return scenarioTelemetrySamplesByScenario[scenarioId] ?? [];
+}
+
+export function listScenarioZoneTelemetrySamples(scenarioId: string): ScenarioZoneTelemetrySample[] {
+  return scenarioZoneTelemetrySamplesByScenario[scenarioId] ?? [];
 }
 
 export function getScenarioPrediction(scenarioId: string, eventId: string): ScenarioPrediction | null {
