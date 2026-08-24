@@ -82,6 +82,10 @@ function eventSeverityClass(event: VehicleEvent) {
   return "normal";
 }
 
+function isDecisionEvidenceEvent(event: VehicleEvent) {
+  return event.event_type !== "normal_update";
+}
+
 function formatEventLabel(eventType?: EventType) {
   if (!eventType) return "monitoring";
   return eventType.replaceAll("_", " ");
@@ -353,7 +357,7 @@ export function NearGuardDashboard() {
         return;
       }
       step();
-    }, 1300);
+    }, 1000);
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current);
     };
@@ -377,9 +381,16 @@ export function NearGuardDashboard() {
       .slice(0, state.currentEventIndex)
       .filter((event) => {
         if (event.vehicle_id !== state.currentEvent?.vehicle_id) return false;
+        if (!isDecisionEvidenceEvent(event)) return false;
         const eventTime = new Date(event.timestamp).getTime();
         return eventTime <= currentTime && currentTime - eventTime <= tenMinutes;
       });
+  }, [state]);
+  const normalTelemetryWindowCount = useMemo(() => {
+    if (!state?.currentEvent) return 0;
+    return state.selectedScenario.events
+      .slice(0, state.currentEventIndex)
+      .filter((event) => event.vehicle_id === state.currentEvent?.vehicle_id && !isDecisionEvidenceEvent(event)).length;
   }, [state]);
   const zoneRiskCards = useMemo<ZoneRiskCard[]>(
     () =>
@@ -427,7 +438,9 @@ export function NearGuardDashboard() {
   );
   const progress = useMemo(() => {
     if (!state) return "0 / 0";
-    return `${Math.min(state.currentEventIndex, state.selectedScenario.events.length)} / ${state.selectedScenario.events.length}`;
+    const evidenceTotal = state.selectedScenario.events.filter(isDecisionEvidenceEvent).length;
+    const evidenceProcessed = state.selectedScenario.events.slice(0, state.currentEventIndex).filter(isDecisionEvidenceEvent).length;
+    return `${Math.min(evidenceProcessed, evidenceTotal)} / ${evidenceTotal} evidence`;
   }, [state]);
 
   return (
@@ -459,8 +472,8 @@ export function NearGuardDashboard() {
           <button className="icon-button" onClick={() => start()} title="Reset replay">
             <RefreshCw size={16} /> Reset
           </button>
-          <button className="icon-button" onClick={step} disabled={!state || state.isComplete} title="Step replay">
-            <StepForward size={16} /> Step
+          <button className="icon-button" onClick={step} disabled={!state || state.isComplete} title="Jump to next decision evidence">
+            <StepForward size={16} /> Next Evidence
           </button>
           <button
             className="primary-button"
@@ -558,10 +571,10 @@ export function NearGuardDashboard() {
             <p className="muted">{state?.selectedScenario.description}</p>
             <div className="evidence-heading">
               <div>
-                <h3>{hasIntervention ? "Intervention Evidence" : "Live Zone Monitoring"}</h3>
+                <h3>{hasIntervention ? "Decision Evidence" : "Telemetry Stream"}</h3>
                 <p className="small muted">
                   {hasIntervention
-                    ? "Chronological evidence used by policy and tools for the current intervention."
+                    ? "Risk-relevant evidence anchors used by policy and tools for the current intervention."
                     : "Continuous synthetic telemetry stream with zone context joined for live risk estimates."}
                 </p>
               </div>
@@ -571,7 +584,7 @@ export function NearGuardDashboard() {
               </span>
             </div>
             <div className="replay-status-strip">
-              <span>{hasIntervention ? "Intervention Review" : "Live Monitoring"}</span>
+              <span>{hasIntervention ? "Decision Evidence" : "Telemetry Stream"}</span>
               <span>{progress}</span>
               <span>{warmupRemaining > 0 ? "Warm-up telemetry" : formatEventLabel(currentEvent?.event_type)}</span>
               <span>{liveSample ? `Live ${timeLabel(liveSample.timestamp)}` : "Loading live stream"}</span>
@@ -656,7 +669,7 @@ export function NearGuardDashboard() {
               </div>
               <div className="evidence-timeline-panel">
                 <div className="tool-row">
-                  <strong>{hasIntervention ? "Intervention Evidence Timeline" : "Monitoring Feed"}</strong>
+                  <strong>{hasIntervention ? "Decision Evidence Timeline" : "Telemetry Stream Feed"}</strong>
                   <span className="badge neutral">
                     {hasIntervention ? (latestAssessment?.risk_band ?? "Review") : `${liveSamples.length || 0} loop samples`}
                   </span>
@@ -679,6 +692,15 @@ export function NearGuardDashboard() {
                   </ul>
                 ) : (
                   <ul className="intervention-timeline">
+                    {normalTelemetryWindowCount > 0 ? (
+                      <li className="normal">
+                        <span className="trace-time">window</span>
+                        <div>
+                          <span className="event-code neutral">normal telemetry</span>
+                          <p>{normalTelemetryWindowCount} normal telemetry anchor observed before decision evidence.</p>
+                        </div>
+                      </li>
+                    ) : null}
                     {evidenceEvents.map((event) => (
                       <li className={eventSeverityClass(event)} key={event.event_id}>
                         <span className="trace-time">{timeLabel(event.timestamp)}</span>
@@ -911,12 +933,12 @@ export function NearGuardDashboard() {
 
           <section className="panel" style={{ marginTop: 14 }}>
             <div className="panel-header">
-              <h3>Recent Trace</h3>
+              <h3>Agent Trace</h3>
               <Clock3 size={16} />
             </div>
             <div className="panel-body">
               {!state?.traceEvents.length ? (
-                <div className="empty">Trace starts when replay begins.</div>
+                <div className="empty">Agent trace starts when decision evidence is assessed.</div>
               ) : (
                 <ul className="trace-list">
                   {recentTraceEvents.map((item) => (

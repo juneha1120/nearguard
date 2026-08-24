@@ -60,10 +60,11 @@ describe("synthetic horizon dataset", () => {
     const first = payload.samples[0];
     const last = payload.samples.at(-1);
 
-    expect(payload.samples.length).toBeGreaterThanOrEqual(240);
+    expect(payload.samples.length).toBeGreaterThanOrEqual(1200);
     expect(first.zones).toHaveLength(4);
     expect(first.zones[0].prime_movers.length).toBeGreaterThan(0);
     expect(Math.abs(first.zones[0].live_risk - last.zones[0].live_risk)).toBeLessThan(0.02);
+    expect(new Date(payload.samples[1].timestamp).getTime() - new Date(first.timestamp).getTime()).toBe(1000);
     expect(new Set(first.zones.map((zone: any) => zone.zone_id))).toEqual(
       new Set(["YARD-C4", "PPT-LINK-25", "YARD-U2", "WHARF-C4"])
     );

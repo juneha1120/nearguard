@@ -95,6 +95,14 @@ function missingContextForScenario(scenario: Scenario, event: VehicleEvent) {
   return scenario.scenario_id === "telemetry-uncertainty" && event.event_id !== "uncertain-003";
 }
 
+export function isEvidenceEvent(event: VehicleEvent) {
+  return event.event_type !== "normal_update";
+}
+
+function nextEvidenceIndex(state: ReplayState) {
+  return state.selectedScenario.events.findIndex((event, index) => index >= state.currentEventIndex && isEvidenceEvent(event));
+}
+
 function buildAssessment(state: ReplayState, event: VehicleEvent, vehicleCase: VehicleCase): RiskAssessment {
   const prediction = getScenarioPrediction(state.selectedScenario.scenario_id, event.event_id);
   if (!prediction) {
@@ -145,6 +153,15 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
   if (inputState.isComplete) return inputState;
 
   const state = structuredClone(inputState) as ReplayState;
+  const evidenceIndex = nextEvidenceIndex(state);
+  if (evidenceIndex === -1) {
+    return {
+      ...state,
+      currentEventIndex: state.selectedScenario.events.length,
+      isComplete: true
+    };
+  }
+  state.currentEventIndex = evidenceIndex;
   const event = state.selectedScenario.events[state.currentEventIndex];
   const vehicleCase = getOrCreateCase(state, event);
   const traceEvents: TraceEvent[] = [];
