@@ -41,9 +41,15 @@ describe("synthetic horizon dataset", () => {
 
   it("keeps high-risk scenarios above stabilized replay outcomes", () => {
     const payload = JSON.parse(readFileSync("models/scenario_predictions.json", "utf8"));
-    const byEvent = new Map(payload.predictions.map((item: any) => [item.event_id, item.assessment.safety_incident_risk_score]));
+    const byEvent = new Map<string, number>(
+      payload.predictions.map((item: any) => [item.event_id, item.assessment.safety_incident_risk_score])
+    );
+    const persistentRisk = byEvent.get("pm27-005");
+    const stabilizedRisk = byEvent.get("ppt-003");
 
-    expect(byEvent.get("pm27-005")).toBeGreaterThan(byEvent.get("ppt-003"));
+    expect(persistentRisk).toBeDefined();
+    expect(stabilizedRisk).toBeDefined();
+    expect(persistentRisk!).toBeGreaterThan(stabilizedRisk!);
   });
 
   it("frames the primary demo as compound telemetry risk instead of a speeding-only alert", () => {
