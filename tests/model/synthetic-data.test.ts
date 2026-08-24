@@ -54,4 +54,18 @@ describe("synthetic horizon dataset", () => {
     expect(pm27.assessment.top_risk_reasons[0]).toMatch(/Rolling telemetry instability/);
     expect(pm27.assessment.top_risk_reasons.join(" ")).not.toMatch(/Speeding occurred/);
   });
+
+  it("provides a loopable live zone telemetry stream", () => {
+    const payload = JSON.parse(readFileSync("data/live_zone_telemetry.json", "utf8"));
+    const first = payload.samples[0];
+    const last = payload.samples.at(-1);
+
+    expect(payload.samples.length).toBeGreaterThanOrEqual(240);
+    expect(first.zones).toHaveLength(4);
+    expect(first.zones[0].prime_movers.length).toBeGreaterThan(0);
+    expect(Math.abs(first.zones[0].live_risk - last.zones[0].live_risk)).toBeLessThan(0.02);
+    expect(new Set(first.zones.map((zone: any) => zone.zone_id))).toEqual(
+      new Set(["YARD-C4", "PPT-LINK-25", "YARD-U2", "WHARF-C4"])
+    );
+  });
 });

@@ -6,9 +6,7 @@ import {
   ClipboardCheck,
   Clock3,
   FastForward,
-  Gauge,
   Layers,
-  MapPin,
   Pause,
   Play,
   RefreshCw,
@@ -16,7 +14,20 @@ import {
   StepForward
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { ApprovalRequest, EventType, ReplayState, RiskAssessment, RiskBand, ToolCall, VehicleCase, VehicleEvent, ZoneContext } from "@/lib/types/domain";
+import type {
+  ApprovalRequest,
+  EventType,
+  LiveTelemetrySample,
+  LiveZoneSnapshot,
+  ReplayState,
+  RiskAssessment,
+  RiskBand,
+  ToolCall,
+  TraceEvent,
+  VehicleCase,
+  VehicleEvent,
+  ZoneContext
+} from "@/lib/types/domain";
 
 type ScenarioMetadata = {
   scenario_id: string;
@@ -26,33 +37,16 @@ type ScenarioMetadata = {
   highlights: string[];
 };
 
-type MapZoneView = {
-  zoneId: string;
-  name: string;
-  className: string;
-  bounds: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  };
-};
-
 type ZoneRiskCard = {
   zone: ZoneContext;
   level: "Low" | "Medium" | "High";
   className: "low" | "medium" | "high";
   flags: string[];
+  live: LiveZoneSnapshot | null;
 };
 
-const MAP_ZONES: MapZoneView[] = [
-  { zoneId: "YARD-C4", name: "YARD-C4", className: "caution", bounds: { x: 12, y: 18, width: 30, height: 28 } },
-  { zoneId: "PPT-LINK-25", name: "PPT-LINK-25", className: "slow", bounds: { x: 58, y: 18, width: 30, height: 28 } },
-  { zoneId: "YARD-U2", name: "YARD-U2", className: "restricted", bounds: { x: 12, y: 58, width: 30, height: 28 } },
-  { zoneId: "WHARF-C4", name: "WHARF-C4", className: "wharf", bounds: { x: 58, y: 58, width: 30, height: 28 } }
-];
-
 const ABNORMAL_EVENTS: EventType[] = ["speeding", "harsh_brake", "sharp_turn", "stale_gps", "risk_persistent"];
+const PLAY_WARMUP_TICKS = 3;
 
 function bandClass(band?: RiskBand) {
   if (!band) return "neutral";
@@ -81,18 +75,25 @@ function eventSeverityClass(event: VehicleEvent) {
   return "normal";
 }
 
-function formatEventLabel(eventType: EventType) {
+function formatEventLabel(eventType?: EventType) {
+  if (!eventType) return "monitoring";
   return eventType.replaceAll("_", " ");
-}
-
-function eventKey(event: VehicleEvent) {
-  return event.event_id;
 }
 
 function baselineZoneRiskLevel(score: number): ZoneRiskCard["level"] {
   if (score < 0.45) return "Low";
   if (score < 0.7) return "Medium";
   return "High";
+}
+
+function liveRiskLevel(score: number): ZoneRiskCard["level"] {
+  if (score < 0.45) return "Low";
+  if (score < 0.68) return "Medium";
+  return "High";
+}
+
+function riskPercent(score?: number | null) {
+  return `${Math.round((score ?? 0) * 100)}%`;
 }
 
 function zoneRiskClass(level: ZoneRiskCard["level"]): ZoneRiskCard["className"] {
@@ -149,14 +150,37 @@ function toolRationale(tool: ToolCall, assessment: RiskAssessment | null) {
   return `Tool was called as part of the ${assessment?.risk_band ?? "current"} policy response.`;
 }
 
+function buildInterventionEvidenceTimeline(
+  traceEvents: TraceEvent[],
+  assessment: RiskAssessment | null,
+  currentEvent: VehicleEvent | null
+) {
+  if (!assessment || !currentEvent) return [];
+  const relevantTypes = new Set([
+    "event_received",
+    "context_enriched",
+    "context_missing",
+    "features_derived",
+    "risk_assessed",
+    "policy_decision",
+    "tool_call",
+    "tool_failure",
+    "approval_requested"
+  ]);
+  return traceEvents.filter((trace) => relevantTypes.has(trace.event_type)).slice(-8);
+}
+
 export function NearGuardDashboard() {
   const [scenarios, setScenarios] = useState<ScenarioMetadata[]>([]);
   const [zones, setZones] = useState<ZoneContext[]>([]);
+  const [liveSamples, setLiveSamples] = useState<LiveTelemetrySample[]>([]);
+  const [liveSampleIndex, setLiveSampleIndex] = useState(0);
+  const [warmupRemaining, setWarmupRemaining] = useState(0);
   const [scenarioId, setScenarioId] = useState("pm27-persistent-high-risk");
   const [state, setState] = useState<ReplayState | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [selectedMapVehicle, setSelectedMapVehicle] = useState<string | null>(null);
   const timerRef = useRef<number | null>(null);
+  const liveTimerRef = useRef<number | null>(null);
 
   async function start(id = scenarioId) {
     const response = await fetch("/api/replay/start", {
@@ -166,7 +190,7 @@ export function NearGuardDashboard() {
     });
     setState(await response.json());
     setIsPlaying(false);
-    setSelectedMapVehicle(null);
+    setWarmupRemaining(0);
   }
 
   async function step() {
@@ -194,9 +218,24 @@ export function NearGuardDashboard() {
     fetch("/api/zones")
       .then((response) => response.json())
       .then((payload) => setZones(payload.zones));
+    fetch("/api/live-zone-telemetry")
+      .then((response) => response.json())
+      .then((payload) => setLiveSamples(payload.samples));
     start(scenarioId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    liveTimerRef.current = window.setInterval(() => {
+      setLiveSampleIndex((index) => {
+        if (!liveSamples.length) return 0;
+        return (index + 1) % liveSamples.length;
+      });
+    }, 1000);
+    return () => {
+      if (liveTimerRef.current) window.clearInterval(liveTimerRef.current);
+    };
+  }, [liveSamples.length]);
 
   useEffect(() => {
     if (!isPlaying) {
@@ -205,22 +244,24 @@ export function NearGuardDashboard() {
       return;
     }
     timerRef.current = window.setInterval(() => {
+      if (warmupRemaining > 0) {
+        setWarmupRemaining((value) => Math.max(value - 1, 0));
+        return;
+      }
       step();
     }, 1300);
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPlaying]);
+  }, [isPlaying, warmupRemaining]);
 
   const selectedCase = state?.selectedCase ?? null;
   const latestAssessment = state?.latestRiskAssessment ?? null;
   const currentEvent = state?.currentEvent ?? null;
   const currentZone = state?.currentZone ?? null;
-  const vehiclePosition = currentEvent?.position ?? currentZone?.center ?? { x: 50, y: 50 };
-  const vehicleHeading = currentEvent?.heading_degrees ?? 90;
-  const accuracy = currentEvent?.accuracy_m ?? 10;
-  const showVehicleDetails = Boolean(selectedMapVehicle && selectedMapVehicle === currentEvent?.vehicle_id);
+  const liveSample = liveSamples[liveSampleIndex] ?? null;
+  const isIdleMonitoring = !currentEvent && !latestAssessment;
   const evidenceEvents = useMemo(() => {
     if (!state?.currentEvent) return [];
     const currentTime = new Date(state.currentEvent.timestamp).getTime();
@@ -228,43 +269,25 @@ export function NearGuardDashboard() {
     return state.selectedScenario.events
       .slice(0, state.currentEventIndex)
       .filter((event) => {
-        if (event.vehicle_id !== state.currentEvent?.vehicle_id || !event.position) return false;
+        if (event.vehicle_id !== state.currentEvent?.vehicle_id) return false;
         const eventTime = new Date(event.timestamp).getTime();
         return eventTime <= currentTime && currentTime - eventTime <= tenMinutes;
       });
   }, [state]);
-  const behaviorEvidence = useMemo(() => {
-    const abnormalEvents = evidenceEvents.filter((event) => ABNORMAL_EVENTS.includes(event.event_type));
-    return {
-      abnormalEvents,
-      hasBehaviorSignal: abnormalEvents.length > 0 || currentEvent?.event_type === "speed_normalized"
-    };
-  }, [currentEvent?.event_type, evidenceEvents]);
-  const contextChips = useMemo(() => {
-    if (!currentEvent) return [];
-    const chips: { label: string; tone: "neutral" | "warning" | "critical" | "low" }[] = [];
-    if (!currentZone) chips.push({ label: "zone context missing", tone: "critical" });
-    if (currentZone?.slow_down_zone_active) chips.push({ label: "slow-down zone", tone: "warning" });
-    if (currentZone?.restriction_level === "restricted") chips.push({ label: "restricted zone", tone: "critical" });
-    if (currentZone?.restriction_level === "wharf") chips.push({ label: "wharf context", tone: "warning" });
-    if (currentZone?.pedestrian_exposure === "high") chips.push({ label: "pedestrian exposure high", tone: "critical" });
-    if (currentZone?.traffic_level === "high") chips.push({ label: "traffic high", tone: "warning" });
-    if (currentEvent.gps_freshness !== "fresh") chips.push({ label: `${currentEvent.gps_freshness} GPS`, tone: "critical" });
-    if (latestAssessment?.uncertainty_reason) chips.push({ label: "low confidence context", tone: "critical" });
-    return chips.length ? chips : [{ label: "context normal", tone: "low" }];
-  }, [currentEvent, currentZone, latestAssessment?.uncertainty_reason]);
   const zoneRiskCards = useMemo<ZoneRiskCard[]>(
     () =>
       zones.map((zone) => {
-        const level = baselineZoneRiskLevel(zone.zone_historical_risk);
+        const live = liveSample?.zones.find((item) => item.zone_id === zone.zone_id) ?? null;
+        const level = live ? liveRiskLevel(live.live_risk) : baselineZoneRiskLevel(zone.zone_historical_risk);
         return {
           zone,
           level,
           className: zoneRiskClass(level),
-          flags: zoneFlags(zone)
+          flags: zoneFlags(zone),
+          live
         };
       }),
-    [zones]
+    [liveSample?.zones, zones]
   );
   const actionExplanation = useMemo(
     () => explainAction(selectedCase, latestAssessment, state?.pendingApprovals.find((approval) => approval.status === "pending") ?? null),
@@ -273,6 +296,10 @@ export function NearGuardDashboard() {
   const pendingApproval = state?.pendingApprovals.find((approval) => approval.status === "pending") ?? null;
   const safetyCase = state?.safetyCases.at(-1) ?? null;
   const recentTraceEvents = state?.traceEvents.slice(-5) ?? [];
+  const interventionEvidence = useMemo(
+    () => buildInterventionEvidenceTimeline(state?.traceEvents ?? [], latestAssessment, currentEvent),
+    [currentEvent, latestAssessment, state?.traceEvents]
+  );
   const progress = useMemo(() => {
     if (!state) return "0 / 0";
     return `${Math.min(state.currentEventIndex, state.selectedScenario.events.length)} / ${state.selectedScenario.events.length}`;
@@ -312,7 +339,13 @@ export function NearGuardDashboard() {
           </button>
           <button
             className="primary-button"
-            onClick={() => setIsPlaying((value) => !value)}
+            onClick={() => {
+              setIsPlaying((value) => {
+                const next = !value;
+                if (next && !currentEvent) setWarmupRemaining(PLAY_WARMUP_TICKS);
+                return next;
+              });
+            }}
             disabled={!state || state.isComplete}
             title={isPlaying ? "Pause replay" : "Auto-play replay"}
           >
@@ -366,183 +399,132 @@ export function NearGuardDashboard() {
             <p className="muted">{state?.selectedScenario.description}</p>
             <div className="evidence-map-heading">
               <div>
-                <h3>{currentEvent ? "Risk Evidence Replay" : "Idle Zone Risk"}</h3>
+                <h3>{latestAssessment ? "Intervention Evidence" : "Live Zone Monitoring"}</h3>
                 <p className="small muted">
-                  {currentEvent
-                    ? "Recent telemetry window and zone context used to explain the current risk event."
-                    : "Baseline synthetic zone context shown until replay evidence arrives."}
+                  {latestAssessment
+                    ? "Chronological evidence used by policy and tools for the current intervention."
+                    : "Continuous synthetic telemetry stream with zone context joined for live risk estimates."}
                 </p>
               </div>
               <span className="badge neutral">
                 <Layers size={13} />
-                {currentEvent ? `${evidenceEvents.length} evidence points` : "quiet"}
+                {latestAssessment ? `${interventionEvidence.length} evidence steps` : "live stream"}
               </span>
             </div>
             <div className="replay-status-strip">
-              <span>{currentEvent ? "Risk Evidence Replay" : "Idle Zone Risk"}</span>
+              <span>{latestAssessment ? "Intervention Review" : "Idle Monitoring"}</span>
               <span>{progress}</span>
-              <span>{currentEvent ? formatEventLabel(currentEvent.event_type) : "No active event"}</span>
-              <span>{currentEvent ? `${evidenceEvents.length} window points` : `${zoneRiskCards.length} baseline zones`}</span>
+              <span>{warmupRemaining > 0 ? "Warm-up telemetry" : formatEventLabel(currentEvent?.event_type)}</span>
+              <span>{liveSample ? `Live ${timeLabel(liveSample.timestamp)}` : "Loading live stream"}</span>
             </div>
-            <div className={`prime-map evidence-replay ${currentEvent ? "live" : "waiting"}`} aria-label="Risk evidence replay map">
-              <div className="map-grid" />
-              <svg className="map-schematic" viewBox="0 0 100 100" aria-hidden="true">
-                <path className="lane-line primary" d="M8 14H92" />
-                <path className="lane-line primary" d="M8 52H92" />
-                <path className="lane-line primary" d="M8 90H92" />
-                <path className="lane-line" d="M9 10V94" />
-                <path className="lane-line" d="M50 10V94" />
-                <path className="lane-line" d="M91 10V94" />
-                <path className="lane-center" d="M8 14H92M8 52H92M8 90H92" />
-                <circle className="lane-node" cx="9" cy="52" r="1.5" />
-                <circle className="lane-node" cx="50" cy="52" r="1.5" />
-                <circle className="lane-node" cx="91" cy="52" r="1.5" />
-              </svg>
-              {MAP_ZONES.map((zone) => {
-                const zoneRisk = zoneRiskCards.find((item) => item.zone.zone_id === zone.zoneId);
-                return (
-                  <div
-                    className={`map-zone ${zone.className} ${zoneRisk ? `baseline-${zoneRisk.className}` : ""} ${zone.zoneId === currentEvent?.zone_id ? "current evidence-zone" : ""}`}
-                    key={zone.zoneId}
-                    style={{
-                      left: `${zone.bounds.x}%`,
-                      top: `${zone.bounds.y}%`,
-                      width: `${zone.bounds.width}%`,
-                      height: `${zone.bounds.height}%`
-                    }}
-                  >
-                    <span>{zone.name}</span>
-                    {!currentEvent && zoneRisk ? (
-                      <div className="zone-risk-overlay">
-                        <strong>{zoneRisk.level}</strong>
-                        <small>{zoneRisk.zone.zone_historical_risk.toFixed(2)} baseline</small>
-                        <div>
-                          {zoneRisk.flags.slice(0, 3).map((flag) => (
-                            <em key={flag}>{flag}</em>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
-              {evidenceEvents.slice(0, -1).map((event, index) => {
-                const nextEvent = evidenceEvents[index + 1];
-                if (!event.position || !nextEvent?.position) return null;
-                const left = Math.min(event.position.x, nextEvent.position.x);
-                const top = Math.min(event.position.y, nextEvent.position.y);
-                const width = Math.max(Math.abs(nextEvent.position.x - event.position.x), 1);
-                const height = Math.max(Math.abs(nextEvent.position.y - event.position.y), 1);
-                return (
-                  <div
-                    className={`evidence-segment ${eventSeverityClass(nextEvent)}`}
-                    key={`${event.event_id}-${nextEvent.event_id}`}
-                    style={{
-                      left: `${left}%`,
-                      top: `${top}%`,
-                      width: `${width}%`,
-                      height: `${height}%`
-                    }}
-                  />
-                );
-              })}
-              {evidenceEvents.map((event) =>
-                event.position ? (
-                  <div
-                    className={`evidence-point ${eventSeverityClass(event)} ${event.event_id === currentEvent?.event_id ? "trigger" : ""}`}
-                    key={eventKey(event)}
-                    style={{
-                      left: `${event.position.x}%`,
-                      top: `${event.position.y}%`
-                    }}
-                    title={`${event.vehicle_id} ${formatEventLabel(event.event_type)}`}
-                  >
-                    <span>{formatEventLabel(event.event_type)}</span>
-                  </div>
-                ) : null
-              )}
-              {latestAssessment ? (
-                <div
-                  className={`risk-horizon ${bandClass(latestAssessment.risk_band)}`}
-                  style={{
-                    left: `${vehiclePosition.x}%`,
-                    top: `${vehiclePosition.y}%`,
-                    transform: `translate(-50%, -50%) rotate(${vehicleHeading}deg) scale(${0.8 + latestAssessment.safety_incident_risk_score * 0.55})`
-                  }}
-                />
-              ) : null}
-              {currentEvent ? (
-                <>
-                  <div
-                    className={`gps-accuracy ${currentEvent.gps_freshness}`}
-                    style={{
-                      left: `${vehiclePosition.x}%`,
-                      top: `${vehiclePosition.y}%`,
-                      width: `${Math.max(34, accuracy * 2.1)}px`,
-                      height: `${Math.max(34, accuracy * 2.1)}px`
-                    }}
-                  />
-                  <button
-                    className={`vehicle-marker evidence-trigger ${bandClass(latestAssessment?.risk_band)} ${currentEvent.event_type}`}
-                    style={{
-                      left: `${vehiclePosition.x}%`,
-                      top: `${vehiclePosition.y}%`
-                    }}
-                    type="button"
-                    title={`Open ${currentEvent.vehicle_id} telemetry`}
-                    onClick={() =>
-                      setSelectedMapVehicle((value) => (value === currentEvent.vehicle_id ? null : currentEvent.vehicle_id))
-                    }
-                  >
-                    <span className="vehicle-heading" style={{ transform: `rotate(${vehicleHeading}deg)` }}>
-                      <span className="topdown-truck active">
-                        <span className="truck-cab" />
-                        <span className="truck-trailer" />
-                      </span>
-                    </span>
-                    <span className="vehicle-label">{currentEvent.vehicle_id}</span>
-                    <span className="trigger-label">{formatEventLabel(currentEvent.event_type)}</span>
-                  </button>
-                </>
-              ) : (
-                <div className="map-empty">Zone baseline risk is shown until a replay event is assessed.</div>
-              )}
-              {currentEvent ? (
-                <div className="context-chip-row">
-                  {contextChips.map((chip) => (
-                    <span className={`context-chip ${chip.tone}`} key={chip.label}>
-                      {chip.label}
-                    </span>
-                  ))}
+            <div className="live-monitor" aria-label="Live zone telemetry monitor">
+              <div className="live-monitor-header">
+                <div>
+                  <strong>{isIdleMonitoring ? "No active intervention" : "Scenario telemetry joined to live context"}</strong>
+                  <p className="small muted">
+                    {isIdleMonitoring
+                      ? "Zone risk is recalculated from the looping live telemetry stream."
+                      : "Live zone conditions remain visible while the scenario evidence is assessed."}
+                  </p>
                 </div>
-              ) : null}
-              {showVehicleDetails ? (
-                <div className="map-popover">
-                  <div className="tool-row">
-                    <strong>{currentEvent?.vehicle_id}</strong>
-                    <span className={`badge ${bandClass(latestAssessment?.risk_band)}`}>{latestAssessment?.risk_band ?? "Monitoring"}</span>
-                  </div>
-                  <p className="small muted">{currentZone?.zone_name ?? "Zone context unavailable"}</p>
-                  <div className="map-popover-grid">
-                    <span>
-                      <Gauge size={13} /> {currentEvent?.speed}/{currentEvent?.speed_limit} km/h
-                    </span>
-                    <span>
-                      <MapPin size={13} /> {currentEvent?.gps_freshness}
-                    </span>
-                    <span>Over limit {state?.latestFeatures?.speed_over_limit ?? 0} km/h</span>
-                    <span>{behaviorEvidence.abnormalEvents.length} abnormal events</span>
-                  </div>
-                  {latestAssessment?.top_risk_reasons.length ? (
-                    <ul className="popover-reasons">
-                      {latestAssessment.top_risk_reasons.slice(0, 3).map((reason) => (
-                        <li key={reason}>{reason}</li>
+                <span className={`live-dot ${isPlaying ? "active" : ""}`} />
+              </div>
+              <div className="zone-risk-board">
+                {zoneRiskCards.map((card) => (
+                  <article
+                    className={`zone-live-card ${card.className} ${card.zone.zone_id === currentEvent?.zone_id ? "current" : ""}`}
+                    key={card.zone.zone_id}
+                  >
+                    <div className="zone-live-top">
+                      <div>
+                        <strong>{card.zone.zone_name}</strong>
+                        <p className="small muted">{card.zone.zone_id}</p>
+                      </div>
+                      <span className={`badge ${card.className}`}>{card.level}</span>
+                    </div>
+                    <div className="risk-meter" aria-hidden="true">
+                      <span style={{ width: riskPercent(card.live?.live_risk ?? card.zone.zone_historical_risk) }} />
+                    </div>
+                    <div className="zone-live-grid">
+                      <span>
+                        Risk <strong>{(card.live?.live_risk ?? card.zone.zone_historical_risk).toFixed(2)}</strong>
+                      </span>
+                      <span>
+                        PMs <strong>{card.live?.active_prime_movers ?? "--"}</strong>
+                      </span>
+                      <span>
+                        Avg <strong>{card.live ? `${card.live.avg_speed} km/h` : "--"}</strong>
+                      </span>
+                      <span>
+                        Compliance <strong>{card.live ? riskPercent(card.live.speed_compliance) : "--"}</strong>
+                      </span>
+                      <span>
+                        GPS delayed/stale{" "}
+                        <strong>{card.live ? `${card.live.delayed_gps_count}/${card.live.stale_gps_count}` : "--"}</strong>
+                      </span>
+                      <span>
+                        Pressure <strong>{card.live ? riskPercent(card.live.traffic_pressure) : "--"}</strong>
+                      </span>
+                    </div>
+                    <div className="zone-flag-row">
+                      {card.flags.slice(0, 4).map((flag) => (
+                        <em key={flag}>{flag}</em>
+                      ))}
+                    </div>
+                    <ul className="prime-mover-list">
+                      {(card.live?.prime_movers ?? []).slice(0, 3).map((mover) => (
+                        <li className={mover.state.replaceAll(" ", "-")} key={mover.vehicle_id}>
+                          <span>{mover.vehicle_id}</span>
+                          <strong>
+                            {mover.speed}/{mover.speed_limit}
+                          </strong>
+                          <small>{mover.state}</small>
+                        </li>
                       ))}
                     </ul>
-                  ) : null}
-                  <p className="small">{selectedCase?.recommended_action ?? "Collecting telemetry."}</p>
+                  </article>
+                ))}
+              </div>
+              <div className="evidence-timeline-panel">
+                <div className="tool-row">
+                  <strong>{latestAssessment ? "Intervention Evidence Timeline" : "Monitoring Feed"}</strong>
+                  <span className="badge neutral">
+                    {latestAssessment ? latestAssessment.risk_band : `${liveSamples.length || 0} loop samples`}
+                  </span>
                 </div>
-              ) : null}
+                {!latestAssessment ? (
+                  <ul className="monitor-feed">
+                    {zoneRiskCards.slice(0, 4).map((card) => (
+                      <li key={card.zone.zone_id}>
+                        <span className="trace-time">{timeLabel(card.live?.updated_at ?? liveSample?.timestamp)}</span>
+                        <p>
+                          {card.zone.zone_id}: {card.live?.active_prime_movers ?? 0} Prime Movers, live risk{" "}
+                          {(card.live?.live_risk ?? card.zone.zone_historical_risk).toFixed(2)}, compliance{" "}
+                          {card.live ? riskPercent(card.live.speed_compliance) : "--"}.
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <ul className="intervention-timeline">
+                    {evidenceEvents.map((event) => (
+                      <li className={eventSeverityClass(event)} key={event.event_id}>
+                        <span className="trace-time">{timeLabel(event.timestamp)}</span>
+                        <p>
+                          <strong>{formatEventLabel(event.event_type)}</strong> for {event.vehicle_id} in {event.zone_id}:{" "}
+                          {event.speed}/{event.speed_limit} km/h, GPS {event.gps_freshness}.
+                        </p>
+                      </li>
+                    ))}
+                    {interventionEvidence.map((trace) => (
+                      <li key={trace.trace_id}>
+                        <span className="trace-time">{timeLabel(trace.timestamp)}</span>
+                        <p>{trace.message}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
             <div className="grid-two">
               <div className="metric">
