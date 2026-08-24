@@ -63,6 +63,7 @@ function timeLabel(timestamp?: string | null) {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
+    timeZone: "Asia/Singapore",
     hour12: false
   }).format(new Date(timestamp));
 }
@@ -261,7 +262,6 @@ export function NearGuardDashboard() {
   const currentEvent = state?.currentEvent ?? null;
   const currentZone = state?.currentZone ?? null;
   const liveSample = liveSamples[liveSampleIndex] ?? null;
-  const isIdleMonitoring = !currentEvent && !latestAssessment;
   const evidenceEvents = useMemo(() => {
     if (!state?.currentEvent) return [];
     const currentTime = new Date(state.currentEvent.timestamp).getTime();
@@ -289,11 +289,17 @@ export function NearGuardDashboard() {
       }),
     [liveSample?.zones, zones]
   );
-  const actionExplanation = useMemo(
-    () => explainAction(selectedCase, latestAssessment, state?.pendingApprovals.find((approval) => approval.status === "pending") ?? null),
-    [latestAssessment, selectedCase, state?.pendingApprovals]
-  );
   const pendingApproval = state?.pendingApprovals.find((approval) => approval.status === "pending") ?? null;
+  const hasIntervention = Boolean(
+    pendingApproval ||
+      state?.toolCalls.length ||
+      (latestAssessment && latestAssessment.risk_band !== "Low") ||
+      (currentEvent && ABNORMAL_EVENTS.includes(currentEvent.event_type))
+  );
+  const actionExplanation = useMemo(
+    () => explainAction(selectedCase, latestAssessment, pendingApproval),
+    [latestAssessment, pendingApproval, selectedCase]
+  );
   const safetyCase = state?.safetyCases.at(-1) ?? null;
   const recentTraceEvents = state?.traceEvents.slice(-5) ?? [];
   const interventionEvidence = useMemo(
@@ -392,27 +398,27 @@ export function NearGuardDashboard() {
             <h2>{state?.selectedScenario.name ?? "Scenario"}</h2>
             <span className={`badge ${bandClass(latestAssessment?.risk_band)}`}>
               <ShieldAlert size={14} />
-              {latestAssessment?.risk_band ?? "Not started"}
+              {hasIntervention ? (latestAssessment?.risk_band ?? "Review") : "Monitoring"}
             </span>
           </div>
           <div className="panel-body">
             <p className="muted">{state?.selectedScenario.description}</p>
-            <div className="evidence-map-heading">
+            <div className="evidence-heading">
               <div>
-                <h3>{latestAssessment ? "Intervention Evidence" : "Live Zone Monitoring"}</h3>
+                <h3>{hasIntervention ? "Intervention Evidence" : "Live Zone Monitoring"}</h3>
                 <p className="small muted">
-                  {latestAssessment
+                  {hasIntervention
                     ? "Chronological evidence used by policy and tools for the current intervention."
                     : "Continuous synthetic telemetry stream with zone context joined for live risk estimates."}
                 </p>
               </div>
               <span className="badge neutral">
                 <Layers size={13} />
-                {latestAssessment ? `${interventionEvidence.length} evidence steps` : "live stream"}
+                {hasIntervention ? `${interventionEvidence.length} evidence steps` : "live stream"}
               </span>
             </div>
             <div className="replay-status-strip">
-              <span>{latestAssessment ? "Intervention Review" : "Idle Monitoring"}</span>
+              <span>{hasIntervention ? "Intervention Review" : "Live Monitoring"}</span>
               <span>{progress}</span>
               <span>{warmupRemaining > 0 ? "Warm-up telemetry" : formatEventLabel(currentEvent?.event_type)}</span>
               <span>{liveSample ? `Live ${timeLabel(liveSample.timestamp)}` : "Loading live stream"}</span>
@@ -420,11 +426,11 @@ export function NearGuardDashboard() {
             <div className="live-monitor" aria-label="Live zone telemetry monitor">
               <div className="live-monitor-header">
                 <div>
-                  <strong>{isIdleMonitoring ? "No active intervention" : "Scenario telemetry joined to live context"}</strong>
+                  <strong>{hasIntervention ? "Scenario evidence crossed intervention policy" : "No active intervention"}</strong>
                   <p className="small muted">
-                    {isIdleMonitoring
-                      ? "Zone risk is recalculated from the looping live telemetry stream."
-                      : "Live zone conditions remain visible while the scenario evidence is assessed."}
+                    {hasIntervention
+                      ? "Live zone conditions remain visible while the scenario evidence is assessed."
+                      : "Zone risk is recalculated from the looping live telemetry stream."}
                   </p>
                 </div>
                 <span className={`live-dot ${isPlaying ? "active" : ""}`} />
@@ -487,12 +493,12 @@ export function NearGuardDashboard() {
               </div>
               <div className="evidence-timeline-panel">
                 <div className="tool-row">
-                  <strong>{latestAssessment ? "Intervention Evidence Timeline" : "Monitoring Feed"}</strong>
+                  <strong>{hasIntervention ? "Intervention Evidence Timeline" : "Monitoring Feed"}</strong>
                   <span className="badge neutral">
-                    {latestAssessment ? latestAssessment.risk_band : `${liveSamples.length || 0} loop samples`}
+                    {hasIntervention ? (latestAssessment?.risk_band ?? "Review") : `${liveSamples.length || 0} loop samples`}
                   </span>
                 </div>
-                {!latestAssessment ? (
+                {!hasIntervention ? (
                   <ul className="monitor-feed">
                     {zoneRiskCards.slice(0, 4).map((card) => (
                       <li key={card.zone.zone_id}>
