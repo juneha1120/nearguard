@@ -434,7 +434,7 @@ button:disabled {
 
 .prime-mover-list li {
   display: grid;
-  grid-template-columns: 58px 52px minmax(0, 1fr);
+  grid-template-columns: 58px 70px minmax(0, 1fr);
   align-items: center;
   gap: 8px;
   border: 1px solid var(--line);

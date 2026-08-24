@@ -481,10 +481,8 @@ export function NearGuardDashboard() {
                       {(card.live?.prime_movers ?? []).slice(0, 3).map((mover) => (
                         <li className={mover.state.replaceAll(" ", "-")} key={mover.vehicle_id}>
                           <span>{mover.vehicle_id}</span>
-                          <strong>
-                            {mover.speed}/{mover.speed_limit}
-                          </strong>
-                          <small>{mover.state}</small>
+                          <strong>{mover.speed} km/h</strong>
+                          <small>limit {mover.speed_limit} km/h · {mover.state}</small>
                         </li>
                       ))}
                     </ul>
