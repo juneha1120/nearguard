@@ -386,12 +386,18 @@ export function NearGuardDashboard() {
             </div>
             <div className={`prime-map evidence-replay ${currentEvent ? "live" : "waiting"}`} aria-label="Risk evidence replay map">
               <div className="map-grid" />
-              <div className="map-route route-top" />
-              <div className="map-route route-middle" />
-              <div className="map-route route-bottom" />
-              <div className="map-route route-left" />
-              <div className="map-route route-center" />
-              <div className="map-route route-right" />
+              <svg className="map-schematic" viewBox="0 0 100 100" aria-hidden="true">
+                <path className="lane-line primary" d="M8 14H92" />
+                <path className="lane-line primary" d="M8 52H92" />
+                <path className="lane-line primary" d="M8 90H92" />
+                <path className="lane-line" d="M9 10V94" />
+                <path className="lane-line" d="M50 10V94" />
+                <path className="lane-line" d="M91 10V94" />
+                <path className="lane-center" d="M8 14H92M8 52H92M8 90H92" />
+                <circle className="lane-node" cx="9" cy="52" r="1.5" />
+                <circle className="lane-node" cx="50" cy="52" r="1.5" />
+                <circle className="lane-node" cx="91" cy="52" r="1.5" />
+              </svg>
               {MAP_ZONES.map((zone) => {
                 const zoneRisk = zoneRiskCards.find((item) => item.zone.zone_id === zone.zoneId);
                 return (
@@ -540,14 +546,12 @@ export function NearGuardDashboard() {
             </div>
             <div className="grid-two">
               <div className="metric">
-                <p className="metric-label">Synthetic Near-Miss Risk</p>
+                <p className="metric-label">Near-Miss Risk</p>
                 <p className="metric-value">{latestAssessment ? latestAssessment.safety_incident_risk_score.toFixed(2) : "--"}</p>
               </div>
               <div className="metric">
-                <p className="metric-label">Horizon / Evidence</p>
-                <p className="metric-value">
-                  {latestAssessment ? `${latestAssessment.prediction_horizon} / ${latestAssessment.evidence_authority}` : "--"}
-                </p>
+                <p className="metric-label">Prediction Horizon</p>
+                <p className="metric-value">{latestAssessment?.prediction_horizon ?? "--"}</p>
               </div>
               <div className="metric">
                 <p className="metric-label">Confidence</p>
@@ -580,6 +584,26 @@ export function NearGuardDashboard() {
               <div className="kv">
                 <span>GPS</span>
                 <strong>{state?.currentEvent?.gps_freshness ?? "--"}</strong>
+              </div>
+              <div className="kv">
+                <span>Weather</span>
+                <strong>{state?.currentZone?.weather ?? state?.latestFeatures?.weather ?? "--"}</strong>
+              </div>
+              <div className="kv">
+                <span>GPS Accuracy</span>
+                <strong>{state?.currentEvent?.accuracy_m ? `${state.currentEvent.accuracy_m} m` : "--"}</strong>
+              </div>
+              <div className="kv">
+                <span>Restriction</span>
+                <strong>{state?.currentZone?.restriction_level ?? state?.latestFeatures?.restriction_level ?? "--"}</strong>
+              </div>
+              <div className="kv">
+                <span>Pedestrian Exposure</span>
+                <strong>{state?.currentZone?.pedestrian_exposure ?? state?.latestFeatures?.pedestrian_exposure ?? "--"}</strong>
+              </div>
+              <div className="kv">
+                <span>Zone Baseline</span>
+                <strong>{state?.currentZone ? state.currentZone.zone_historical_risk.toFixed(2) : "--"}</strong>
               </div>
             </div>
 

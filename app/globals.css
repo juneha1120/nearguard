@@ -1,17 +1,17 @@
 :root {
   color-scheme: light;
-  --bg: #f6f7f3;
+  --bg: #f3f5f2;
   --panel: #ffffff;
-  --panel-soft: #eef3ef;
-  --ink: #18201d;
-  --muted: #62706a;
-  --line: #d8ded7;
+  --panel-soft: #f5f7f5;
+  --ink: #17211d;
+  --muted: #5f6b66;
+  --line: #dfe4df;
   --green: #226b4a;
   --teal: #0f766e;
   --amber: #a55b12;
   --red: #b42318;
   --blue: #2457a6;
-  --shadow: 0 16px 40px rgba(30, 45, 38, 0.12);
+  --shadow: 0 1px 2px rgba(30, 45, 38, 0.05);
 }
 
 * {
@@ -54,10 +54,9 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 18px 24px;
+  padding: 14px 20px;
   border-bottom: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.84);
-  backdrop-filter: blur(14px);
+  background: #ffffff;
   position: sticky;
   top: 0;
   z-index: 5;
@@ -71,10 +70,10 @@ button:disabled {
 }
 
 .brand-mark {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--green), var(--teal));
+  background: var(--green);
   color: white;
   display: grid;
   place-items: center;
@@ -83,7 +82,7 @@ button:disabled {
 
 .brand h1 {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1.1;
 }
 
@@ -134,7 +133,7 @@ button:disabled {
 .dashboard {
   width: min(1680px, 100%);
   margin: 0 auto;
-  padding: 18px;
+  padding: 14px;
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr) 380px;
   gap: 14px;
@@ -149,7 +148,7 @@ button:disabled {
 }
 
 .panel-header {
-  padding: 14px 16px;
+  padding: 11px 14px;
   border-bottom: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
@@ -164,7 +163,7 @@ button:disabled {
 }
 
 .panel-body {
-  padding: 14px 16px;
+  padding: 12px 14px;
 }
 
 .case-card {
@@ -201,8 +200,8 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border-radius: 999px;
-  padding: 4px 9px;
+  border-radius: 6px;
+  padding: 3px 7px;
   font-size: 12px;
   font-weight: 700;
   border: 1px solid transparent;
@@ -283,9 +282,7 @@ button:disabled {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background:
-    linear-gradient(90deg, rgba(36, 87, 166, 0.08), transparent 22%, transparent 78%, rgba(34, 107, 74, 0.1)),
-    #f7faf7;
+  background: #f7f9f7;
 }
 
 .prime-map.waiting {
@@ -300,68 +297,50 @@ button:disabled {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(98, 112, 106, 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(98, 112, 106, 0.12) 1px, transparent 1px);
+    linear-gradient(rgba(98, 112, 106, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(98, 112, 106, 0.08) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
-.map-route {
+.map-schematic {
   position: absolute;
-  border-radius: 4px;
-  background:
-    linear-gradient(90deg, transparent 49%, rgba(255, 255, 255, 0.62) 49%, rgba(255, 255, 255, 0.62) 51%, transparent 51%),
-    rgba(70, 84, 102, 0.24);
-  box-shadow: inset 0 0 0 1px rgba(70, 84, 102, 0.1);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
 }
 
-.route-top,
-.route-middle,
-.route-bottom {
-  left: 9%;
-  width: 82%;
-  height: 14px;
+.lane-line {
+  fill: none;
+  stroke: rgba(70, 84, 102, 0.38);
+  stroke-width: 0.8;
+  stroke-linecap: square;
 }
 
-.route-top {
-  top: 14%;
+.lane-line.primary {
+  stroke-width: 1.1;
 }
 
-.route-middle {
-  top: 52%;
+.lane-center {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.78);
+  stroke-width: 0.35;
+  stroke-dasharray: 2 2;
 }
 
-.route-bottom {
-  top: 90%;
-}
-
-.route-left,
-.route-center,
-.route-right {
-  top: 10%;
-  width: 14px;
-  height: 84%;
-  background:
-    linear-gradient(0deg, transparent 49%, rgba(255, 255, 255, 0.62) 49%, rgba(255, 255, 255, 0.62) 51%, transparent 51%),
-    rgba(70, 84, 102, 0.24);
-}
-
-.route-left {
-  left: 9%;
-}
-
-.route-center {
-  left: 49%;
-}
-
-.route-right {
-  left: 90%;
+.lane-node {
+  fill: #ffffff;
+  stroke: rgba(70, 84, 102, 0.4);
+  stroke-width: 0.45;
 }
 
 .map-zone {
   position: absolute;
-  border: 1px solid rgba(98, 112, 106, 0.34);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.46);
+  z-index: 2;
+  border: 1px solid rgba(98, 112, 106, 0.32);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.5);
   transition:
     border-color 180ms ease,
     background 180ms ease,
@@ -372,28 +351,28 @@ button:disabled {
   position: absolute;
   left: 8px;
   top: 7px;
-  padding: 3px 6px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.82);
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.88);
   color: var(--ink);
   font-size: 11px;
   font-weight: 800;
 }
 
 .map-zone.caution {
-  background: rgba(255, 243, 214, 0.62);
+  background: rgba(255, 243, 214, 0.46);
 }
 
 .map-zone.slow {
-  background: rgba(233, 245, 234, 0.7);
+  background: rgba(233, 245, 234, 0.56);
 }
 
 .map-zone.wharf {
-  background: rgba(226, 240, 255, 0.72);
+  background: rgba(226, 240, 255, 0.56);
 }
 
 .map-zone.restricted {
-  background: rgba(255, 232, 217, 0.68);
+  background: rgba(255, 232, 217, 0.54);
 }
 
 .map-zone.current {
@@ -421,9 +400,9 @@ button:disabled {
   right: 8px;
   bottom: 8px;
   border: 1px solid rgba(216, 222, 215, 0.8);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.82);
-  padding: 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.88);
+  padding: 7px;
 }
 
 .zone-risk-overlay strong,
@@ -896,8 +875,8 @@ button:disabled {
 .metric {
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 12px;
-  min-height: 86px;
+  padding: 10px;
+  min-height: 72px;
   background: #fbfcfa;
 }
 
@@ -909,12 +888,12 @@ button:disabled {
 
 .metric-value {
   margin: 0;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
 }
 
 .section-title {
-  margin: 18px 0 10px;
+  margin: 14px 0 8px;
   font-size: 13px;
   color: var(--muted);
   text-transform: uppercase;
@@ -929,7 +908,7 @@ button:disabled {
 .kv {
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 9px;
+  padding: 8px;
   background: #fbfcfa;
 }
 
