@@ -63,7 +63,7 @@ Recommended first demo:
 PM-27 Persistent High Risk
 ```
 
-This demonstrates speeding, harsh braking, supervisor notification timeout, fallback notification, persistent high risk, human approval and safety case creation.
+This demonstrates compound rolling telemetry risk, harsh braking, a sharp turn, supervisor notification timeout, fallback notification, persistent high risk, human approval and safety case creation.
 
 ## Docs
 

@@ -26,6 +26,7 @@ export function deriveFeatures(
   const speedingEvents = allWindowEvents.filter((item) => item.speed > item.speed_limit).length;
   const alertEvents = allWindowEvents.filter((item) => ["speeding", "harsh_brake", "sharp_turn", "stale_gps", "risk_persistent"].includes(item.event_type)).length;
   const hasPriorIntervention = vehicleCase?.status === "monitoring" || vehicleCase?.status === "pending_approval" || vehicleCase?.status === "escalated";
+  const unstableAfterIntervention = ["speeding", "harsh_brake", "sharp_turn", "risk_persistent"].includes(event.event_type);
   const weatherIndex = { clear: 0, rain: 0.5, heavy_rain: 1 }[zone.weather];
   const trafficIndex = { low: 0, medium: 0.5, high: 1 }[zone.traffic_level];
   const restrictionIndex = { normal: 0, caution: 0.35, restricted: 0.7, wharf: 1 }[zone.restriction_level];
@@ -68,7 +69,7 @@ export function deriveFeatures(
     shift_hours: 4.2,
     night_flag: false,
     time_since_last_intervention: hasPriorIntervention ? 3 : 999,
-    post_intervention_noncompliance: Boolean(hasPriorIntervention && speedOverLimit > 0),
+    post_intervention_noncompliance: Boolean(hasPriorIntervention && unstableAfterIntervention),
     traffic_weather_compound_index: Number(((trafficIndex + weatherIndex) / 2).toFixed(2)),
     zone_transition_risk: Number(restrictionIndex.toFixed(2)),
     previous_risk: previousRisk,
