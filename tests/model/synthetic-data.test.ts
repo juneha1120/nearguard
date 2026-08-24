@@ -71,8 +71,8 @@ describe("synthetic horizon dataset", () => {
   });
 
   it("provides dense one-second telemetry for scenario primary vehicles", () => {
-    const payload = JSON.parse(readFileSync("data/scenario_telemetry.json", "utf8"));
-    const pm27 = payload.scenarios["pm27-persistent-high-risk"];
+    const payload = JSON.parse(readFileSync("data/scenario_telemetry/pm27-persistent-high-risk.json", "utf8"));
+    const pm27 = payload.samples;
     const betweenAnchors = pm27.filter(
       (sample: any) =>
         new Date(sample.timestamp).getTime() > new Date("2026-08-19T09:14:42+08:00").getTime() &&
