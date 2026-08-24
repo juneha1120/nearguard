@@ -569,11 +569,11 @@
         "risk_trend": "decreasing"
       },
       "assessment": {
-        "synthetic_near_miss_risk_score": 0.99,
-        "safety_incident_risk_score": 0.99,
+        "synthetic_near_miss_risk_score": 0.36,
+        "safety_incident_risk_score": 0.36,
         "prediction_horizon": "15m",
         "evidence_authority": "SYNTHETIC_DATA",
-        "risk_band": "Critical / Low Confidence",
+        "risk_band": "Low",
         "confidence": "high",
         "uncertainty_reason": null,
         "top_risk_reasons": [

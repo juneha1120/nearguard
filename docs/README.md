@@ -7,7 +7,7 @@ NearGuard is a hackathon MVP for PSA Code Sprint 2.0: an agentic AI safety syste
 1. `product_context.md` - problem framing, product concept, users, public-context boundaries and non-goals.
 2. `implementation_plan.md` - concrete build plan, repo layout, artifact contracts, APIs, tests and build order.
 3. `design.md` - system architecture, agentic safety loop, tool design and safety boundaries.
-4. `ai_and_data.md` - synthetic data, scenarios, ML model methodology, features, labels, confidence and explanations.
+4. `ai_and_data.md` - synthetic data, field provenance, scenarios, ML model methodology, features, labels, confidence and explanations.
 5. `SAFETY.md` - hard safety boundaries, evidence authority, prototype assumptions and production validation gate.
 6. `demo_plan.md` - demo flow, required screens, scripted trace and slide outline.
 
@@ -25,7 +25,7 @@ NearGuard is designed to satisfy the Code Sprint expectation that an agentic AI 
 ## Source-Of-Truth Boundaries
 
 - Use `implementation_plan.md` for implementation decisions.
-- Use `ai_and_data.md` for synthetic scenarios, risk features and AI model methodology.
+- Use `ai_and_data.md` for synthetic scenarios, data provenance, risk features and AI model methodology.
 - Use `design.md` for architecture and safety-policy boundaries.
 - Use `SAFETY.md` for prototype safety boundaries and production validation requirements.
 - Use `demo_plan.md` for presentation and judging flow.

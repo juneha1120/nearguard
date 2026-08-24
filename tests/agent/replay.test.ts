@@ -63,6 +63,9 @@ describe("agent replay", () => {
       .filter((trace) => trace.event_type === "risk_assessed")
       .map((trace) => JSON.stringify(trace.metadata));
     expect(traceReasons.join(" ")).toMatch(/Pedestrian exposure is high/);
+    expect(state.latestRiskAssessment?.confidence).toBe("high");
+    expect(state.latestRiskAssessment?.risk_band).toBe("Low");
+    expect(state.latestRiskAssessment?.top_risk_reasons.join(" ")).toMatch(/Speed normalized/);
   });
 
   it("handles telemetry uncertainty with low confidence and human review", () => {

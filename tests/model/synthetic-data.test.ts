@@ -46,10 +46,15 @@ describe("synthetic horizon dataset", () => {
     );
     const persistentRisk = byEvent.get("pm27-005");
     const stabilizedRisk = byEvent.get("ppt-003");
+    const wharfExposureRisk = byEvent.get("wharf-002");
+    const wharfStabilizedRisk = byEvent.get("wharf-003");
 
     expect(persistentRisk).toBeDefined();
     expect(stabilizedRisk).toBeDefined();
+    expect(wharfExposureRisk).toBeDefined();
+    expect(wharfStabilizedRisk).toBeDefined();
     expect(persistentRisk!).toBeGreaterThan(stabilizedRisk!);
+    expect(wharfExposureRisk!).toBeGreaterThan(wharfStabilizedRisk!);
   });
 
   it("frames the primary demo as compound telemetry risk instead of a speeding-only alert", () => {

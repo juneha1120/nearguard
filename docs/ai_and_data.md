@@ -40,7 +40,18 @@ synthetic near-miss risk evidence within next 15 minutes
 
 It must not be described as a PSA production probability or accident probability.
 
-## Core Inputs
+## Data Provenance And Core Inputs
+
+The MVP is synthetic, but each field still has a defined role. This avoids mixing measured telemetry, static priors, derived features and model output.
+
+| Class | Meaning | MVP Source | Future Source | Cadence |
+| --- | --- | --- | --- | --- |
+| Static registry | Slowly changing zone metadata and priors. | `data/zones.json` | Approved master data, yard map registry or safety configuration. | Controlled release. |
+| Dynamic zone telemetry | Current zone operating state for dashboard zone cards. | `data/live_zone_telemetry.json`, `data/scenario_zone_telemetry/{scenario}.json` | Weather, yard traffic, access control, telemetry aggregation, approved pedestrian-density source. | Seconds to minutes. |
+| Vehicle telemetry | Prime Mover movement and data quality. | `data/scenarios.json`, `data/scenario_telemetry/{scenario}.json` | Telematics, GPS/RTLS, vehicle system events. | Seconds. |
+| Derived features | Rolling windows and engineered context. | `scripts/train_model.py`, `lib/model/features.ts` | Feature service using approved window definitions. | Per evaluation snapshot. |
+| Labels | Future outcome used for training. | Synthetic latent process in generated CSV. | Safety-reviewed incident or near-miss labels plus matched normal windows. | Batch dataset rebuild. |
+| Model output | Per-PM risk evidence. | `models/scenario_predictions.json` and `.joblib` artifact. | Versioned approved model service or artifact. | Per event/snapshot. |
 
 `VehicleEvent` remains the sparse decision-evidence replay input:
 
@@ -50,12 +61,26 @@ It must not be described as a PSA production probability or accident probability
 | `event_type` | `normal_update`, `speeding`, `harsh_brake`, `sharp_turn`, `stale_gps`, `speed_normalized`, `risk_persistent`. |
 | `speed`, `speed_limit`, `gps_freshness` | Primary telemetry and confidence signals. |
 
-`ZoneContext` provides static synthetic operating context:
+`ZoneContext` provides registry defaults and a static synthetic prior:
 
 | Field | Notes |
 | --- | --- |
-| `traffic_level`, `weather`, `zone_historical_risk` | Contextual risk modifiers. |
-| `restriction_level`, `slow_down_zone_active`, `pedestrian_exposure` | Public-PSA-inspired context and prototype assumptions. |
+| `zone_historical_risk` | Static synthetic zone prior in the MVP. It is an input feature, not a model output and not updated by the live stream. |
+| `traffic_level`, `weather`, `restriction_level`, `slow_down_zone_active`, `pedestrian_exposure` | MVP defaults. In production these are dynamic operating-context fields when live sources are available. |
+
+Current `zone_historical_risk` values are hand-authored assumptions: `YARD-C4 = 0.72`, `PPT-LINK-25 = 0.60`, `WHARF-C4 = 0.78`, `YARD-U2 = 0.66`. They represent a synthetic prior for demo differentiation. In production, this value should be calculated offline from reviewed historical evidence, for example:
+
+```text
+zone_historical_risk =
+  0.35 * reviewed_near_miss_rate
++ 0.20 * reviewed_incident_rate
++ 0.15 * harsh_brake_or_sharp_turn_rate
++ 0.10 * speeding_or_noncompliance_rate
++ 0.10 * pedestrian_exposure_index
++ 0.10 * traffic_complexity_index
+```
+
+The exact weights would need safety-owner approval, backtesting and calibration. Until then, the MVP must describe `zone_historical_risk` as a synthetic static prior.
 
 The dashboard uses four checked-in demo data layers:
 
@@ -67,6 +92,27 @@ The dashboard uses four checked-in demo data layers:
 | Scenario zone stream | `data/scenario_zone_telemetry/{scenario}.json` | Dense 1-second dynamic zone risk/context telemetry aligned to the selected scenario. |
 
 Dense scenario telemetry is presentation/demo input. It makes the dashboard feel continuous, but only sparse decision anchors are traced as risk evidence and policy/tool events.
+
+Runtime risk terms are intentionally separate:
+
+| Value | Meaning |
+| --- | --- |
+| `live_risk` | Zone-level operational risk from live or scenario zone telemetry. It is not the ML model output. |
+| `eventRisk` | Heuristic PM event impact used to make a scenario zone react. |
+| `safety_incident_risk_score` | ML model output: per-PM, per-event synthetic near-miss risk evidence within the next 15 minutes. |
+| `risk_band` | Deterministic banding from model score, confidence and prior action state. |
+
+Live Monitoring reads `live_risk` directly from the looped zone telemetry stream and maps it to `Low`, `Medium` or `High`. During scenario replay, the active zone card blends zone telemetry, event impact, the latest agent/model risk score and the zone prior:
+
+```text
+scenario_zone_risk =
+  0.50 * telemetry_risk
++ 0.20 * event_risk
++ 0.20 * safety_incident_risk_score
++ 0.10 * zone_historical_risk
+```
+
+The dashboard floors this blended value at `0.85 * zone_historical_risk` and caps it at `0.96`. This blend is a UI/replay overlay, not a retrained zone model.
 
 ## Rolling Features
 
@@ -89,7 +135,7 @@ NearGuard groups model inputs into four practical safety feature layers:
 | Layer | NearGuard Features | Purpose |
 | --- | --- | --- |
 | Vehicle dynamics | `speed`, `speed_over_limit`, `speeding_ratio_5m`, `speeding_ratio_10m`, `mean_speed_5m`, `speed_std_10m`, `harsh_brake_count_10m`, `sharp_turn_count_10m` | Captures recent vehicle behaviour and instability. |
-| Operational context | `zone_historical_risk`, `traffic_level`, `weather`, `restriction_level`, `pedestrian_exposure`, `slow_down_zone_active` | Adds where and under what operating conditions the vehicle is moving. |
+| Operational context | `zone_historical_risk`, `traffic_level`, `weather`, `restriction_level`, `pedestrian_exposure`, `slow_down_zone_active` | Adds where and under what operating conditions the vehicle is moving. In the MVP model pipeline these context values come from `data/zones.json`; production should prefer latest approved dynamic context where available. |
 | Human / behaviour proxy | `shift_hours`, `night_flag`, `time_since_last_intervention`, `post_intervention_noncompliance` | Represents fatigue-like and response-to-advisory signals without using private biometrics. |
 | Engineered risk signals | `alert_density_30m`, `risk_escalation_rate`, `traffic_weather_compound_index`, `zone_transition_risk`, `previous_risk`, `risk_trend` | Summarizes temporal accumulation and compound risk. |
 

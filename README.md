@@ -39,7 +39,7 @@ The web app uses `models/scenario_predictions.json` for reliable demo replay whi
 - `data/scenarios.json` defines sparse decision evidence anchors for replay and policy/tool steps.
 - `data/scenario_telemetry/{scenario}.json` provides dense 1-second Prime Mover telemetry during a selected scenario.
 - `data/scenario_zone_telemetry/{scenario}.json` provides matching 1-second dynamic zone telemetry during a selected scenario.
-- `data/zones.json` is static zone registry/context, such as zone names, baseline risk, restrictions and pedestrian exposure.
+- `data/zones.json` is static zone registry/default context. `zone_historical_risk` is a hand-authored synthetic prior; weather, restrictions and pedestrian exposure are MVP defaults that live zone telemetry can override.
 
 ## Run The App
 

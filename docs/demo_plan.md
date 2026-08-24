@@ -61,15 +61,15 @@ The scenario is inspired by public PSA safety themes such as responsible driving
 09:14:04  Event window updated: sharp-turn and harsh-brake signals are present
 09:14:05  Zone context loaded: high traffic, rain, caution restriction
 09:14:06  Freshness check passed: gps_freshness = fresh
-09:14:07  Telemetry model returned synthetic near-miss risk within next 15m = 0.84
-09:14:08  Top reasons: rolling instability, traffic-weather compound risk, prior intervention persistence
-09:14:09  Policy decision: High risk, warn driver and notify supervisor
-09:14:09  notify_driver succeeded
-09:14:10  notify_supervisor failed: timeout
-09:14:12  Fallback supervisor notification succeeded
-09:18:30  New telemetry received for reassessment
-09:18:32  Reassessment: risk remains high at 0.79
-09:18:35  Agent requested approval for zone advisory
+09:15:26  Telemetry model returned synthetic near-miss risk within next 15m = 0.66
+09:15:27  Top reasons: rolling instability, traffic-weather compound risk, alert density and prior intervention persistence
+09:15:28  Policy decision: High risk, warn driver and notify supervisor
+09:15:28  notify_driver succeeded
+09:15:29  notify_supervisor failed: timeout
+09:15:30  Fallback supervisor notification succeeded
+09:16:05  Reassessment: risk remains persistent high at 0.77
+09:16:08  Agent requested approval for zone advisory
+09:18:30  New telemetry shows risk remains persistent at 0.79
 09:19:10  Supervisor approved advisory
 09:19:11  Safety case SC-1007 created
 ```

@@ -188,8 +188,9 @@ erDiagram
 
 | Entity | Role | Model Input? |
 | --- | --- | --- |
-| `VehicleEvent` | Primary synthetic live telemetry event input. | Yes, after validation and aggregation. |
-| `ZoneContext` | Zone-level operational and public-PSA-inspired context. | Yes, joined by `zone_id`. |
+| `VehicleEvent` | Sparse decision-evidence input for replay, risk assessment, policy and tool simulation. | Yes, after validation and aggregation. |
+| `LiveTelemetrySample` / `ScenarioZoneTelemetrySample` | Dense zone monitoring stream for dashboard visuals and zone cards. | No for the MVP model; used by the UI zone-risk display. |
+| `ZoneContext` | Static zone registry/default context. `zone_historical_risk` is a synthetic prior; weather, restrictions and pedestrian exposure are MVP defaults. | Yes, joined by `zone_id`. |
 | `VehicleCase` | Current case state managed by the agent. | Partly; previous risk and trend may be used. |
 | `RiskAssessment` | Prediction output for a specific evaluation time and future horizon. | No. |
 | `TraceEvent` | Audit trail for decisions, model outputs, tool calls, approvals and failures. | No. |
@@ -244,6 +245,8 @@ RiskAssessment
 assessment_id
 case_id
 safety_incident_risk_score
+prediction_horizon
+evidence_authority
 confidence
 uncertainty_reason
 top_risk_reasons
@@ -278,9 +281,10 @@ extraction_confidence
 | --- | --- | --- |
 | Raw telemetry | `speed`, `speed_limit`, `event_type`, `zone_id`, `gps_freshness` | Captures the latest vehicle event. |
 | Enriched context | `traffic_level`, `weather`, `zone_historical_risk`, `restriction_level`, `slow_down_zone_active`, `pedestrian_exposure` | Adds operational and zone-level context. |
-| Derived features | `speed_over_limit`, `speed_over_limit_band`, `recent_harsh_brake_count_10m`, `recent_sharp_turn_count_10m`, `previous_risk`, `risk_trend` | Converts event stream and case state into model-ready signals. |
+| Derived features | `speed_over_limit`, `speed_over_limit_band`, rolling speed ratios, rolling alert counts, `alert_density_30m`, `risk_escalation_rate`, compound context indexes, `previous_risk`, `risk_trend` | Converts event stream, context and case state into model-ready signals. |
 | Model outputs | `safety_incident_risk_score`, `confidence`, `uncertainty_reason`, `top_risk_reasons` | Prediction and explanation results. |
 | Operational fields | `recommended_action`, `pending_approval`, `tool_calls`, `trace` | Used by the agent workflow, not the MVP risk model. |
+| Dashboard zone-risk fields | `live_risk`, active PM count, speed compliance, GPS quality counts, traffic pressure | Used for zone cards and live visuals, not model training or policy authority. |
 
 ### 5.5 Field Meaning And Use
 
@@ -292,7 +296,7 @@ extraction_confidence
 | `gps_freshness` | `fresh`, `delayed`, `stale` | VehicleEvent | Model input and confidence adjustment. |
 | `traffic_level` | `low`, `medium`, `high` | ZoneContext | Model input. |
 | `weather` | `clear`, `rain`, `heavy_rain` | ZoneContext | Model input. |
-| `zone_historical_risk` | 0.0-1.0 synthetic baseline | ZoneContext | Model input. |
+| `zone_historical_risk` | 0.0-1.0 hand-authored synthetic prior | ZoneContext | Model input and dashboard fallback prior; not learned or live-updated in the MVP. |
 | `restriction_level` | `normal`, `caution`, `restricted`, `wharf` | ZoneContext | Model input and policy check. |
 | `slow_down_zone_active` | boolean | ZoneContext | Model input and policy check. |
 | `pedestrian_exposure` | `low`, `medium`, `high` | ZoneContext | Model input and risk reason. |
@@ -424,13 +428,13 @@ sequenceDiagram
     participant Safety as Safety Supervisor
     participant Trace as Trace Store
 
-    Sim->>API: PM-27 harsh brake and speeding event
+    Sim->>API: PM-27 harsh brake event
     API->>Agent: Normalized VehicleEvent
     Agent->>Trace: Log event_received
     Agent->>Agent: Collect zone context and recent history
     Agent->>Trace: Log context_enriched
     Agent->>Risk: Predict safety incident risk
-    Risk-->>Agent: 0.84, medium confidence, top reasons
+    Risk-->>Agent: 0.66, high confidence, top reasons
     Agent->>Trace: Log risk_assessed
     Agent->>Policy: Check allowed actions
     Policy-->>Agent: Driver advisory plus supervisor report
@@ -442,7 +446,7 @@ sequenceDiagram
     Agent->>Tools: fallback_notify
     Tools-->>Agent: delivered
     Agent->>Risk: Reassess after new telemetry
-    Risk-->>Agent: 0.79, persistent high
+    Risk-->>Agent: 0.77, persistent high, high confidence
     Agent->>Policy: Check stronger response authority
     Policy-->>Agent: Approval required
     Agent->>Safety: Approve zone advisory?

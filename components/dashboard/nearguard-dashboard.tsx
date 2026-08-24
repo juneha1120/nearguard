@@ -124,6 +124,16 @@ function riskScoreFromEvent(event: VehicleEvent) {
   return Math.min(0.96, eventBoost[event.event_type] + overLimit * 0.035 + gpsBoost);
 }
 
+function blendedZoneRisk(
+  telemetryRisk: number,
+  eventRisk: number,
+  modelRisk: number,
+  historicalRisk: number
+) {
+  const blendedRisk = telemetryRisk * 0.5 + eventRisk * 0.2 + modelRisk * 0.2 + historicalRisk * 0.1;
+  return Math.max(historicalRisk * 0.85, Math.min(0.96, blendedRisk));
+}
+
 function liveStateFromEvent(event: VehicleEvent): LivePrimeMoverSnapshot["state"] {
   if (event.event_type === "speeding") return "speeding";
   if (event.event_type === "harsh_brake") return "harsh brake";
@@ -152,7 +162,8 @@ function buildScenarioLiveSample(
   zones: ZoneContext[],
   scenarioTimestamp?: string | null,
   scenarioTelemetrySample?: ScenarioTelemetrySample | null,
-  scenarioZoneTelemetrySample?: ScenarioZoneTelemetrySample | null
+  scenarioZoneTelemetrySample?: ScenarioZoneTelemetrySample | null,
+  latestAssessment?: RiskAssessment | null
 ): LiveTelemetrySample | null {
   if (!baseSample || !selectedScenario?.events.length) return baseSample;
 
@@ -164,6 +175,7 @@ function buildScenarioLiveSample(
   const scenarioEventsToDate = selectedScenario.events.slice(0, eventCursor + 1);
   const activeTime = new Date(displayEvent.timestamp).getTime();
   const eventRisk = "rolling_risk_contribution" in displayEvent ? displayEvent.rolling_risk_contribution : riskScoreFromEvent(activeEvent);
+  const modelRisk = latestAssessment?.safety_incident_risk_score ?? 0;
   const baseZones = baseSample.zones.map((zone) => ({
     ...zone,
     prime_movers: zone.prime_movers.filter((mover) => mover.vehicle_id !== selectedScenario.primary_vehicle_id)
@@ -189,7 +201,12 @@ function buildScenarioLiveSample(
       ...zone,
       updated_at: displayTimestamp,
       live_risk: Number(
-        Math.max(displayZone?.live_risk ?? zone.live_risk, eventRisk, zoneContext?.zone_historical_risk ?? 0).toFixed(3)
+        blendedZoneRisk(
+          displayZone?.live_risk ?? zone.live_risk,
+          eventRisk,
+          modelRisk,
+          zoneContext?.zone_historical_risk ?? 0
+        ).toFixed(3)
       ),
       active_prime_movers: displayZone?.active_prime_movers ?? primeMovers.length,
       avg_speed:
@@ -301,16 +318,22 @@ export function NearGuardDashboard() {
   const [scenarioId, setScenarioId] = useState("pm27-persistent-high-risk");
   const [state, setState] = useState<ReplayState | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const replayRequestRef = useRef(0);
   const timerRef = useRef<number | null>(null);
   const liveTimerRef = useRef<number | null>(null);
 
   async function start(id = scenarioId) {
+    if (!id) return;
+
+    const requestId = ++replayRequestRef.current;
     const response = await fetch("/api/replay/start", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ scenario_id: id })
     });
     const nextState = (await response.json()) as ReplayState;
+    if (requestId !== replayRequestRef.current) return;
+
     setState(nextState);
     setIsPlaying(false);
     setWarmupRemaining(0);
@@ -318,10 +341,26 @@ export function NearGuardDashboard() {
     setScenarioClockMs(nextState.selectedScenario.events[0] ? new Date(nextState.selectedScenario.events[0].timestamp).getTime() : null);
     fetch(`/api/scenario-telemetry?scenario_id=${encodeURIComponent(id)}`)
       .then((telemetryResponse) => telemetryResponse.json())
-      .then((payload) => setScenarioTelemetrySamples(payload.samples));
+      .then((payload) => {
+        if (requestId === replayRequestRef.current) setScenarioTelemetrySamples(payload.samples);
+      });
     fetch(`/api/scenario-zone-telemetry?scenario_id=${encodeURIComponent(id)}`)
       .then((telemetryResponse) => telemetryResponse.json())
-      .then((payload) => setScenarioZoneTelemetrySamples(payload.samples));
+      .then((payload) => {
+        if (requestId === replayRequestRef.current) setScenarioZoneTelemetrySamples(payload.samples);
+      });
+  }
+
+  function resetToLiveMonitoring() {
+    replayRequestRef.current += 1;
+    setScenarioId("");
+    setState(null);
+    setIsPlaying(false);
+    setWarmupRemaining(0);
+    setLiveSampleIndex(0);
+    setScenarioClockMs(null);
+    setScenarioTelemetrySamples([]);
+    setScenarioZoneTelemetrySamples([]);
   }
 
   async function step() {
@@ -422,7 +461,8 @@ export function NearGuardDashboard() {
         zones,
         scenarioClockTimestamp,
         scenarioTelemetrySample,
-        scenarioZoneTelemetrySample
+        scenarioZoneTelemetrySample,
+        latestAssessment
       ),
     [
       rawLiveSample,
@@ -431,6 +471,7 @@ export function NearGuardDashboard() {
       scenarioZoneTelemetrySample,
       state?.currentEventIndex,
       state?.selectedScenario,
+      latestAssessment,
       zones
     ]
   );
@@ -520,17 +561,20 @@ export function NearGuardDashboard() {
             className="select"
             value={scenarioId}
             onChange={(event) => {
-              setScenarioId(event.target.value);
-              start(event.target.value);
+              const nextScenarioId = event.target.value;
+              setScenarioId(nextScenarioId);
+              if (nextScenarioId) start(nextScenarioId);
+              else resetToLiveMonitoring();
             }}
           >
+            <option value="">Live monitoring</option>
             {scenarios.map((scenario) => (
               <option key={scenario.scenario_id} value={scenario.scenario_id}>
                 {scenario.name}
               </option>
             ))}
           </select>
-          <button className="icon-button" onClick={() => start()} title="Reset replay">
+          <button className="icon-button" onClick={resetToLiveMonitoring} title="Reset to live monitoring">
             <RefreshCw size={16} /> Reset
           </button>
           <button className="icon-button" onClick={step} disabled={!state || state.isComplete} title="Jump to next decision evidence">
