@@ -14,7 +14,10 @@
         "event_type": "normal_update",
         "speed": 22,
         "speed_limit": 25,
-        "gps_freshness": "fresh"
+        "gps_freshness": "fresh",
+        "position": { "x": 14, "y": 52 },
+        "heading_degrees": 0,
+        "accuracy_m": 6
       },
       {
         "event_id": "pm27-002",
@@ -24,7 +27,10 @@
         "event_type": "sharp_turn",
         "speed": 24,
         "speed_limit": 25,
-        "gps_freshness": "fresh"
+        "gps_freshness": "fresh",
+        "position": { "x": 25, "y": 52 },
+        "heading_degrees": 0,
+        "accuracy_m": 5
       },
       {
         "event_id": "pm27-003",
@@ -34,7 +40,10 @@
         "event_type": "harsh_brake",
         "speed": 26,
         "speed_limit": 25,
-        "gps_freshness": "fresh"
+        "gps_freshness": "fresh",
+        "position": { "x": 38, "y": 52 },
+        "heading_degrees": 0,
+        "accuracy_m": 6
       },
       {
         "event_id": "pm27-004",
@@ -44,7 +53,10 @@
         "event_type": "harsh_brake",
         "speed": 24,
         "speed_limit": 25,
-        "gps_freshness": "fresh"
+        "gps_freshness": "fresh",
+        "position": { "x": 49, "y": 52 },
+        "heading_degrees": 0,
+        "accuracy_m": 7
       },
       {
         "event_id": "pm27-005",
@@ -54,7 +66,10 @@
         "event_type": "risk_persistent",
         "speed": 24,
         "speed_limit": 25,
-        "gps_freshness": "fresh"
+        "gps_freshness": "fresh",
+        "position": { "x": 49, "y": 42 },
+        "heading_degrees": 270,
+        "accuracy_m": 7
       }
     ]
   },
@@ -73,7 +88,10 @@
         "event_type": "normal_update",
         "speed": 22,
         "speed_limit": 25,
-        "gps_freshness": "fresh"
+        "gps_freshness": "fresh",
+        "position": { "x": 58, "y": 14 },
+        "heading_degrees": 0,
+        "accuracy_m": 5
       },
       {
         "event_id": "ppt-002",
@@ -83,7 +101,10 @@
         "event_type": "speeding",
         "speed": 34,
         "speed_limit": 25,
-        "gps_freshness": "fresh"
+        "gps_freshness": "fresh",
+        "position": { "x": 72, "y": 14 },
+        "heading_degrees": 0,
+        "accuracy_m": 5
       },
       {
         "event_id": "ppt-003",
@@ -93,7 +114,10 @@
         "event_type": "speed_normalized",
         "speed": 21,
         "speed_limit": 25,
-        "gps_freshness": "fresh"
+        "gps_freshness": "fresh",
+        "position": { "x": 86, "y": 14 },
+        "heading_degrees": 0,
+        "accuracy_m": 6
       }
     ]
   },
@@ -112,7 +136,10 @@
         "event_type": "normal_update",
         "speed": 12,
         "speed_limit": 15,
-        "gps_freshness": "fresh"
+        "gps_freshness": "fresh",
+        "position": { "x": 58, "y": 90 },
+        "heading_degrees": 0,
+        "accuracy_m": 4
       },
       {
         "event_id": "wharf-002",
@@ -122,7 +149,10 @@
         "event_type": "sharp_turn",
         "speed": 18,
         "speed_limit": 15,
-        "gps_freshness": "fresh"
+        "gps_freshness": "fresh",
+        "position": { "x": 73, "y": 90 },
+        "heading_degrees": 0,
+        "accuracy_m": 5
       },
       {
         "event_id": "wharf-003",
@@ -132,7 +162,10 @@
         "event_type": "speed_normalized",
         "speed": 9,
         "speed_limit": 15,
-        "gps_freshness": "fresh"
+        "gps_freshness": "fresh",
+        "position": { "x": 90, "y": 84 },
+        "heading_degrees": 270,
+        "accuracy_m": 5
       }
     ]
   },
@@ -151,7 +184,10 @@
         "event_type": "stale_gps",
         "speed": 28,
         "speed_limit": 25,
-        "gps_freshness": "stale"
+        "gps_freshness": "stale",
+        "position": { "x": 14, "y": 90 },
+        "heading_degrees": 0,
+        "accuracy_m": 34
       },
       {
         "event_id": "uncertain-002",
@@ -161,7 +197,10 @@
         "event_type": "normal_update",
         "speed": 27,
         "speed_limit": 25,
-        "gps_freshness": "delayed"
+        "gps_freshness": "delayed",
+        "position": { "x": 28, "y": 90 },
+        "heading_degrees": 0,
+        "accuracy_m": 18
       },
       {
         "event_id": "uncertain-003",
@@ -171,7 +210,10 @@
         "event_type": "speed_normalized",
         "speed": 20,
         "speed_limit": 25,
-        "gps_freshness": "fresh"
+        "gps_freshness": "fresh",
+        "position": { "x": 42, "y": 90 },
+        "heading_degrees": 0,
+        "accuracy_m": 7
       }
     ]
   }

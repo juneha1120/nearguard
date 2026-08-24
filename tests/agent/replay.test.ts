@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { advanceReplay, createInitialReplayState, decideApproval, validateEvent } from "@/lib/agent/replay";
+import { advanceReplay, createInitialReplayState, decideApproval, isEvidenceEvent, validateEvent } from "@/lib/agent/replay";
 import type { ReplayState } from "@/lib/types/domain";
 
 function runScenario(scenarioId: string): ReplayState {
@@ -38,6 +38,16 @@ describe("agent replay", () => {
 
     expect(state.safetyCases).toHaveLength(1);
     expect(state.traceEvents.some((trace) => trace.event_type === "safety_case_created")).toBe(true);
+  });
+
+  it("steps to the next evidence event instead of tracing normal telemetry", () => {
+    const initial = createInitialReplayState("ppt-link-slow-down-zone");
+    const state = advanceReplay(initial);
+
+    expect(state.currentEvent?.event_id).toBe("ppt-002");
+    expect(state.currentEvent?.event_type).toBe("speeding");
+    expect(state.traceEvents.some((trace) => trace.message.includes("normal_update"))).toBe(false);
+    expect(initial.selectedScenario.events.filter(isEvidenceEvent).map((event) => event.event_id)).toEqual(["ppt-002", "ppt-003"]);
   });
 
   it("stabilizes the slow-down-zone scenario after speed normalizes", () => {

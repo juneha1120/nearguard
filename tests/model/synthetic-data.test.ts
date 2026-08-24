@@ -41,9 +41,15 @@ describe("synthetic horizon dataset", () => {
 
   it("keeps high-risk scenarios above stabilized replay outcomes", () => {
     const payload = JSON.parse(readFileSync("models/scenario_predictions.json", "utf8"));
-    const byEvent = new Map(payload.predictions.map((item: any) => [item.event_id, item.assessment.safety_incident_risk_score]));
+    const byEvent = new Map<string, number>(
+      payload.predictions.map((item: any) => [item.event_id, item.assessment.safety_incident_risk_score])
+    );
+    const persistentRisk = byEvent.get("pm27-005");
+    const stabilizedRisk = byEvent.get("ppt-003");
 
-    expect(byEvent.get("pm27-005")).toBeGreaterThan(byEvent.get("ppt-003"));
+    expect(persistentRisk).toBeDefined();
+    expect(stabilizedRisk).toBeDefined();
+    expect(persistentRisk!).toBeGreaterThan(stabilizedRisk!);
   });
 
   it("frames the primary demo as compound telemetry risk instead of a speeding-only alert", () => {
@@ -53,5 +59,47 @@ describe("synthetic horizon dataset", () => {
     expect(pm27.features.speeding_ratio_10m).toBeLessThan(0.35);
     expect(pm27.assessment.top_risk_reasons[0]).toMatch(/Rolling telemetry instability/);
     expect(pm27.assessment.top_risk_reasons.join(" ")).not.toMatch(/Speeding occurred/);
+  });
+
+  it("provides a loopable live zone telemetry stream", () => {
+    const payload = JSON.parse(readFileSync("data/live_zone_telemetry.json", "utf8"));
+    const first = payload.samples[0];
+    const last = payload.samples.at(-1);
+
+    expect(payload.samples.length).toBeGreaterThanOrEqual(1200);
+    expect(first.zones).toHaveLength(4);
+    expect(first.zones[0].prime_movers.length).toBeGreaterThan(0);
+    expect(Math.abs(first.zones[0].live_risk - last.zones[0].live_risk)).toBeLessThan(0.02);
+    expect(new Date(payload.samples[1].timestamp).getTime() - new Date(first.timestamp).getTime()).toBe(1000);
+    expect(new Set(first.zones.map((zone: any) => zone.zone_id))).toEqual(
+      new Set(["YARD-C4", "PPT-LINK-25", "YARD-U2", "WHARF-C4"])
+    );
+  });
+
+  it("provides dense one-second telemetry for scenario primary vehicles", () => {
+    const payload = JSON.parse(readFileSync("data/scenario_telemetry/pm27-persistent-high-risk.json", "utf8"));
+    const pm27 = payload.samples;
+    const betweenAnchors = pm27.filter(
+      (sample: any) =>
+        new Date(sample.timestamp).getTime() > new Date("2026-08-19T09:14:42+08:00").getTime() &&
+        new Date(sample.timestamp).getTime() < new Date("2026-08-19T09:15:26+08:00").getTime()
+    );
+
+    expect(pm27.length).toBeGreaterThan(200);
+    expect(new Date(pm27[1].timestamp).getTime() - new Date(pm27[0].timestamp).getTime()).toBe(1000);
+    expect(betweenAnchors.length).toBeGreaterThan(30);
+    expect(new Set(betweenAnchors.map((sample: any) => sample.vehicle_id))).toEqual(new Set(["PM-27"]));
+    expect(betweenAnchors.some((sample: any) => sample.event_anchor_id === null)).toBe(true);
+  });
+
+  it("provides matching dense dynamic zone telemetry for scenarios", () => {
+    const vehiclePayload = JSON.parse(readFileSync("data/scenario_telemetry/pm27-persistent-high-risk.json", "utf8"));
+    const zonePayload = JSON.parse(readFileSync("data/scenario_zone_telemetry/pm27-persistent-high-risk.json", "utf8"));
+
+    expect(zonePayload.samples).toHaveLength(vehiclePayload.samples.length);
+    expect(zonePayload.samples[0].timestamp).toBe(vehiclePayload.samples[0].timestamp);
+    expect(zonePayload.samples[1].timestamp).toBe(vehiclePayload.samples[1].timestamp);
+    expect(zonePayload.samples.some((sample: any) => sample.harsh_brake_count_5m > 0)).toBe(true);
+    expect(zonePayload.samples.every((sample: any) => sample.zone_id === "YARD-C4")).toBe(true);
   });
 });

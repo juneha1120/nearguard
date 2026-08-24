@@ -17,6 +17,7 @@ export type RiskBand = "Low" | "Medium" | "High" | "Persistent High" | "Critical
 export type CaseStatus = "open" | "monitoring" | "pending_approval" | "escalated" | "stabilized" | "closed";
 export type ToolStatus = "pending" | "delivered" | "failed" | "approved" | "rejected" | "created" | "recommended";
 export type ApprovalStatus = "pending" | "approved" | "rejected";
+export type LivePrimeMoverState = "normal" | "watching" | "speeding" | "stale GPS" | "harsh brake" | "sharp turn" | "recovering";
 export type TraceEventType =
   | "event_received"
   | "validation_error"
@@ -41,6 +42,11 @@ export interface VehicleEvent {
   speed: number;
   speed_limit: 15 | 25 | 40;
   gps_freshness: GpsFreshness;
+  position?: MapPosition;
+  heading_degrees?: number;
+  accuracy_m?: number;
+  lat?: number;
+  lng?: number;
 }
 
 export interface ZoneContext {
@@ -52,6 +58,92 @@ export interface ZoneContext {
   restriction_level: RestrictionLevel;
   slow_down_zone_active: boolean;
   pedestrian_exposure: PedestrianExposure;
+  map_region?: string;
+  center?: MapPosition;
+  bounds?: MapBounds;
+}
+
+export interface LivePrimeMoverSnapshot {
+  vehicle_id: string;
+  speed: number;
+  speed_limit: number;
+  gps_freshness: GpsFreshness;
+  state: LivePrimeMoverState;
+  rolling_risk_contribution: number;
+}
+
+export interface LiveZoneSnapshot {
+  zone_id: string;
+  updated_at: string;
+  live_risk: number;
+  active_prime_movers: number;
+  avg_speed: number;
+  speed_compliance: number;
+  stale_gps_count: number;
+  delayed_gps_count: number;
+  harsh_brake_count_5m: number;
+  sharp_turn_count_5m: number;
+  traffic_pressure: number;
+  weather: Weather;
+  restriction_level: RestrictionLevel;
+  pedestrian_exposure: PedestrianExposure;
+  slow_down_zone_active: boolean;
+  prime_movers: LivePrimeMoverSnapshot[];
+}
+
+export interface LiveTelemetrySample {
+  sample_id: string;
+  timestamp: string;
+  zones: LiveZoneSnapshot[];
+}
+
+export interface ScenarioTelemetrySample {
+  sample_id: string;
+  timestamp: string;
+  scenario_id: string;
+  vehicle_id: string;
+  zone_id: string;
+  speed: number;
+  speed_limit: number;
+  gps_freshness: GpsFreshness;
+  state: LivePrimeMoverState;
+  rolling_risk_contribution: number;
+  event_anchor_id: string | null;
+  position?: MapPosition;
+  accuracy_m?: number;
+  heading_degrees?: number;
+}
+
+export interface ScenarioZoneTelemetrySample {
+  sample_id: string;
+  timestamp: string;
+  scenario_id: string;
+  zone_id: string;
+  live_risk: number;
+  active_prime_movers: number;
+  avg_speed: number;
+  speed_compliance: number;
+  stale_gps_count: number;
+  delayed_gps_count: number;
+  harsh_brake_count_5m: number;
+  sharp_turn_count_5m: number;
+  traffic_pressure: number;
+  weather: Weather;
+  restriction_level: RestrictionLevel;
+  pedestrian_exposure: PedestrianExposure;
+  slow_down_zone_active: boolean;
+}
+
+export interface MapPosition {
+  x: number;
+  y: number;
+}
+
+export interface MapBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 export interface DerivedFeatures {
