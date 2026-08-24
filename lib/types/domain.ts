@@ -97,6 +97,23 @@ export interface LiveTelemetrySample {
   zones: LiveZoneSnapshot[];
 }
 
+export interface ScenarioTelemetrySample {
+  sample_id: string;
+  timestamp: string;
+  scenario_id: string;
+  vehicle_id: string;
+  zone_id: string;
+  speed: number;
+  speed_limit: number;
+  gps_freshness: GpsFreshness;
+  state: LivePrimeMoverState;
+  rolling_risk_contribution: number;
+  event_anchor_id: string | null;
+  position?: MapPosition;
+  accuracy_m?: number;
+  heading_degrees?: number;
+}
+
 export interface MapPosition {
   x: number;
   y: number;

@@ -2,12 +2,14 @@ import scenarioPredictionData from "@/models/scenario_predictions.json";
 import scenarioData from "@/data/scenarios.json";
 import zoneData from "@/data/zones.json";
 import liveTelemetryData from "@/data/live_zone_telemetry.json";
-import type { LiveTelemetrySample, Scenario, ScenarioPrediction, ZoneContext } from "@/lib/types/domain";
+import scenarioTelemetryData from "@/data/scenario_telemetry.json";
+import type { LiveTelemetrySample, Scenario, ScenarioPrediction, ScenarioTelemetrySample, ZoneContext } from "@/lib/types/domain";
 
 export const scenarios = scenarioData as Scenario[];
 export const zones = zoneData as ZoneContext[];
 export const scenarioPredictions = scenarioPredictionData.predictions as ScenarioPrediction[];
 export const liveTelemetrySamples = liveTelemetryData.samples as LiveTelemetrySample[];
+export const scenarioTelemetrySamplesByScenario = scenarioTelemetryData.scenarios as Record<string, ScenarioTelemetrySample[]>;
 
 export function getScenario(scenarioId?: string): Scenario {
   if (!scenarioId) {
@@ -26,6 +28,10 @@ export function listZones(): ZoneContext[] {
 
 export function listLiveTelemetrySamples(): LiveTelemetrySample[] {
   return liveTelemetrySamples;
+}
+
+export function listScenarioTelemetrySamples(scenarioId: string): ScenarioTelemetrySample[] {
+  return scenarioTelemetrySamplesByScenario[scenarioId] ?? [];
 }
 
 export function getScenarioPrediction(scenarioId: string, eventId: string): ScenarioPrediction | null {

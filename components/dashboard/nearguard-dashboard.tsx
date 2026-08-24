@@ -28,6 +28,7 @@ import type {
   ReplayState,
   RiskAssessment,
   RiskBand,
+  ScenarioTelemetrySample,
   ToolCall,
   TraceEvent,
   VehicleCase,
@@ -148,31 +149,33 @@ function buildScenarioLiveSample(
   selectedScenario: ReplayState["selectedScenario"] | null,
   currentEventIndex: number,
   zones: ZoneContext[],
-  scenarioTimestamp?: string | null
+  scenarioTimestamp?: string | null,
+  scenarioTelemetrySample?: ScenarioTelemetrySample | null
 ): LiveTelemetrySample | null {
   if (!baseSample || !selectedScenario?.events.length) return baseSample;
 
   const displayTimestamp = scenarioTimestamp ?? baseSample.timestamp;
   const eventCursor = Math.max(0, Math.min(currentEventIndex - 1, selectedScenario.events.length - 1));
   const activeEvent = selectedScenario.events[eventCursor] ?? selectedScenario.events[0];
+  const displayEvent = scenarioTelemetrySample ?? activeEvent;
   const scenarioEventsToDate = selectedScenario.events.slice(0, eventCursor + 1);
-  const activeTime = new Date(activeEvent.timestamp).getTime();
-  const eventRisk = riskScoreFromEvent(activeEvent);
+  const activeTime = new Date(displayEvent.timestamp).getTime();
+  const eventRisk = "rolling_risk_contribution" in displayEvent ? displayEvent.rolling_risk_contribution : riskScoreFromEvent(activeEvent);
   const baseZones = baseSample.zones.map((zone) => ({
     ...zone,
     prime_movers: zone.prime_movers.filter((mover) => mover.vehicle_id !== selectedScenario.primary_vehicle_id)
   }));
 
   const zoneSnapshots = baseZones.map((zone) => {
-    if (zone.zone_id !== activeEvent.zone_id) return zone;
+    if (zone.zone_id !== displayEvent.zone_id) return zone;
 
-    const zoneContext = zones.find((item) => item.zone_id === activeEvent.zone_id);
+    const zoneContext = zones.find((item) => item.zone_id === displayEvent.zone_id);
     const scenarioMover: LivePrimeMoverSnapshot = {
-      vehicle_id: activeEvent.vehicle_id,
-      speed: activeEvent.speed,
-      speed_limit: activeEvent.speed_limit,
-      gps_freshness: activeEvent.gps_freshness,
-      state: liveStateFromEvent(activeEvent),
+      vehicle_id: displayEvent.vehicle_id,
+      speed: displayEvent.speed,
+      speed_limit: displayEvent.speed_limit,
+      gps_freshness: displayEvent.gps_freshness,
+      state: "state" in displayEvent ? displayEvent.state : liveStateFromEvent(activeEvent),
       rolling_risk_contribution: Number(eventRisk.toFixed(2))
     };
     const primeMovers = [scenarioMover, ...zone.prime_movers].slice(0, 4);
@@ -200,7 +203,7 @@ function buildScenarioLiveSample(
   });
 
   return {
-    sample_id: `${baseSample.sample_id}-${selectedScenario.scenario_id}-${activeEvent.event_id}`,
+    sample_id: `${baseSample.sample_id}-${selectedScenario.scenario_id}-${"sample_id" in displayEvent ? displayEvent.sample_id : activeEvent.event_id}`,
     timestamp: displayTimestamp,
     zones: zoneSnapshots
   };
@@ -284,6 +287,7 @@ export function NearGuardDashboard() {
   const [scenarios, setScenarios] = useState<ScenarioMetadata[]>([]);
   const [zones, setZones] = useState<ZoneContext[]>([]);
   const [liveSamples, setLiveSamples] = useState<LiveTelemetrySample[]>([]);
+  const [scenarioTelemetrySamples, setScenarioTelemetrySamples] = useState<ScenarioTelemetrySample[]>([]);
   const [liveSampleIndex, setLiveSampleIndex] = useState(0);
   const [warmupRemaining, setWarmupRemaining] = useState(0);
   const [scenarioClockMs, setScenarioClockMs] = useState<number | null>(null);
@@ -305,6 +309,9 @@ export function NearGuardDashboard() {
     setWarmupRemaining(0);
     setLiveSampleIndex(0);
     setScenarioClockMs(nextState.selectedScenario.events[0] ? new Date(nextState.selectedScenario.events[0].timestamp).getTime() : null);
+    fetch(`/api/scenario-telemetry?scenario_id=${encodeURIComponent(id)}`)
+      .then((telemetryResponse) => telemetryResponse.json())
+      .then((payload) => setScenarioTelemetrySamples(payload.samples));
   }
 
   async function step() {
@@ -380,9 +387,25 @@ export function NearGuardDashboard() {
   const currentZone = state?.currentZone ?? null;
   const rawLiveSample = liveSamples[liveSampleIndex] ?? null;
   const scenarioClockTimestamp = scenarioClockMs === null ? null : new Date(scenarioClockMs).toISOString();
+  const scenarioTelemetrySample = useMemo(() => {
+    if (scenarioClockMs === null || !scenarioTelemetrySamples.length) return null;
+    return (
+      scenarioTelemetrySamples.find((sample) => new Date(sample.timestamp).getTime() >= scenarioClockMs) ??
+      scenarioTelemetrySamples.at(-1) ??
+      null
+    );
+  }, [scenarioClockMs, scenarioTelemetrySamples]);
   const liveSample = useMemo(
-    () => buildScenarioLiveSample(rawLiveSample, state?.selectedScenario ?? null, state?.currentEventIndex ?? 0, zones, scenarioClockTimestamp),
-    [rawLiveSample, scenarioClockTimestamp, state?.currentEventIndex, state?.selectedScenario, zones]
+    () =>
+      buildScenarioLiveSample(
+        rawLiveSample,
+        state?.selectedScenario ?? null,
+        state?.currentEventIndex ?? 0,
+        zones,
+        scenarioClockTimestamp,
+        scenarioTelemetrySample
+      ),
+    [rawLiveSample, scenarioClockTimestamp, scenarioTelemetrySample, state?.currentEventIndex, state?.selectedScenario, zones]
   );
   const evidenceEvents = useMemo(() => {
     if (!state?.currentEvent) return [];

@@ -69,4 +69,20 @@ describe("synthetic horizon dataset", () => {
       new Set(["YARD-C4", "PPT-LINK-25", "YARD-U2", "WHARF-C4"])
     );
   });
+
+  it("provides dense one-second telemetry for scenario primary vehicles", () => {
+    const payload = JSON.parse(readFileSync("data/scenario_telemetry.json", "utf8"));
+    const pm27 = payload.scenarios["pm27-persistent-high-risk"];
+    const betweenAnchors = pm27.filter(
+      (sample: any) =>
+        new Date(sample.timestamp).getTime() > new Date("2026-08-19T09:14:42+08:00").getTime() &&
+        new Date(sample.timestamp).getTime() < new Date("2026-08-19T09:15:26+08:00").getTime()
+    );
+
+    expect(pm27.length).toBeGreaterThan(200);
+    expect(new Date(pm27[1].timestamp).getTime() - new Date(pm27[0].timestamp).getTime()).toBe(1000);
+    expect(betweenAnchors.length).toBeGreaterThan(30);
+    expect(new Set(betweenAnchors.map((sample: any) => sample.vehicle_id))).toEqual(new Set(["PM-27"]));
+    expect(betweenAnchors.some((sample: any) => sample.event_anchor_id === null)).toBe(true);
+  });
 });
