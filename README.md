@@ -34,6 +34,14 @@ This writes:
 
 The web app uses `models/scenario_predictions.json` and `models/routine_live_predictions.json` for reliable scenario replay and routine live monitoring while keeping the trained `.joblib` artifact as the local AI model output.
 
+For live runtime inference, start the optional Python model service:
+
+```powershell
+npm.cmd run model:serve
+```
+
+The dashboard calls this service once per live telemetry tick. If the service is not running, it falls back to `models/routine_live_predictions.json` so the demo remains deterministic.
+
 ## Demo Data Layout
 
 - `data/routine_live_zone_telemetry.json` drives the routine 1-second zone monitoring stream.
