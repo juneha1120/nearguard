@@ -12,7 +12,7 @@ MVP+ adds a narrow V2V/V2X interaction-aware risk layer: surrounding Prime Mover
 
 - Web app: Next.js, TypeScript, React and local in-memory state.
 - AI pipeline: Python, pandas, scikit-learn and joblib.
-- Model runtime: pretrained local artifact plus exported scenario and routine live predictions for deterministic demo playback.
+- Model runtime: pretrained local artifact served by an optional Python inference service for live monitoring, plus exported scenario and routine live predictions for deterministic fallback/demo playback.
 - Storage: checked-in JSON/CSV fixtures and generated artifacts; no database for MVP.
 - External integrations: none. Notifications, approvals and safety cases are simulated.
 
@@ -103,7 +103,7 @@ Both prediction artifacts must include `target`, `prediction_horizon` and `asses
 - The feature aggregator should apply a 10-second reaction window after an intervention signal; unsafe telemetry inside that window is not `post_intervention_noncompliance`.
 - The live feature aggregator should compute same-zone nearby PM count within 50m, nearest PM distance, nearest PM relative speed and closing rate when position data is usable.
 - The risk service should consume exported scenario predictions for replay reliability.
-- Routine Live Monitoring should consume exported routine live predictions for deterministic trained-model scoring.
+- Routine Live Monitoring should call the Python runtime inference service for per-tick trained-model scoring and fall back to exported routine live predictions if the optional service is unavailable.
 - The policy engine should map continuous ML risk scores to intervention thresholds and remain responsible for action class.
 - The tool layer should keep simulated notifications, fallback notification, approval request, zone advisory recommendation and safety case creation.
 - The dashboard should label the score as synthetic near-miss risk within the next 15 minutes and show that deterministic policy/human approval control interventions.
@@ -157,6 +157,7 @@ Production roadmap items should remain explicit: richer topology-aware multi-veh
 Run:
 
 - `npm run model:train`
+- `npm run model:serve`
 - `npm run lint`
 - `npm test`
 - `npm run build`

@@ -109,11 +109,11 @@ Runtime risk terms are intentionally separate:
 | Value | Meaning |
 | --- | --- |
 | Zone Operational Risk | Dashboard risk value calculated from live zone telemetry fields such as traffic pressure, speed compliance, GPS quality, recent harsh-brake/sharp-turn counts, weather, restrictions and pedestrian exposure. It is not the vehicle ML model output. |
-| Vehicle Near-Miss Risk | Continuous trained-model assessment from Prime Mover telemetry, rolling-window features and current zone context. Routine monitoring and scenario replay both use exported deterministic prediction artifacts for demo repeatability. |
+| Vehicle Near-Miss Risk | Continuous trained-model assessment from Prime Mover telemetry, rolling-window features and current zone context. Routine monitoring calls the Python runtime inference service when available and falls back to exported predictions for demo reliability; scenario replay uses exported scenario predictions for repeatability. |
 | `safety_incident_risk_score` | ML model output: per-PM rolling synthetic near-miss risk assessment within the next 15 minutes. This score updates continuously, while interventions are opened only when policy thresholds are crossed. |
 | `risk_band` | Deterministic banding from model score, confidence and prior action state; policy thresholds use this band to decide intervention class. |
 
-Live Monitoring calculates Zone Operational Risk from zone telemetry, then reads exported trained-model predictions for Vehicle Near-Miss Risk. During scenario replay, dense scenario PM/zone telemetry keeps the display continuous while replay decision points use exported trained-model predictions for policy thresholds. The dashboard does not blend zone telemetry risk with vehicle model risk.
+Live Monitoring calculates Zone Operational Risk from zone telemetry, then requests runtime trained-model inference for Vehicle Near-Miss Risk on each live telemetry tick. During scenario replay, dense scenario PM/zone telemetry keeps the display continuous while replay decision points use exported trained-model predictions for policy thresholds. The dashboard does not blend zone telemetry risk with vehicle model risk.
 
 ## Rolling Features
 
@@ -199,9 +199,9 @@ The MVP trains a local scikit-learn tabular classifier:
 - Model: `HistGradientBoostingClassifier`.
 - Target: `near_miss_within_next_15m`.
 - Output: synthetic near-miss risk score, risk band, confidence, reasons, `prediction_horizon = 15m`, `evidence_authority = SYNTHETIC_DATA`.
-- Runtime: checked-in model artifact plus exported scenario and routine live predictions for deterministic demo playback.
+- Runtime: checked-in model artifact served by an optional Python inference service for live monitoring, plus exported scenario and routine live predictions for deterministic fallback/demo playback.
 
-`data/synthetic_training_data.csv` is the model training/evaluation table. It is not the dashboard replay stream. Replay uses `data/scenario_decision_points/{scenario}.json` for decision-point anchors plus scenario-specific dense telemetry JSON for visual continuity; routine live monitoring uses the routine telemetry JSON plus `models/routine_live_predictions.json`.
+`data/synthetic_training_data.csv` is the model training/evaluation table. It is not the dashboard replay stream. Replay uses `data/scenario_decision_points/{scenario}.json` for decision-point anchors plus scenario-specific dense telemetry JSON for visual continuity; routine live monitoring uses the routine telemetry JSON and calls the runtime model service when available, with `models/routine_live_predictions.json` as a deterministic fallback.
 
 `HistGradientBoostingClassifier` is a decision-tree-family gradient boosting model. It does not react to one isolated event as a single rule. It learns from engineered rolling-window features and context so the MVP can demonstrate how weak signals combine over time.
 

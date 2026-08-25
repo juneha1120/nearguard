@@ -165,7 +165,6 @@ export function NearGuardDashboard() {
       .then((response) => response.json())
       .then((payload) => {
         setLiveSamples(payload.samples);
-        setLivePredictions(payload.predictions ?? []);
       });
     start(scenarioId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -238,6 +237,28 @@ export function NearGuardDashboard() {
     }
     return predictions;
   }, [livePredictions]);
+  useEffect(() => {
+    if (state || !rawLiveSample) return;
+
+    let isCancelled = false;
+    fetch(`/api/live-risk-predictions?sample_id=${encodeURIComponent(rawLiveSample.sample_id)}`)
+      .then((response) => response.json())
+      .then((payload) => {
+        if (isCancelled) return;
+        const predictions = (payload.predictions ?? []) as LivePrediction[];
+        setLivePredictions((current) => {
+          const retained = current.filter((prediction) => prediction.sample_id !== rawLiveSample.sample_id);
+          return [...retained, ...predictions].slice(-240);
+        });
+      })
+      .catch(() => {
+        // The API route falls back to exported predictions; keep the previous tick if even that fails.
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [rawLiveSample, state]);
   const scenarioClockTimestamp = scenarioClockMs === null ? null : new Date(scenarioClockMs).toISOString();
   const scenarioTelemetrySample = useMemo(() => {
     if (scenarioClockMs === null || !scenarioTelemetrySamples.length) return null;
