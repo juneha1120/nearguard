@@ -313,6 +313,81 @@ button:disabled {
   box-shadow: 0 0 0 6px rgba(165, 91, 18, 0.12);
 }
 
+.live-dot.paused {
+  background: #9aa5a0;
+  box-shadow: none;
+  animation: none;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(23, 33, 29, 0.42);
+}
+
+.scenario-modal {
+  width: min(520px, 100%);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 50px rgba(23, 33, 29, 0.22);
+  padding: 20px;
+}
+
+.scenario-modal-kicker {
+  display: block;
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.scenario-modal h2 {
+  margin: 7px 0 8px;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.scenario-modal p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.scenario-modal ul {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 7px;
+}
+
+.scenario-modal li {
+  border-left: 3px solid var(--green);
+  border-radius: 0 6px 6px 0;
+  background: #f5f7f5;
+  padding: 7px 9px;
+  font-size: 13px;
+}
+
+.scenario-modal-footer {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.scenario-modal-footer span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .zone-risk-board {
   flex: 1;
   min-height: 0;
@@ -391,7 +466,7 @@ button:disabled {
 
 .zone-live-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 4px;
 }
 
@@ -402,6 +477,27 @@ button:disabled {
   padding: 4px 5px;
   color: var(--muted);
   font-size: 10px;
+}
+
+.zone-live-grid span.low {
+  background: #f1faf3;
+  border-color: #cfe8d6;
+}
+
+.zone-live-grid span.medium {
+  background: #fff8e8;
+  border-color: #f1d49f;
+}
+
+.zone-live-grid span.high,
+.zone-live-grid span.critical {
+  background: #fff1e8;
+  border-color: #f7c29b;
+}
+
+.zone-live-grid span.neutral {
+  background: #fbfcfa;
+  border-color: var(--line);
 }
 
 .zone-live-grid strong {

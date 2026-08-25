@@ -1,6 +1,7 @@
 import type {
   ApprovalRequest,
   EventType,
+  LivePrediction,
   LivePrimeMoverSnapshot,
   LiveTelemetrySample,
   LiveZoneSnapshot,
@@ -31,6 +32,11 @@ export type ZoneRiskCard = {
   flags: string[];
   live: LiveZoneSnapshot | null;
   operationalRisk: number;
+};
+
+export type LiveModelAssessment = {
+  features: LivePrediction["features"];
+  assessment: RiskAssessment;
 };
 
 const ABNORMAL_EVENTS: EventType[] = ["speeding", "harsh_brake", "sharp_turn", "stale_gps", "risk_persistent"];
@@ -149,6 +155,13 @@ export function trafficSeverityClass(traffic?: string | null) {
   if (traffic === "low") return "low";
   if (traffic === "medium") return "medium";
   if (traffic === "high") return "high";
+  return "neutral";
+}
+
+export function weatherSeverityClass(weather?: string | null) {
+  if (weather === "clear") return "low";
+  if (weather === "rain") return "medium";
+  if (weather === "heavy_rain") return "high";
   return "neutral";
 }
 
@@ -288,12 +301,29 @@ export function zoneFlags(live: LiveZoneSnapshot | null) {
   const flags: string[] = [];
   if (!live) return flags;
   if (live.slow_down_zone_active) flags.push("25km/h slow-down");
-  if (live.restriction_level === "restricted") flags.push("restricted");
-  if (live.restriction_level === "wharf") flags.push("wharf access");
-  if (live.pedestrian_exposure === "high") flags.push("pedestrian high");
-  if (trafficLevelFromPressure(live.traffic_pressure) === "high") flags.push("traffic high");
-  if (live.weather !== "clear") flags.push(live.weather.replace("_", " "));
   return flags;
+}
+
+export function livePredictionKey(sampleId: string, vehicleId: string) {
+  return `${sampleId}:${vehicleId}`;
+}
+
+export function liveModelAssessment(prediction: LivePrediction): LiveModelAssessment {
+  return {
+    features: prediction.features,
+    assessment: {
+      assessment_id: `live-${prediction.sample_id}-${prediction.vehicle_id}`,
+      case_id: `live-${prediction.vehicle_id}`,
+      safety_incident_risk_score: prediction.assessment.safety_incident_risk_score,
+      prediction_horizon: prediction.assessment.prediction_horizon,
+      evidence_authority: prediction.assessment.evidence_authority,
+      risk_band: prediction.assessment.risk_band,
+      confidence: prediction.assessment.confidence,
+      uncertainty_reason: prediction.assessment.uncertainty_reason,
+      top_risk_reasons: prediction.assessment.top_risk_reasons,
+      created_at: prediction.timestamp
+    }
+  };
 }
 
 export function explainAction(

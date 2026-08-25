@@ -275,6 +275,17 @@ export interface ScenarioPrediction {
   };
 }
 
+export interface LivePrediction {
+  sample_id: string;
+  timestamp: string;
+  vehicle_id: string;
+  zone_id: string;
+  features: DerivedFeatures;
+  assessment: Omit<RiskAssessment, "assessment_id" | "case_id" | "created_at"> & {
+    synthetic_near_miss_risk_score?: number;
+  };
+}
+
 export interface ReplayState {
   selectedScenario: Scenario;
   currentEventIndex: number;

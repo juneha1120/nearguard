@@ -30,6 +30,8 @@ import {
   formatEventLabel,
   gpsSeverityClass,
   isDecisionPointEvent,
+  liveModelAssessment,
+  livePredictionKey,
   liveRiskLevel,
   restrictionSeverityClass,
   riskPercent,
@@ -41,13 +43,15 @@ import {
   trafficLevelFromPressure,
   trafficSeverityClass,
   trendSeverityClass,
+  weatherSeverityClass,
   zoneFlags,
   zoneRiskClass,
   type ScenarioMetadata,
   type ZoneRiskCard
 } from "@/components/dashboard/dashboard-utils";
-import { assessLiveVehicleNearMissRisk, calculateZoneOperationalRisk } from "@/lib/model/live-risk";
+import { calculateZoneOperationalRisk } from "@/lib/model/live-risk";
 import type {
+  LivePrediction,
   LiveTelemetrySample,
   ReplayState,
   ScenarioTelemetrySample,
@@ -55,20 +59,19 @@ import type {
   ZoneRegistryEntry
 } from "@/lib/types/domain";
 
-const PLAY_WARMUP_TICKS = 3;
-
 export function NearGuardDashboard() {
   const [scenarios, setScenarios] = useState<ScenarioMetadata[]>([]);
   const [zones, setZones] = useState<ZoneRegistryEntry[]>([]);
   const [liveSamples, setLiveSamples] = useState<LiveTelemetrySample[]>([]);
+  const [livePredictions, setLivePredictions] = useState<LivePrediction[]>([]);
   const [scenarioTelemetrySamples, setScenarioTelemetrySamples] = useState<ScenarioTelemetrySample[]>([]);
   const [scenarioZoneTelemetrySamples, setScenarioZoneTelemetrySamples] = useState<ScenarioZoneTelemetrySample[]>([]);
   const [liveSampleIndex, setLiveSampleIndex] = useState(0);
-  const [warmupRemaining, setWarmupRemaining] = useState(0);
   const [scenarioClockMs, setScenarioClockMs] = useState<number | null>(null);
   const [scenarioId, setScenarioId] = useState("pm27-persistent-high-risk");
   const [state, setState] = useState<ReplayState | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [introScenario, setIntroScenario] = useState<ReplayState["selectedScenario"] | null>(null);
   const [rightTab, setRightTab] = useState<"action" | "timeline">("action");
   const [selectedLiveVehicleId, setSelectedLiveVehicleId] = useState<string | null>(null);
   const replayRequestRef = useRef(0);
@@ -89,9 +92,10 @@ export function NearGuardDashboard() {
 
     setState(nextState);
     setIsPlaying(false);
-    setWarmupRemaining(0);
     setLiveSampleIndex(0);
     setScenarioClockMs(nextState.selectedScenario.events[0] ? new Date(nextState.selectedScenario.events[0].timestamp).getTime() : null);
+    setIntroScenario(nextState.selectedScenario);
+    setSelectedLiveVehicleId(null);
     fetch(`/api/scenario-telemetry?scenario_id=${encodeURIComponent(id)}`)
       .then((telemetryResponse) => telemetryResponse.json())
       .then((payload) => {
@@ -109,7 +113,7 @@ export function NearGuardDashboard() {
     setScenarioId("");
     setState(null);
     setIsPlaying(false);
-    setWarmupRemaining(0);
+    setIntroScenario(null);
     setLiveSampleIndex(0);
     setScenarioClockMs(null);
     setScenarioTelemetrySamples([]);
@@ -117,6 +121,7 @@ export function NearGuardDashboard() {
   }
 
   async function step() {
+    setIsPlaying(false);
     const response = await fetch("/api/replay/step", { method: "POST" });
     const nextState = (await response.json()) as ReplayState;
     setState(nextState);
@@ -158,23 +163,37 @@ export function NearGuardDashboard() {
       .then((payload) => setZones(payload.zones));
     fetch("/api/live-zone-telemetry")
       .then((response) => response.json())
-      .then((payload) => setLiveSamples(payload.samples));
+      .then((payload) => {
+        setLiveSamples(payload.samples);
+        setLivePredictions(payload.predictions ?? []);
+      });
     start(scenarioId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    if (state) {
+      if (liveTimerRef.current) window.clearInterval(liveTimerRef.current);
+      liveTimerRef.current = null;
+      return;
+    }
+
     liveTimerRef.current = window.setInterval(() => {
       setLiveSampleIndex((index) => {
         if (!liveSamples.length) return 0;
         return (index + 1) % liveSamples.length;
       });
-      setScenarioClockMs((timestamp) => (timestamp === null ? timestamp : timestamp + 1000));
     }, 1000);
     return () => {
       if (liveTimerRef.current) window.clearInterval(liveTimerRef.current);
     };
-  }, [liveSamples.length]);
+  }, [liveSamples.length, state]);
+
+  const nextDecisionTargetMs = useMemo(() => {
+    if (!state || state.isComplete) return null;
+    const event = state.selectedScenario.events.find((candidate, index) => index >= state.currentEventIndex && isDecisionPointEvent(candidate));
+    return event ? new Date(event.timestamp).getTime() : null;
+  }, [state]);
 
   useEffect(() => {
     if (!isPlaying) {
@@ -182,23 +201,43 @@ export function NearGuardDashboard() {
       timerRef.current = null;
       return;
     }
+    if (!state || nextDecisionTargetMs === null) {
+      setIsPlaying(false);
+      return;
+    }
+
     timerRef.current = window.setInterval(() => {
-      if (warmupRemaining > 0) {
-        setWarmupRemaining((value) => Math.max(value - 1, 0));
-        return;
-      }
-      step();
+      setScenarioClockMs((currentClockMs) => {
+        const current = currentClockMs ?? nextDecisionTargetMs;
+        const nextClockMs = Math.min(current + 1000, nextDecisionTargetMs);
+
+        if (nextClockMs >= nextDecisionTargetMs) {
+          if (timerRef.current) window.clearInterval(timerRef.current);
+          timerRef.current = null;
+          void step();
+        }
+
+        return nextClockMs;
+      });
     }, 1000);
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPlaying, warmupRemaining]);
+  }, [isPlaying, nextDecisionTargetMs, state]);
 
   const selectedCase = state?.selectedCase ?? null;
   const latestAssessment = state?.latestRiskAssessment ?? null;
   const currentEvent = state?.currentEvent ?? null;
+  const isScenarioMode = Boolean(state);
   const rawLiveSample = liveSamples[liveSampleIndex] ?? null;
+  const livePredictionBySampleVehicle = useMemo(() => {
+    const predictions = new Map<string, LivePrediction>();
+    for (const prediction of livePredictions) {
+      predictions.set(livePredictionKey(prediction.sample_id, prediction.vehicle_id), prediction);
+    }
+    return predictions;
+  }, [livePredictions]);
   const scenarioClockTimestamp = scenarioClockMs === null ? null : new Date(scenarioClockMs).toISOString();
   const scenarioTelemetrySample = useMemo(() => {
     if (scenarioClockMs === null || !scenarioTelemetrySamples.length) return null;
@@ -294,22 +333,14 @@ export function NearGuardDashboard() {
       zone: zones.find((item) => item.zone_id === firstLiveZone.zone_id) ?? null
     };
   }, [liveSample?.zones, selectedLiveVehicleId, zones]);
+  const liveVehiclePrediction = useMemo(() => {
+    if (isScenarioMode || !selectedLiveVehicle || !liveSample) return null;
+    return livePredictionBySampleVehicle.get(livePredictionKey(liveSample.sample_id, selectedLiveVehicle.mover.vehicle_id)) ?? null;
+  }, [isScenarioMode, livePredictionBySampleVehicle, liveSample, selectedLiveVehicle]);
   const liveVehicleAssessment = useMemo(() => {
-    if (!selectedLiveVehicle || !liveSample) return null;
-    const sampleHistory = liveSamples.slice(0, liveSampleIndex + 1);
-    const samples = sampleHistory.some((sample) => sample.sample_id === liveSample.sample_id)
-      ? sampleHistory
-      : [...sampleHistory, liveSample];
-
-    return assessLiveVehicleNearMissRisk(
-      samples,
-      liveSample,
-      selectedLiveVehicle.liveZone,
-      selectedLiveVehicle.mover,
-      selectedLiveVehicle.zone,
-      latestAssessment?.safety_incident_risk_score
-    );
-  }, [latestAssessment?.safety_incident_risk_score, liveSample, liveSampleIndex, liveSamples, selectedLiveVehicle]);
+    if (!liveVehiclePrediction) return null;
+    return liveModelAssessment(liveVehiclePrediction);
+  }, [liveVehiclePrediction]);
   const pendingApproval = state?.pendingApprovals.find((approval) => approval.status === "pending") ?? null;
   const hasIntervention = Boolean(
     pendingApproval ||
@@ -394,43 +425,70 @@ export function NearGuardDashboard() {
           </button>
           <button
             className="primary-button"
-            onClick={() => {
-              setIsPlaying((value) => {
-                const next = !value;
-                if (next && !currentEvent) setWarmupRemaining(PLAY_WARMUP_TICKS);
-                return next;
-              });
-            }}
-            disabled={!state || state.isComplete}
-            title={isPlaying ? "Pause replay" : "Auto-play replay"}
+            onClick={() => setIsPlaying((value) => !value)}
+            disabled={!state || state.isComplete || nextDecisionTargetMs === null}
+            title={isPlaying ? "Pause replay" : "Play replay until the next decision"}
           >
             {isPlaying ? <Pause size={16} /> : <Play size={16} />} {isPlaying ? "Pause" : "Play"}
           </button>
         </div>
       </header>
 
+      {introScenario ? (
+        <div className="modal-backdrop" role="presentation">
+          <section className="scenario-modal" role="dialog" aria-modal="true" aria-labelledby="scenario-modal-title">
+            <span className="scenario-modal-kicker">Scenario selected</span>
+            <h2 id="scenario-modal-title">{introScenario.name}</h2>
+            <p>{introScenario.description}</p>
+            <ul>
+              {introScenario.highlights.map((highlight) => (
+                <li key={highlight}>{highlight}</li>
+              ))}
+            </ul>
+            <div className="scenario-modal-footer">
+              <span>
+                {introScenario.events.filter(isDecisionPointEvent).length} decisions - clock paused
+              </span>
+              <button className="primary-button" type="button" onClick={() => setIntroScenario(null)}>
+                OK
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+
       <section className="dashboard">
         <section className="panel live-dashboard-panel">
           <div className="panel-header">
             <div>
-              <h2>Zone Monitor</h2>
-              <p className="small muted">Operational zone telemetry</p>
+              <h2>{isScenarioMode ? "Scenario Zone Replay" : "Zone Monitor"}</h2>
+              <p className="small muted">{isScenarioMode ? "Scripted telemetry, paused at decision anchors" : "Operational zone telemetry"}</p>
             </div>
             <span className={`badge ${bandClass(latestAssessment?.risk_band)}`}>
               <ShieldAlert size={14} />
-              {hasIntervention ? (latestAssessment?.risk_band ?? "Review") : "Monitoring"}
+              {isScenarioMode ? (isPlaying ? "Playing" : state?.isComplete ? "Complete" : "Paused") : hasIntervention ? (latestAssessment?.risk_band ?? "Review") : "Monitoring"}
             </span>
           </div>
           <div className="panel-body">
             <div className="live-monitor" aria-label="Live zone telemetry monitor">
               <div className="live-monitor-header">
                 <div>
-                  <strong>{hasIntervention ? "Vehicle risk crossed an intervention threshold" : "Continuous assessment active"}</strong>
+                  <strong>
+                    {isScenarioMode
+                      ? state?.isComplete
+                        ? "Scenario complete"
+                        : isPlaying
+                          ? "Replaying toward next decision point"
+                          : "Scenario clock paused"
+                      : hasIntervention
+                        ? "Vehicle risk crossed an intervention threshold"
+                        : "Continuous assessment active"}
+                  </strong>
                 </div>
                 <div className="live-clock">
                   <Clock3 size={14} />
                   <span>{liveSample ? timeLabel(liveSample.timestamp) : "--:--:--"}</span>
-                  <i className={`live-dot ${isPlaying ? "active" : ""}`} />
+                  <i className={`live-dot ${isScenarioMode ? (isPlaying ? "active" : "paused") : ""}`} />
                 </div>
               </div>
               <div className="zone-risk-board">
@@ -452,45 +510,57 @@ export function NearGuardDashboard() {
                       <span style={{ width: riskPercent(card.operationalRisk) }} />
                     </div>
                     <div className="zone-live-grid">
-                      <span>
+                      <span className={scoreSeverityClass(card.operationalRisk)}>
                         Zone Risk <strong>{card.operationalRisk.toFixed(2)}</strong>
                       </span>
-                      <span>
-                        PMs <strong>{card.live?.active_prime_movers ?? "--"}</strong>
+                      <span className={trafficSeverityClass(trafficLevelFromPressure(card.live?.traffic_pressure))}>
+                        Traffic <strong>{trafficLevelFromPressure(card.live?.traffic_pressure) ?? "--"}</strong>
                       </span>
-                      <span>
-                        Avg <strong>{card.live ? `${card.live.avg_speed} km/h` : "--"}</strong>
+                      <span className={weatherSeverityClass(card.live?.weather)}>
+                        Weather <strong>{card.live ? card.live.weather.replace("_", " ") : "--"}</strong>
                       </span>
-                      <span>
-                        Compliance <strong>{card.live ? riskPercent(card.live.speed_compliance) : "--"}</strong>
+                      <span className={restrictionSeverityClass(card.live?.restriction_level)}>
+                        Restriction <strong>{card.live?.restriction_level ?? "--"}</strong>
+                      </span>
+                      <span className={trafficSeverityClass(card.live?.pedestrian_exposure)}>
+                        Pedestrian <strong>{card.live?.pedestrian_exposure ?? "--"}</strong>
+                      </span>
+                      <span className={speedSeverityClass(card.live?.avg_speed, card.live?.prime_movers[0]?.speed_limit)}>
+                        Avg Speed <strong>{card.live ? `${card.live.avg_speed} km/h` : "--"}</strong>
                       </span>
                     </div>
-                    <div className="zone-flag-row">
-                      {card.flags.slice(0, 3).map((flag) => (
-                        <em key={flag}>{flag}</em>
-                      ))}
-                    </div>
+                    {card.flags.length ? (
+                      <div className="zone-flag-row">
+                        {card.flags.slice(0, 3).map((flag) => (
+                          <em key={flag}>{flag}</em>
+                        ))}
+                      </div>
+                    ) : null}
                     <ul className="prime-mover-list">
-                      {(card.live?.prime_movers ?? []).map((mover) => (
-                        <li
-                          className={`${scoreSeverityClass(
-                            card.live && liveSample
-                              ? assessLiveVehicleNearMissRisk(liveSamples.slice(0, liveSampleIndex + 1), liveSample, card.live, mover, card.zone).assessment
-                                  .safety_incident_risk_score
-                              : null
-                          )} ${selectedLiveVehicle?.mover.vehicle_id === mover.vehicle_id && signalUsesLiveVehicle ? "selected" : ""}`}
-                          key={mover.vehicle_id}
-                        >
-                          <button type="button" onClick={() => setSelectedLiveVehicleId(mover.vehicle_id)}>
-                            <span>{mover.vehicle_id}</span>
-                            <strong>{mover.speed} km/h</strong>
-                            <small>
-                              limit {mover.speed_limit} km/h
-                              <em className={`state-tag ${eventSignalClass(mover.state)}`}>{mover.state}</em>
-                            </small>
-                          </button>
-                        </li>
-                      ))}
+                      {(card.live?.prime_movers ?? []).map((mover) => {
+                        const prediction =
+                          liveSample && !isScenarioMode
+                            ? livePredictionBySampleVehicle.get(livePredictionKey(liveSample.sample_id, mover.vehicle_id))
+                            : null;
+
+                        return (
+                          <li
+                            className={`${scoreSeverityClass(prediction?.assessment.safety_incident_risk_score ?? null)} ${
+                              selectedLiveVehicle?.mover.vehicle_id === mover.vehicle_id && signalUsesLiveVehicle ? "selected" : ""
+                            }`}
+                            key={mover.vehicle_id}
+                          >
+                            <button type="button" onClick={() => setSelectedLiveVehicleId(mover.vehicle_id)}>
+                              <span>{mover.vehicle_id}</span>
+                              <strong>{mover.speed} km/h</strong>
+                              <small>
+                                limit {mover.speed_limit} km/h
+                                <em className={`state-tag ${eventSignalClass(mover.state)}`}>{mover.state}</em>
+                              </small>
+                            </button>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </article>
                 ))}

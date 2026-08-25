@@ -22,10 +22,10 @@ NearGuard is designed to satisfy the Code Sprint expectation that an agentic AI 
 - invoke human review, approval or escalation where appropriate
 - produce a clear execution trace covering decisions, tool calls, approvals, actions, results and errors
 
-## Source-Of-Truth Boundaries
+## Docs Map
 
-- Use `implementation_plan.md` for implementation decisions.
-- Use `ai_and_data.md` for synthetic scenarios, data provenance, risk features and AI model methodology.
+- Use `implementation_plan.md` for implementation contracts and repo workflow.
+- Use `ai_and_data.md` for synthetic scenarios, data provenance, risk features and model methodology.
 - Use `design.md` for architecture and safety-policy boundaries.
 - Use `SAFETY.md` for prototype safety boundaries and production validation requirements.
 - Use `demo_plan.md` for presentation and judging flow.

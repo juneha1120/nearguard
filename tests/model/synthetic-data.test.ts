@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { listLiveTelemetrySamples } from "@/lib/data/repository";
+import { listLivePredictions, listLiveTelemetrySamples } from "@/lib/data/repository";
 
 function csvRows() {
   const [headerLine, ...lines] = readFileSync("data/synthetic_training_data.csv", "utf8").trim().split(/\r?\n/);
@@ -54,6 +54,22 @@ describe("synthetic horizon dataset", () => {
 
     expect(payload.target).toBe("near_miss_within_next_15m");
     expect(payload.prediction_horizon).toBe("15m");
+    expect(prediction.assessment.prediction_horizon).toBe("15m");
+    expect(prediction.assessment.evidence_authority).toBe("SYNTHETIC_DATA");
+  });
+
+  it("exports trained-model predictions for routine live monitoring", () => {
+    const payload = JSON.parse(readFileSync("models/routine_live_predictions.json", "utf8"));
+    const prediction = payload.predictions[0];
+
+    expect(payload.target).toBe("near_miss_within_next_15m");
+    expect(payload.prediction_horizon).toBe("15m");
+    expect(payload.predictions.length).toBeGreaterThan(1000);
+    expect(listLivePredictions()).toHaveLength(payload.predictions.length);
+    expect(prediction).toHaveProperty("sample_id");
+    expect(prediction).toHaveProperty("vehicle_id");
+    expect(prediction).toHaveProperty("zone_id");
+    expect(prediction.features).toHaveProperty("nearby_vehicle_count_50m");
     expect(prediction.assessment.prediction_horizon).toBe("15m");
     expect(prediction.assessment.evidence_authority).toBe("SYNTHETIC_DATA");
   });
