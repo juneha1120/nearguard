@@ -18,7 +18,7 @@ export function decidePolicy(assessment: RiskAssessment): PolicyDecision {
   switch (assessment.risk_band) {
     case "Low":
       return {
-        recommendedAction: "Monitor case briefly and wait for updated telemetry.",
+        recommendedAction: "Continue monitoring; vehicle risk is below intervention threshold.",
         authorityClass: "Automatic monitoring",
         toolNames: [],
         shouldRequestApproval: false,
@@ -27,7 +27,7 @@ export function decidePolicy(assessment: RiskAssessment): PolicyDecision {
       };
     case "Medium":
       return {
-        recommendedAction: "Send concise driver advisory and continue monitoring.",
+        recommendedAction: "Advisory threshold crossed; send concise driver advisory and continue monitoring.",
         authorityClass: "Automatic advisory",
         toolNames: ["notify_driver"],
         shouldRequestApproval: false,
@@ -36,7 +36,7 @@ export function decidePolicy(assessment: RiskAssessment): PolicyDecision {
       };
     case "High":
       return {
-        recommendedAction: "Warn driver and notify operations supervisor with risk reasons.",
+        recommendedAction: "Supervisor threshold crossed; warn driver and notify operations supervisor with risk reasons.",
         authorityClass: "Supervisor report required",
         toolNames: ["notify_driver", "notify_supervisor"],
         shouldRequestApproval: false,
@@ -45,7 +45,7 @@ export function decidePolicy(assessment: RiskAssessment): PolicyDecision {
       };
     case "Persistent High":
       return {
-        recommendedAction: "Request approval for zone advisory and prepare safety case evidence.",
+        recommendedAction: "Persistent intervention threshold crossed; request approval for zone advisory and prepare safety case evidence.",
         authorityClass: "Human approval required",
         toolNames: ["request_human_approval"],
         shouldRequestApproval: true,
@@ -54,7 +54,7 @@ export function decidePolicy(assessment: RiskAssessment): PolicyDecision {
       };
     case "Critical / Low Confidence":
       return {
-        recommendedAction: "Escalate to safety supervisor for human review with uncertainty reason.",
+        recommendedAction: "Low-confidence escalation threshold crossed; send human review request with uncertainty reason.",
         authorityClass: "Urgent escalation required",
         toolNames: ["notify_supervisor"],
         shouldRequestApproval: false,

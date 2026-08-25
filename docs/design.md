@@ -107,12 +107,12 @@ flowchart LR
 | Event Ingestion | Validates event shape, normalizes fields and attaches events to active vehicle cases. |
 | Context Enricher | Joins vehicle events with zone context, public-PSA-inspired restrictions and recent vehicle history. |
 | Feature Aggregator | Builds model-ready features from recent 5/10/30-minute behavioural windows, context and case state. |
-| Risk Prediction Service | Produces synthetic near-miss risk evidence for the next 15 minutes, confidence, uncertainty reason and top risk reasons. |
-| Safety Policy Engine | Maps model evidence, confidence, uncertainty and operational impact to allowed action classes. It remains the intervention authority. |
+| Risk Prediction Service | Continuously produces per-Prime-Mover synthetic near-miss risk assessments for the next 15 minutes, confidence, uncertainty reason and top risk reasons. |
+| Safety Policy Engine | Maps model risk bands, confidence, uncertainty and operational impact to intervention thresholds and allowed action classes. It remains the intervention authority. |
 | Agent Controller | Runs observe, normalize, enrich, validate, predict, decide, act, monitor, reassess and escalate loop. |
 | Tool Layer | Provides simulated external actions and intentional failure paths. |
 | Trace Logger | Persists chronological trace events for audit and demo display. |
-| Dashboard | Shows active cases, explanations, pending approvals, tool status and execution trace. |
+| Dashboard | Shows zone monitoring, vehicle risk signal, AI assessment timeline, pending approvals and tool status. |
 | Worker Report Parser | Optional future LLM component that extracts structured context from plain-language reports. |
 
 ## 4. Agentic Safety Loop
@@ -188,16 +188,17 @@ erDiagram
 
 | Entity | Role | Model Input? |
 | --- | --- | --- |
-| `VehicleEvent` | Sparse decision-evidence input for replay, risk assessment, policy and tool simulation. | Yes, after validation and aggregation. |
-| `LiveTelemetrySample` / `ScenarioZoneTelemetrySample` | Dense zone monitoring stream for dashboard visuals and zone cards. | No for the MVP model; used by the UI zone-risk display. |
-| `ZoneContext` | Static zone registry/default context. `zone_historical_risk` is a synthetic prior; weather, restrictions and pedestrian exposure are MVP defaults. | Yes, joined by `zone_id`. |
+| `VehicleEvent` | Sparse decision-point input for replay, risk assessment, policy and tool simulation. Dense telemetry represents the continuous stream between these anchors. | Yes, after validation and aggregation. |
+| `LiveTelemetrySample` / `ScenarioZoneTelemetrySample` | Dense zone monitoring stream for dashboard visuals, zone cards and runtime operating context. | Yes for dynamic operating context; zone-risk display remains separate from model output. |
+| `ZoneRegistryEntry` | Static zone registry: zone ID, name, map geometry and `zone_historical_risk` only. | Yes for static prior and map join. |
+| `ZoneContext` | Runtime context assembled from `ZoneRegistryEntry` plus live zone telemetry. | Yes, joined by `zone_id` and timestamp. |
 | `VehicleCase` | Current case state managed by the agent. | Partly; previous risk and trend may be used. |
 | `RiskAssessment` | Prediction output for a specific evaluation time and future horizon. | No. |
 | `TraceEvent` | Audit trail for decisions, model outputs, tool calls, approvals and failures. | No. |
 | `ToolCall` | Simulated operational tool execution record. | No. |
 | `ApprovalRequest` | Human approval state. | No. |
 | `SafetyCase` | Escalated case summary and evidence. | No for MVP; future labelled feedback only if approved. |
-| `WorkerRiskReport` | Optional future plain-language hazard report. | Not directly; LLM-extracted context may enrich `ZoneContext`. |
+| `WorkerRiskReport` | Optional future plain-language hazard report. | Not directly; LLM-extracted context may enrich reviewed runtime context. |
 
 ### 5.3 Core Schemas
 
@@ -211,6 +212,16 @@ event_type
 speed
 speed_limit
 gps_freshness
+```
+
+```text
+ZoneRegistryEntry
+zone_id
+zone_name
+zone_historical_risk
+map_region
+center
+bounds
 ```
 
 ```text
@@ -282,28 +293,34 @@ extraction_confidence
 | Raw telemetry | `speed`, `speed_limit`, `event_type`, `zone_id`, `gps_freshness` | Captures the latest vehicle event. |
 | Enriched context | `traffic_level`, `weather`, `zone_historical_risk`, `restriction_level`, `slow_down_zone_active`, `pedestrian_exposure` | Adds operational and zone-level context. |
 | Derived features | `speed_over_limit`, `speed_over_limit_band`, rolling speed ratios, rolling alert counts, `alert_density_30m`, `risk_escalation_rate`, compound context indexes, `previous_risk`, `risk_trend` | Converts event stream, context and case state into model-ready signals. |
+| V2V / V2X interaction features | `nearby_vehicle_count_50m`, `nearest_vehicle_distance_m`, `nearest_vehicle_relative_speed_kmh`, `closing_rate_mps`, `interaction_features_available` | Adds same-zone surrounding Prime Mover proximity and closing-motion context when position data is usable. |
 | Model outputs | `safety_incident_risk_score`, `confidence`, `uncertainty_reason`, `top_risk_reasons` | Prediction and explanation results. |
 | Operational fields | `recommended_action`, `pending_approval`, `tool_calls`, `trace` | Used by the agent workflow, not the MVP risk model. |
-| Dashboard zone-risk fields | `live_risk`, active PM count, speed compliance, GPS quality counts, traffic pressure | Used for zone cards and live visuals, not model training or policy authority. |
+| Dashboard live-risk fields | Active PM count, speed compliance, GPS quality counts, traffic pressure, weather, restrictions, pedestrian exposure and current PM speed/state/GPS. | Used to calculate Zone Operational Risk and feed the rolling Vehicle Near-Miss Risk model path; policy remains the intervention authority. |
 
 ### 5.5 Field Meaning And Use
 
 | Field | Type / Range | Source | Used For |
 | --- | --- | --- | --- |
 | `speed` | 0-50 km/h for demo | VehicleEvent | Model input and speed-over-limit feature. |
-| `speed_limit` | 15, 25 or 40 km/h in scripted demo | VehicleEvent / ZoneContext | Model input and safety-policy check. |
+| `speed_limit` | 15, 25 or 40 km/h in scripted demo | VehicleEvent | Model input and safety-policy check. |
 | `event_type` | Controlled enum | VehicleEvent | Model input and trace explanation. |
 | `gps_freshness` | `fresh`, `delayed`, `stale` | VehicleEvent | Model input and confidence adjustment. |
-| `traffic_level` | `low`, `medium`, `high` | ZoneContext | Model input. |
-| `weather` | `clear`, `rain`, `heavy_rain` | ZoneContext | Model input. |
-| `zone_historical_risk` | 0.0-1.0 hand-authored synthetic prior | ZoneContext | Model input and dashboard fallback prior; not learned or live-updated in the MVP. |
-| `restriction_level` | `normal`, `caution`, `restricted`, `wharf` | ZoneContext | Model input and policy check. |
-| `slow_down_zone_active` | boolean | ZoneContext | Model input and policy check. |
-| `pedestrian_exposure` | `low`, `medium`, `high` | ZoneContext | Model input and risk reason. |
+| `position` | synthetic yard-map x/y; `10m` per map unit | Scenario PM telemetry or routine demo enrichment | V2V distance and closing-rate derivation. |
+| `heading_degrees` | 0-359 degrees | Scenario PM telemetry or routine demo enrichment | Relative-motion fallback when prior position is unavailable. |
+| `traffic_level` | `low`, `medium`, `high` | Live zone telemetry / ZoneContext | Model input. |
+| `weather` | `clear`, `rain`, `heavy_rain` | Live zone telemetry / ZoneContext | Model input. |
+| `zone_historical_risk` | 0.0-1.0 hand-authored synthetic prior | ZoneRegistryEntry | Model input and dashboard fallback prior; not learned or live-updated in the MVP. |
+| `restriction_level` | `normal`, `caution`, `restricted`, `wharf` | Live zone telemetry / ZoneContext | Model input and policy check. |
+| `slow_down_zone_active` | boolean | Live zone telemetry / ZoneContext | Model input and policy check. |
+| `pedestrian_exposure` | `low`, `medium`, `high` | Live zone telemetry / ZoneContext | Model input and risk reason. |
 | `speed_over_limit` | numeric km/h | Derived | Model input. |
 | `speed_over_limit_band` | `none`, `minor`, `moderate`, `severe` | Derived | Model input and explanation. |
 | `recent_harsh_brake_count_10m` | integer 0+ | Derived | Model input. |
 | `recent_sharp_turn_count_10m` | integer 0+ | Derived | Model input. |
+| `nearest_vehicle_distance_m` | numeric metres or 999 fallback | Derived from live PM positions | Model input and explanation. |
+| `closing_rate_mps` | numeric m/s | Derived from live PM relative motion | Model input and explanation. |
+| `interaction_features_available` | boolean | Derived from position/GPS quality | Confidence and model input. |
 | `previous_risk` | 0.0-1.0 | VehicleCase | Model input for trend. |
 | `risk_trend` | `decreasing`, `stable`, `increasing` | Derived | Policy and escalation. |
 
@@ -311,17 +328,17 @@ extraction_confidence
 
 ### 6.1 Tabular Risk Model
 
-The primary model is a tabular ML risk model using scikit-learn gradient boosting. It predicts `near_miss_within_next_15m` from rolling telemetry windows, enriched context and derived features. The served `safety_incident_risk_score` is synthetic decision-support evidence for app compatibility, not a validated accident probability. In the prototype, training data and labels are synthetic demo constructs.
+The primary model is a tabular ML risk model using scikit-learn gradient boosting. It continuously predicts `near_miss_within_next_15m` from rolling telemetry windows, enriched context and derived features. The served `safety_incident_risk_score` is a synthetic per-Prime-Mover risk assessment for app compatibility, not a validated accident probability. In the prototype, training data and labels are synthetic demo constructs.
 
-`docs/ai_and_data.md` is the source of truth for the prototype training recipe, feature encoding, synthetic label approach, confidence handling, explanation strategy and production-readiness boundaries.
+`docs/ai_and_data.md` owns the prototype training recipe, feature encoding, synthetic label approach, confidence handling, explanation strategy and production-readiness boundaries.
 
-The model is a decision-tree-family gradient boosting classifier. It is used for rolling multi-variable risk prioritization, not single-event rule alerting. Deterministic rules still handle obvious violations and hard safety boundaries.
+The model is a decision-tree-family gradient boosting classifier. It is used for rolling multi-variable risk prioritization, not single-event rule alerting. Interventions are opened when policy thresholds are crossed, while deterministic rules still handle hard safety boundaries.
 
 Model outputs:
 
 - `safety_incident_risk_score`: 0.0-1.0 score.
 - `confidence`: `high`, `medium` or `low`.
-- `uncertainty_reason`: missing context, stale GPS, conflicting signals or sparse history.
+- `uncertainty_reason`: missing context, stale GPS, nearby vehicle position unavailable, conflicting signals or sparse history.
 - `top_risk_reasons`: human-readable reasons derived from feature contribution or rule-aligned explanation.
 
 ### 6.2 LLM Role
@@ -459,8 +476,8 @@ sequenceDiagram
 ## 10. Implementation Notes
 
 - Keep the first implementation vertical: one scripted scenario should work end to end before adding more scenarios.
-- Use `docs/implementation_plan.md` as the source of truth for scaffold, module boundaries, artifact contracts, API contracts, tests and build order.
-- Use `docs/ai_and_data.md` as the source of truth for synthetic variables, scenario construction, ML training methodology and risk explanation boundaries.
+- Use `docs/implementation_plan.md` for scaffold, module boundaries, artifact contracts, API contracts, tests and build order.
+- Use `docs/ai_and_data.md` for synthetic variables, scenario construction, ML training methodology and risk explanation boundaries.
 - Prefer deterministic policy rules for intervention decisions.
 - Make the dashboard trace visually prominent.
 - Build one intentional failure path early so agentic behaviour is visible.

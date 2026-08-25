@@ -1,0 +1,61 @@
+{
+  "scenario_id": "wharf-pedestrian-exposure",
+  "name": "Wharf Pedestrian Exposure",
+  "description": "Continuous scoring raises PM-31 risk when wharf pedestrian exposure combines with speed and a sharp turn, then lowers the assessment as speed normalizes.",
+  "primary_vehicle_id": "PM-31",
+  "highlights": [
+    "wharf",
+    "pedestrian exposure",
+    "sharp turn"
+  ],
+  "events": [
+    {
+      "event_id": "wharf-001",
+      "timestamp": "2026-08-19T11:20:00+08:00",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "event_type": "normal_update",
+      "speed": 12,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "position": {
+        "x": 67,
+        "y": 78.16
+      },
+      "heading_degrees": 90,
+      "accuracy_m": 4
+    },
+    {
+      "event_id": "wharf-002",
+      "timestamp": "2026-08-19T11:20:58+08:00",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "event_type": "sharp_turn",
+      "speed": 18,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "position": {
+        "x": 85,
+        "y": 71.74
+      },
+      "heading_degrees": 0,
+      "accuracy_m": 5
+    },
+    {
+      "event_id": "wharf-003",
+      "timestamp": "2026-08-19T11:22:05+08:00",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "event_type": "speed_normalized",
+      "speed": 9,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "position": {
+        "x": 64.78,
+        "y": 66.96
+      },
+      "heading_degrees": 270,
+      "accuracy_m": 5
+    }
+  ]
+}

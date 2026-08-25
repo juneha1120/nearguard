@@ -1,0 +1,96 @@
+{
+  "scenario_id": "pm27-persistent-high-risk",
+  "name": "PM-27 Persistent High Risk",
+  "description": "Continuous scoring sees PM-27 risk rise across a rainy high-traffic caution zone. Near-limit speed, sharp turning and repeated harsh braking push the vehicle above intervention thresholds, then persistent high risk drives approval and safety case creation.",
+  "primary_vehicle_id": "PM-27",
+  "highlights": [
+    "compound telemetry",
+    "harsh braking",
+    "sharp turn",
+    "tool failure",
+    "approval",
+    "safety case"
+  ],
+  "events": [
+    {
+      "event_id": "pm27-001",
+      "timestamp": "2026-08-19T09:14:02+08:00",
+      "vehicle_id": "PM-27",
+      "zone_id": "YARD-C4",
+      "event_type": "normal_update",
+      "speed": 22,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "position": {
+        "x": 16.5,
+        "y": 38.16
+      },
+      "heading_degrees": 90,
+      "accuracy_m": 6
+    },
+    {
+      "event_id": "pm27-002",
+      "timestamp": "2026-08-19T09:14:42+08:00",
+      "vehicle_id": "PM-27",
+      "zone_id": "YARD-C4",
+      "event_type": "sharp_turn",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "position": {
+        "x": 39,
+        "y": 35.05
+      },
+      "heading_degrees": 0,
+      "accuracy_m": 5
+    },
+    {
+      "event_id": "pm27-003",
+      "timestamp": "2026-08-19T09:15:26+08:00",
+      "vehicle_id": "PM-27",
+      "zone_id": "YARD-C4",
+      "event_type": "harsh_brake",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "position": {
+        "x": 16.34,
+        "y": 26.96
+      },
+      "heading_degrees": 270,
+      "accuracy_m": 6
+    },
+    {
+      "event_id": "pm27-004",
+      "timestamp": "2026-08-19T09:16:05+08:00",
+      "vehicle_id": "PM-27",
+      "zone_id": "YARD-C4",
+      "event_type": "harsh_brake",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "position": {
+        "x": 29.54,
+        "y": 38.16
+      },
+      "heading_degrees": 90,
+      "accuracy_m": 7
+    },
+    {
+      "event_id": "pm27-005",
+      "timestamp": "2026-08-19T09:18:30+08:00",
+      "vehicle_id": "PM-27",
+      "zone_id": "YARD-C4",
+      "event_type": "risk_persistent",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "position": {
+        "x": 33.39,
+        "y": 26.96
+      },
+      "heading_degrees": 270,
+      "accuracy_m": 7
+    }
+  ]
+}

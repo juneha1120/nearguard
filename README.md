@@ -35,11 +35,12 @@ The web app uses `models/scenario_predictions.json` for reliable demo replay whi
 
 ## Demo Data Layout
 
-- `data/live_zone_telemetry.json` drives the idle 1-second zone monitoring stream.
-- `data/scenarios.json` defines sparse decision evidence anchors for replay and policy/tool steps.
-- `data/scenario_telemetry/{scenario}.json` provides dense 1-second Prime Mover telemetry during a selected scenario.
-- `data/scenario_zone_telemetry/{scenario}.json` provides matching 1-second dynamic zone telemetry during a selected scenario.
-- `data/zones.json` is static zone registry/default context. `zone_historical_risk` is a hand-authored synthetic prior; weather, restrictions and pedestrian exposure are MVP defaults that live zone telemetry can override.
+- `data/routine_live_zone_telemetry.json` drives the routine 1-second zone monitoring stream.
+- `data/routine_prime_mover_telemetry.json` is the matching routine 1-second Prime Mover snapshot stream.
+- `data/scenario_decision_points/{scenario}.json` defines sparse decision anchors for replay and policy/tool steps.
+- `data/scenario_prime_mover_telemetry/{scenario}.json` provides dense 1-second Prime Mover telemetry during a selected scenario.
+- `data/scenario_live_zone_telemetry/{scenario}.json` provides matching 1-second live zone telemetry during a selected scenario.
+- `data/zone_registry.json` is static zone registry data only: IDs, names, map geometry and `zone_historical_risk`. Weather, restrictions, pedestrian exposure and other operating context live in telemetry files.
 
 ## Run The App
 
@@ -63,7 +64,7 @@ npm.cmd run build
 
 ## Demo Flow
 
-Use the scenario selector in the dashboard, then click `Next Evidence` or `Play`.
+Use the scenario selector in the dashboard, then click `Next Decision` or `Play`.
 
 Recommended first demo:
 

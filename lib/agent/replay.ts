@@ -1,4 +1,4 @@
-import { getScenario, getScenarioPrediction, getZone } from "@/lib/data/repository";
+import { getLatestScenarioZoneTelemetrySample, getScenario, getScenarioPrediction, getZone } from "@/lib/data/repository";
 import { deriveFeatures, recentVehicleEvents } from "@/lib/model/features";
 import { riskBandFor } from "@/lib/model/risk";
 import { decidePolicy } from "@/lib/policy/policy";
@@ -12,7 +12,8 @@ import type {
   TraceEvent,
   VehicleCase,
   VehicleEvent,
-  ZoneContext
+  ZoneContext,
+  ZoneRegistryEntry
 } from "@/lib/types/domain";
 
 let traceCounter = 0;
@@ -95,12 +96,38 @@ function missingContextForScenario(scenario: Scenario, event: VehicleEvent) {
   return scenario.scenario_id === "telemetry-uncertainty" && event.event_id !== "uncertain-003";
 }
 
-export function isEvidenceEvent(event: VehicleEvent) {
+function fallbackOperatingContext(zone: ZoneRegistryEntry, zoneId = zone.zone_id): ZoneContext {
+  return {
+    ...zone,
+    zone_id: zoneId,
+    traffic_level: "high",
+    weather: "rain",
+    restriction_level: "restricted",
+    slow_down_zone_active: false,
+    pedestrian_exposure: "medium"
+  };
+}
+
+function zoneContextForFeatures(scenario: Scenario, event: VehicleEvent, zone: ZoneRegistryEntry): ZoneContext {
+  const dynamicTelemetry = getLatestScenarioZoneTelemetrySample(scenario.scenario_id, event.zone_id, event.timestamp);
+  if (!dynamicTelemetry) return fallbackOperatingContext(zone);
+
+  return {
+    ...zone,
+    traffic_level: dynamicTelemetry.traffic_pressure >= 0.75 ? "high" : dynamicTelemetry.traffic_pressure >= 0.45 ? "medium" : "low",
+    weather: dynamicTelemetry.weather,
+    restriction_level: dynamicTelemetry.restriction_level,
+    slow_down_zone_active: dynamicTelemetry.slow_down_zone_active,
+    pedestrian_exposure: dynamicTelemetry.pedestrian_exposure
+  };
+}
+
+export function isDecisionPointEvent(event: VehicleEvent) {
   return event.event_type !== "normal_update";
 }
 
-function nextEvidenceIndex(state: ReplayState) {
-  return state.selectedScenario.events.findIndex((event, index) => index >= state.currentEventIndex && isEvidenceEvent(event));
+function nextDecisionPointIndex(state: ReplayState) {
+  return state.selectedScenario.events.findIndex((event, index) => index >= state.currentEventIndex && isDecisionPointEvent(event));
 }
 
 function buildAssessment(state: ReplayState, event: VehicleEvent, vehicleCase: VehicleCase): RiskAssessment {
@@ -153,15 +180,15 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
   if (inputState.isComplete) return inputState;
 
   const state = structuredClone(inputState) as ReplayState;
-  const evidenceIndex = nextEvidenceIndex(state);
-  if (evidenceIndex === -1) {
+  const decisionPointIndex = nextDecisionPointIndex(state);
+  if (decisionPointIndex === -1) {
     return {
       ...state,
       currentEventIndex: state.selectedScenario.events.length,
       isComplete: true
     };
   }
-  state.currentEventIndex = evidenceIndex;
+  state.currentEventIndex = decisionPointIndex;
   const event = state.selectedScenario.events[state.currentEventIndex];
   const vehicleCase = getOrCreateCase(state, event);
   const traceEvents: TraceEvent[] = [];
@@ -183,21 +210,25 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
 
   const zone = getZone(event.zone_id);
   const missingContext = missingContextForScenario(state.selectedScenario, event);
-  const zoneForFeatures: ZoneContext = zone ?? {
+  const fallbackZone: ZoneRegistryEntry = zone ?? {
     zone_id: event.zone_id,
     zone_name: "Unavailable zone context",
-    traffic_level: "high",
-    weather: "rain",
     zone_historical_risk: 0.66,
-    restriction_level: "restricted",
-    slow_down_zone_active: false,
-    pedestrian_exposure: "medium"
   };
+  const zoneForFeatures = missingContext ? fallbackOperatingContext(fallbackZone, event.zone_id) : zoneContextForFeatures(state.selectedScenario, event, fallbackZone);
 
   if (missingContext) {
     traceEvents.push(trace(vehicleCase.case_id, event.timestamp, "context_missing", "Zone context lookup unavailable; confidence will be reduced.", { zone_id: event.zone_id }));
   } else {
-    traceEvents.push(trace(vehicleCase.case_id, event.timestamp, "context_enriched", `Zone context loaded: ${zoneForFeatures.zone_name}.`, { zone: zoneForFeatures }));
+    traceEvents.push(
+      trace(
+        vehicleCase.case_id,
+        event.timestamp,
+        "context_enriched",
+        `Zone context loaded: ${zoneForFeatures.zone_name}; latest dynamic telemetry applied where available.`,
+        { zone: zoneForFeatures }
+      )
+    );
   }
 
   const processedEvents = state.selectedScenario.events.slice(0, state.currentEventIndex);
@@ -211,7 +242,7 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
       vehicleCase.case_id,
       event.timestamp,
       "risk_assessed",
-      `Telemetry model returned ${assessment.safety_incident_risk_score.toFixed(2)} synthetic near-miss risk within next ${assessment.prediction_horizon} (${assessment.risk_band}, ${assessment.confidence} confidence).`,
+      `Continuous assessment returned ${assessment.safety_incident_risk_score.toFixed(2)} synthetic near-miss risk within next ${assessment.prediction_horizon}; policy maps ${assessment.risk_band} risk to the intervention threshold (${assessment.confidence} confidence).`,
       { assessment }
     )
   );
@@ -266,6 +297,69 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
     pendingApprovals: approvals,
     traceEvents: [...state.traceEvents, ...traceEvents],
     isComplete: nextIndex >= state.selectedScenario.events.length
+  };
+}
+
+export function rewindReplay(inputState: ReplayState): ReplayState {
+  const processedDecisionPointCount = inputState.selectedScenario.events
+    .slice(0, inputState.currentEventIndex)
+    .filter(isDecisionPointEvent).length;
+  const targetDecisionPointCount = Math.max(0, processedDecisionPointCount - 1);
+  const retainedApprovals = inputState.pendingApprovals.filter((approval) => approval.status !== "pending");
+  const retainedApprovalIds = new Set(retainedApprovals.map((approval) => approval.approval_id));
+  const retainedToolCalls = inputState.toolCalls.filter((tool) => tool.tool_name === "recommend_zone_advisory");
+  const retainedToolCallIds = new Set(retainedToolCalls.map((tool) => tool.tool_call_id));
+  const retainedSafetyCaseIds = new Set(inputState.safetyCases.map((safetyCase) => safetyCase.safety_case_id));
+  const retainedTraceEvents = inputState.traceEvents.filter((event) => {
+    const metadata = event.metadata as {
+      approval_id?: string;
+      toolCall?: ToolCall;
+      safetyCase?: { safety_case_id?: string };
+    };
+
+    return (
+      (metadata.approval_id && retainedApprovalIds.has(metadata.approval_id)) ||
+      (metadata.toolCall && retainedToolCallIds.has(metadata.toolCall.tool_call_id)) ||
+      (metadata.safetyCase?.safety_case_id && retainedSafetyCaseIds.has(metadata.safetyCase.safety_case_id))
+    );
+  });
+  let state = createInitialReplayState(inputState.selectedScenario.scenario_id);
+
+  for (let index = 0; index < targetDecisionPointCount; index += 1) {
+    state = advanceReplay(state);
+  }
+
+  const activeCases: VehicleCase[] = state.activeCases.map((vehicleCase) => {
+    const decidedApproval = retainedApprovals.find((approval) => approval.case_id === vehicleCase.case_id);
+    if (!decidedApproval) return vehicleCase;
+
+    return {
+      ...vehicleCase,
+      status: decidedApproval.status === "approved" ? "escalated" : "monitoring",
+      pending_approval: false,
+      updated_at: decidedApproval.decision_time ?? vehicleCase.updated_at
+    };
+  });
+  const selectedCase = state.selectedCase
+    ? activeCases.find((vehicleCase) => vehicleCase.case_id === state.selectedCase?.case_id) ?? state.selectedCase
+    : null;
+
+  return {
+    ...state,
+    activeCases,
+    selectedCase,
+    pendingApprovals: [
+      ...state.pendingApprovals.filter((approval) => !retainedApprovalIds.has(approval.approval_id)),
+      ...retainedApprovals
+    ],
+    toolCalls: [
+      ...state.toolCalls.filter((tool) => !retainedToolCallIds.has(tool.tool_call_id)),
+      ...retainedToolCalls
+    ],
+    safetyCases: inputState.safetyCases,
+    traceEvents: [...state.traceEvents, ...retainedTraceEvents].sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    )
   };
 }
 

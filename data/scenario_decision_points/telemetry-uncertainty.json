@@ -1,0 +1,61 @@
+{
+  "scenario_id": "telemetry-uncertainty",
+  "name": "Telemetry Uncertainty",
+  "description": "Continuous scoring detects that stale GPS and unavailable zone context make the vehicle assessment low-confidence enough for human review.",
+  "primary_vehicle_id": "PM-09",
+  "highlights": [
+    "stale GPS",
+    "missing context",
+    "low confidence"
+  ],
+  "events": [
+    {
+      "event_id": "uncertain-001",
+      "timestamp": "2026-08-19T13:05:00+08:00",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "event_type": "stale_gps",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "position": {
+        "x": 17,
+        "y": 78.16
+      },
+      "heading_degrees": 90,
+      "accuracy_m": 34
+    },
+    {
+      "event_id": "uncertain-002",
+      "timestamp": "2026-08-19T13:06:10+08:00",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "event_type": "normal_update",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "position": {
+        "x": 18.73,
+        "y": 66.96
+      },
+      "heading_degrees": 270,
+      "accuracy_m": 18
+    },
+    {
+      "event_id": "uncertain-003",
+      "timestamp": "2026-08-19T13:07:30+08:00",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "event_type": "speed_normalized",
+      "speed": 20,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "position": {
+        "x": 37.1,
+        "y": 66.96
+      },
+      "heading_degrees": 270,
+      "accuracy_m": 7
+    }
+  ]
+}

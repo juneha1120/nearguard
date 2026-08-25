@@ -11,11 +11,35 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
 RANDOM_SEED = 42
 HORIZON_MINUTES = 15
+REACTION_WINDOW_SECONDS = 10
+UNSAFE_AFTER_INTERVENTION_EVENTS = {"speeding", "harsh_brake", "sharp_turn", "risk_persistent"}
 
 
 def load_json(path: Path):
     with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
+
+
+def load_zone_contexts() -> list[dict[str, object]]:
+    registry = {zone["zone_id"]: zone for zone in load_json(DATA_DIR / "zone_registry.json")}
+    routine_samples = load_json(DATA_DIR / "routine_live_zone_telemetry.json")["samples"]
+    first_zone_samples = routine_samples[0]["zones"]
+    contexts: list[dict[str, object]] = []
+
+    for live_zone in first_zone_samples:
+        static_zone = registry[live_zone["zone_id"]]
+        contexts.append(
+            {
+                **static_zone,
+                "traffic_level": "high" if live_zone["traffic_pressure"] >= 0.75 else "medium" if live_zone["traffic_pressure"] >= 0.45 else "low",
+                "weather": live_zone["weather"],
+                "restriction_level": live_zone["restriction_level"],
+                "slow_down_zone_active": live_zone["slow_down_zone_active"],
+                "pedestrian_exposure": live_zone["pedestrian_exposure"],
+            }
+        )
+
+    return contexts
 
 
 def speed_band(speed_over_limit: float) -> str:
@@ -82,7 +106,43 @@ def latent_pressure(row: dict[str, object]) -> float:
     pressure += 0.22 if bool(row["night_flag"]) else 0.0
     pressure += 0.42 if bool(row["post_intervention_noncompliance"]) else 0.0
     pressure += float(row["zone_transition_risk"]) * 0.35
+    if bool(row["interaction_features_available"]):
+        nearest_distance = float(row["nearest_vehicle_distance_m"])
+        if nearest_distance <= 15:
+            pressure += 0.72
+        elif nearest_distance <= 25:
+            pressure += 0.45
+        elif nearest_distance <= 50:
+            pressure += 0.22
+        pressure += min(int(row["nearby_vehicle_count_50m"]), 4) * 0.14
+        pressure += min(float(row["nearest_vehicle_relative_speed_kmh"]), 24) * 0.018
+        pressure += min(float(row["closing_rate_mps"]), 4.5) * 0.24
     return pressure
+
+
+def reaction_window_active(time_since_last_intervention_minutes: float) -> bool:
+    return time_since_last_intervention_minutes * 60 <= REACTION_WINDOW_SECONDS
+
+
+def post_intervention_noncompliance_for(event_type: str, time_since_last_intervention_minutes: float) -> bool:
+    return event_type in UNSAFE_AFTER_INTERVENTION_EVENTS and not reaction_window_active(time_since_last_intervention_minutes)
+
+
+def intervention_contaminated_window(row: dict[str, object], near_miss_label: int) -> bool:
+    if near_miss_label == 1:
+        return False
+    time_since_last_intervention = float(row["time_since_last_intervention"])
+    if time_since_last_intervention >= HORIZON_MINUTES:
+        return False
+    has_risk_signal = (
+        str(row["event_type"]) in UNSAFE_AFTER_INTERVENTION_EVENTS
+        or float(row["speed_over_limit"]) > 0
+        or float(row["speeding_ratio_10m"]) > 0
+        or int(row["harsh_brake_count_10m"]) > 0
+        or int(row["sharp_turn_count_10m"]) > 0
+        or float(row["latent_synthetic_risk"]) >= 0.35
+    )
+    return has_risk_signal
 
 
 def build_snapshot(
@@ -95,6 +155,7 @@ def build_snapshot(
     night_flag: bool,
     time_since_last_intervention: float,
     post_intervention_noncompliance: bool,
+    rng: random.Random,
 ) -> dict[str, object]:
     window_5 = summarize_window(history, evaluation_timestamp, 5)
     window_10 = summarize_window(history, evaluation_timestamp, 10)
@@ -114,6 +175,18 @@ def build_snapshot(
     traffic_index = {"low": 0.0, "medium": 0.5, "high": 1.0}[str(zone["traffic_level"])]
     restriction_index = {"normal": 0.0, "caution": 0.35, "restricted": 0.7, "wharf": 1.0}[str(zone["restriction_level"])]
     current_hint = speed_over / 25 + count_kind(window_10, "harsh_brake") * 0.08 + count_kind(window_10, "sharp_turn") * 0.08
+    interaction_available = str(current["gps_freshness"]) != "stale" and rng.random() > 0.08
+    traffic_density_hint = {"low": 0, "medium": 1, "high": 2}[str(zone["traffic_level"])]
+    nearby_vehicle_count = 0
+    nearest_distance = 999.0
+    relative_speed = 0.0
+    closing_rate = 0.0
+    if interaction_available:
+        nearby_vehicle_count = max(0, min(5, traffic_density_hint + rng.choice([-1, 0, 0, 1, 2])))
+        if nearby_vehicle_count > 0:
+            nearest_distance = round(rng.uniform(8, 48), 1)
+            relative_speed = round(abs(rng.gauss(7, 5)), 1)
+            closing_rate = round(max(0.0, rng.gauss(1.2 if nearest_distance <= 25 else 0.45, 0.75)), 2)
 
     return {
         "vehicle_id": vehicle_id,
@@ -150,9 +223,15 @@ def build_snapshot(
         "shift_hours": round(shift_hours, 2),
         "night_flag": night_flag,
         "time_since_last_intervention": round(time_since_last_intervention, 2),
+        "reaction_window_active": reaction_window_active(time_since_last_intervention),
         "post_intervention_noncompliance": post_intervention_noncompliance,
         "traffic_weather_compound_index": round((traffic_index + weather_index) / 2, 2),
         "zone_transition_risk": round(restriction_index, 2),
+        "nearby_vehicle_count_50m": nearby_vehicle_count,
+        "nearest_vehicle_distance_m": nearest_distance,
+        "nearest_vehicle_relative_speed_kmh": relative_speed,
+        "closing_rate_mps": closing_rate,
+        "interaction_features_available": interaction_available,
         "previous_risk": round(previous_risk, 3),
         "risk_trend": risk_trend(previous_risk, current_hint),
     }
@@ -160,7 +239,7 @@ def build_snapshot(
 
 def generate_rows(vehicle_count: int = 72, events_per_vehicle: int = 72) -> list[dict[str, object]]:
     rng = random.Random(RANDOM_SEED)
-    zones = load_json(DATA_DIR / "zones.json")
+    zones = load_zone_contexts()
     rows: list[dict[str, object]] = []
     base_time = datetime.fromisoformat("2026-08-19T06:00:00+08:00")
 
@@ -172,7 +251,6 @@ def generate_rows(vehicle_count: int = 72, events_per_vehicle: int = 72) -> list
         history: list[dict[str, object]] = []
         previous_risk = rng.uniform(0.05, 0.35)
         time_since_last_intervention = 999.0
-        post_intervention_noncompliance = False
         future_near_miss_times: list[datetime] = []
 
         for event_index in range(events_per_vehicle):
@@ -202,6 +280,7 @@ def generate_rows(vehicle_count: int = 72, events_per_vehicle: int = 72) -> list
             if event_index < 15:
                 continue
 
+            post_intervention_noncompliance = post_intervention_noncompliance_for(event_type, time_since_last_intervention)
             snapshot = build_snapshot(
                 vehicle_id,
                 timestamp,
@@ -212,23 +291,23 @@ def generate_rows(vehicle_count: int = 72, events_per_vehicle: int = 72) -> list
                 night_flag,
                 time_since_last_intervention,
                 post_intervention_noncompliance,
+                rng,
             )
             probability = sigmoid(latent_pressure(snapshot) + rng.uniform(-0.65, 0.65))
             occurred = rng.random() < probability
             if occurred:
                 future_near_miss_times.append(timestamp + timedelta(minutes=rng.randint(3, HORIZON_MINUTES)))
                 time_since_last_intervention = 0
-                post_intervention_noncompliance = rng.random() < 0.42
             else:
                 time_since_last_intervention = min(999.0, time_since_last_intervention + 2)
-                if time_since_last_intervention > 12:
-                    post_intervention_noncompliance = False
             previous_risk = probability
 
             snapshot["latent_synthetic_risk"] = round(probability, 3)
-            snapshot["near_miss_within_next_15m"] = int(
+            near_miss_label = int(
                 any(timestamp < near_miss_time <= timestamp + timedelta(minutes=HORIZON_MINUTES) for near_miss_time in future_near_miss_times)
             )
+            snapshot["near_miss_within_next_15m"] = near_miss_label
+            snapshot["intervention_contaminated_window"] = intervention_contaminated_window(snapshot, near_miss_label)
             rows.append(snapshot)
 
     return rows

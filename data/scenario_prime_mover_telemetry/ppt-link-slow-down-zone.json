@@ -1,0 +1,2542 @@
+{
+  "samples": [
+    {
+      "sample_id": "ppt-link-slow-down-zone-0001",
+      "timestamp": "2026-08-19T02:02:00.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 22,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": "ppt-001",
+      "position": {
+        "x": 65,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0002",
+      "timestamp": "2026-08-19T02:02:01.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 22,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 65.61,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0003",
+      "timestamp": "2026-08-19T02:02:02.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 22,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 66.22,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0004",
+      "timestamp": "2026-08-19T02:02:03.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 66.86,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0005",
+      "timestamp": "2026-08-19T02:02:04.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 67.5,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0006",
+      "timestamp": "2026-08-19T02:02:05.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 68.14,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0007",
+      "timestamp": "2026-08-19T02:02:06.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 68.78,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0008",
+      "timestamp": "2026-08-19T02:02:07.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 69.44,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0009",
+      "timestamp": "2026-08-19T02:02:08.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 70.11,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0010",
+      "timestamp": "2026-08-19T02:02:09.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 70.78,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0011",
+      "timestamp": "2026-08-19T02:02:10.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 71.44,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0012",
+      "timestamp": "2026-08-19T02:02:11.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 72.11,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0013",
+      "timestamp": "2026-08-19T02:02:12.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 72.78,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0014",
+      "timestamp": "2026-08-19T02:02:13.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 73.44,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0015",
+      "timestamp": "2026-08-19T02:02:14.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 74.14,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0016",
+      "timestamp": "2026-08-19T02:02:15.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 74.83,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0017",
+      "timestamp": "2026-08-19T02:02:16.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 75.53,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0018",
+      "timestamp": "2026-08-19T02:02:17.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 76.22,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0019",
+      "timestamp": "2026-08-19T02:02:18.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 76.92,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0020",
+      "timestamp": "2026-08-19T02:02:19.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 77.61,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0021",
+      "timestamp": "2026-08-19T02:02:20.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 78.31,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0022",
+      "timestamp": "2026-08-19T02:02:21.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 79,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0023",
+      "timestamp": "2026-08-19T02:02:22.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 79.69,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0024",
+      "timestamp": "2026-08-19T02:02:23.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 80.39,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0025",
+      "timestamp": "2026-08-19T02:02:24.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 81.08,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0026",
+      "timestamp": "2026-08-19T02:02:25.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 81.81,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0027",
+      "timestamp": "2026-08-19T02:02:26.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 82.53,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0028",
+      "timestamp": "2026-08-19T02:02:27.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 83.25,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0029",
+      "timestamp": "2026-08-19T02:02:28.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 83.97,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0030",
+      "timestamp": "2026-08-19T02:02:29.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 84.69,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0031",
+      "timestamp": "2026-08-19T02:02:30.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 37.74
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0032",
+      "timestamp": "2026-08-19T02:02:31.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 36.99
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0033",
+      "timestamp": "2026-08-19T02:02:32.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 36.24
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0034",
+      "timestamp": "2026-08-19T02:02:33.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 35.49
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0035",
+      "timestamp": "2026-08-19T02:02:34.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 34.74
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0036",
+      "timestamp": "2026-08-19T02:02:35.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 33.99
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0037",
+      "timestamp": "2026-08-19T02:02:36.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 33.22
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0038",
+      "timestamp": "2026-08-19T02:02:37.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 32.44
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0039",
+      "timestamp": "2026-08-19T02:02:38.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 31.66
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0040",
+      "timestamp": "2026-08-19T02:02:39.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 30.88
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0041",
+      "timestamp": "2026-08-19T02:02:40.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 29,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 30.08
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0042",
+      "timestamp": "2026-08-19T02:02:41.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 29,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 29.27
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0043",
+      "timestamp": "2026-08-19T02:02:42.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 29,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 28.47
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0044",
+      "timestamp": "2026-08-19T02:02:43.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 29,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 27.66
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0045",
+      "timestamp": "2026-08-19T02:02:44.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 29,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 84.89,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0046",
+      "timestamp": "2026-08-19T02:02:45.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 30,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 84.06,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0047",
+      "timestamp": "2026-08-19T02:02:46.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 30,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 83.23,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0048",
+      "timestamp": "2026-08-19T02:02:47.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 30,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 82.39,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0049",
+      "timestamp": "2026-08-19T02:02:48.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 30,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 81.56,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0050",
+      "timestamp": "2026-08-19T02:02:49.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 30,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 80.73,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0051",
+      "timestamp": "2026-08-19T02:02:50.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 30,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 79.89,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0052",
+      "timestamp": "2026-08-19T02:02:51.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 31,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 79.03,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0053",
+      "timestamp": "2026-08-19T02:02:52.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 31,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 78.17,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0054",
+      "timestamp": "2026-08-19T02:02:53.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 31,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 77.31,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0055",
+      "timestamp": "2026-08-19T02:02:54.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 31,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 76.45,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0056",
+      "timestamp": "2026-08-19T02:02:55.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 31,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 75.59,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0057",
+      "timestamp": "2026-08-19T02:02:56.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 31,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 74.73,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0058",
+      "timestamp": "2026-08-19T02:02:57.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 31,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 73.87,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0059",
+      "timestamp": "2026-08-19T02:02:58.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 31,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 73.01,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0060",
+      "timestamp": "2026-08-19T02:02:59.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 31,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 72.14,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0061",
+      "timestamp": "2026-08-19T02:03:00.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 31,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 71.28,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0062",
+      "timestamp": "2026-08-19T02:03:01.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 31,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 70.42,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0063",
+      "timestamp": "2026-08-19T02:03:02.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 32,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 69.53,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0064",
+      "timestamp": "2026-08-19T02:03:03.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 32,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 68.64,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0065",
+      "timestamp": "2026-08-19T02:03:04.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 32,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 67.76,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0066",
+      "timestamp": "2026-08-19T02:03:05.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 32,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 66.87,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0067",
+      "timestamp": "2026-08-19T02:03:06.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 32,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 65.98,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0068",
+      "timestamp": "2026-08-19T02:03:07.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 32,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 65.09,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0069",
+      "timestamp": "2026-08-19T02:03:08.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 32,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 64.2,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0070",
+      "timestamp": "2026-08-19T02:03:09.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 33,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 63.28,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0071",
+      "timestamp": "2026-08-19T02:03:10.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 33,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 62.37,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0072",
+      "timestamp": "2026-08-19T02:03:11.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 33,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 61.45,
+        "y": 26.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0073",
+      "timestamp": "2026-08-19T02:03:12.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 33,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 61,
+        "y": 27.43
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0074",
+      "timestamp": "2026-08-19T02:03:13.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 34,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 61,
+        "y": 28.37
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0075",
+      "timestamp": "2026-08-19T02:03:14.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 34,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 61,
+        "y": 29.32
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0076",
+      "timestamp": "2026-08-19T02:03:15.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 34,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "speeding",
+      "event_anchor_id": "ppt-002",
+      "position": {
+        "x": 61,
+        "y": 30.26
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0077",
+      "timestamp": "2026-08-19T02:03:16.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 34,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 61,
+        "y": 31.2
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0078",
+      "timestamp": "2026-08-19T02:03:17.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 34,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 61,
+        "y": 32.15
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0079",
+      "timestamp": "2026-08-19T02:03:18.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 34,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 61,
+        "y": 33.09
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0080",
+      "timestamp": "2026-08-19T02:03:19.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 33,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 61,
+        "y": 34.01
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0081",
+      "timestamp": "2026-08-19T02:03:20.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 33,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 61,
+        "y": 34.93
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0082",
+      "timestamp": "2026-08-19T02:03:21.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 33,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 61,
+        "y": 35.84
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0083",
+      "timestamp": "2026-08-19T02:03:22.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 33,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 61,
+        "y": 36.76
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0084",
+      "timestamp": "2026-08-19T02:03:23.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 33,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 61,
+        "y": 37.68
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0085",
+      "timestamp": "2026-08-19T02:03:24.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 33,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 61.43,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0086",
+      "timestamp": "2026-08-19T02:03:25.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 32,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 62.32,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0087",
+      "timestamp": "2026-08-19T02:03:26.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 32,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 63.21,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0088",
+      "timestamp": "2026-08-19T02:03:27.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 32,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 64.1,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0089",
+      "timestamp": "2026-08-19T02:03:28.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 32,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 64.99,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0090",
+      "timestamp": "2026-08-19T02:03:29.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 32,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 65.88,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0091",
+      "timestamp": "2026-08-19T02:03:30.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 31,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 66.74,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0092",
+      "timestamp": "2026-08-19T02:03:31.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 31,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 67.6,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0093",
+      "timestamp": "2026-08-19T02:03:32.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 31,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 68.46,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0094",
+      "timestamp": "2026-08-19T02:03:33.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 30,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 69.29,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0095",
+      "timestamp": "2026-08-19T02:03:34.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 30,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 70.13,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0096",
+      "timestamp": "2026-08-19T02:03:35.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 30,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 70.96,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0097",
+      "timestamp": "2026-08-19T02:03:36.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 30,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 71.79,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0098",
+      "timestamp": "2026-08-19T02:03:37.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 29,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 72.6,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0099",
+      "timestamp": "2026-08-19T02:03:38.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 29,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 73.41,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0100",
+      "timestamp": "2026-08-19T02:03:39.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 29,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 74.21,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0101",
+      "timestamp": "2026-08-19T02:03:40.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 29,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 75.02,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0102",
+      "timestamp": "2026-08-19T02:03:41.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 75.79,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0103",
+      "timestamp": "2026-08-19T02:03:42.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 76.57,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0104",
+      "timestamp": "2026-08-19T02:03:43.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 77.35,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0105",
+      "timestamp": "2026-08-19T02:03:44.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 78.13,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0106",
+      "timestamp": "2026-08-19T02:03:45.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 78.91,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0107",
+      "timestamp": "2026-08-19T02:03:46.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 79.66,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0108",
+      "timestamp": "2026-08-19T02:03:47.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 80.41,
+        "y": 38.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0109",
+      "timestamp": "2026-08-19T02:03:48.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 81.16,
+        "y": 38.16
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0110",
+      "timestamp": "2026-08-19T02:03:49.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 81.91,
+        "y": 38.16
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0111",
+      "timestamp": "2026-08-19T02:03:50.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 82.66,
+        "y": 38.16
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0112",
+      "timestamp": "2026-08-19T02:03:51.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 83.41,
+        "y": 38.16
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0113",
+      "timestamp": "2026-08-19T02:03:52.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 84.16,
+        "y": 38.16
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0114",
+      "timestamp": "2026-08-19T02:03:53.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 84.88,
+        "y": 38.16
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0115",
+      "timestamp": "2026-08-19T02:03:54.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 37.56
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0116",
+      "timestamp": "2026-08-19T02:03:55.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 36.84
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0117",
+      "timestamp": "2026-08-19T02:03:56.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 36.12
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0118",
+      "timestamp": "2026-08-19T02:03:57.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 35.39
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0119",
+      "timestamp": "2026-08-19T02:03:58.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 34.67
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0120",
+      "timestamp": "2026-08-19T02:03:59.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 33.95
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0121",
+      "timestamp": "2026-08-19T02:04:00.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 33.25
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0122",
+      "timestamp": "2026-08-19T02:04:01.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 32.56
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0123",
+      "timestamp": "2026-08-19T02:04:02.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 31.87
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0124",
+      "timestamp": "2026-08-19T02:04:03.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 31.17
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0125",
+      "timestamp": "2026-08-19T02:04:04.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 30.48
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0126",
+      "timestamp": "2026-08-19T02:04:05.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 29.81
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0127",
+      "timestamp": "2026-08-19T02:04:06.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 29.14
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0128",
+      "timestamp": "2026-08-19T02:04:07.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 28.48
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0129",
+      "timestamp": "2026-08-19T02:04:08.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 27.81
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0130",
+      "timestamp": "2026-08-19T02:04:09.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 27.17
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0131",
+      "timestamp": "2026-08-19T02:04:10.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 84.57,
+        "y": 26.96
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0132",
+      "timestamp": "2026-08-19T02:04:11.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 83.93,
+        "y": 26.96
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0133",
+      "timestamp": "2026-08-19T02:04:12.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 83.29,
+        "y": 26.96
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0134",
+      "timestamp": "2026-08-19T02:04:13.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 22,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 82.68,
+        "y": 26.96
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0135",
+      "timestamp": "2026-08-19T02:04:14.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 22,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 82.07,
+        "y": 26.96
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0136",
+      "timestamp": "2026-08-19T02:04:15.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 22,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 81.46,
+        "y": 26.96
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0137",
+      "timestamp": "2026-08-19T02:04:16.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 22,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 80.85,
+        "y": 26.96
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0138",
+      "timestamp": "2026-08-19T02:04:17.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 21,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 80.27,
+        "y": 26.96
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0139",
+      "timestamp": "2026-08-19T02:04:18.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 21,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 79.68,
+        "y": 26.96
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0140",
+      "timestamp": "2026-08-19T02:04:19.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 21,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 79.1,
+        "y": 26.96
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "ppt-link-slow-down-zone-0141",
+      "timestamp": "2026-08-19T02:04:20.000Z",
+      "scenario_id": "ppt-link-slow-down-zone",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "speed": 21,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "recovering",
+      "event_anchor_id": "ppt-003",
+      "position": {
+        "x": 78.52,
+        "y": 26.96
+      },
+      "accuracy_m": 6,
+      "heading_degrees": 270
+    }
+  ]
+}
