@@ -300,7 +300,7 @@ export function zoneRiskClass(level: ZoneRiskCard["level"]): ZoneRiskCard["class
 export function zoneFlags(live: LiveZoneSnapshot | null) {
   const flags: string[] = [];
   if (!live) return flags;
-  if (live.slow_down_zone_active) flags.push("25km/h slow-down");
+  if (live.slow_down_zone_active) flags.push("Slow-down advisory");
   return flags;
 }
 
