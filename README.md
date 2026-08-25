@@ -30,8 +30,9 @@ This writes:
 - `data/synthetic_training_data.csv`
 - `models/nearguard-risk-model.joblib`
 - `models/scenario_predictions.json`
+- `models/routine_live_predictions.json`
 
-The web app uses `models/scenario_predictions.json` for reliable demo replay while keeping the trained `.joblib` artifact as the local AI model output.
+The web app uses `models/scenario_predictions.json` and `models/routine_live_predictions.json` for reliable scenario replay and routine live monitoring while keeping the trained `.joblib` artifact as the local AI model output.
 
 ## Demo Data Layout
 
@@ -57,6 +58,7 @@ http://127.0.0.1:3000
 ## Verify
 
 ```powershell
+npm.cmd run lint
 npm.cmd test
 npm.cmd exec tsc -- --noEmit
 npm.cmd run build

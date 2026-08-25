@@ -12,7 +12,7 @@ MVP+ adds a narrow V2V/V2X interaction-aware risk layer: surrounding Prime Mover
 
 - Web app: Next.js, TypeScript, React and local in-memory state.
 - AI pipeline: Python, pandas, scikit-learn and joblib.
-- Model runtime: pretrained local artifact plus exported scenario predictions for deterministic demo playback.
+- Model runtime: pretrained local artifact plus exported scenario and routine live predictions for deterministic demo playback.
 - Storage: checked-in JSON/CSV fixtures and generated artifacts; no database for MVP.
 - External integrations: none. Notifications, approvals and safety cases are simulated.
 
@@ -47,7 +47,7 @@ near_miss_within_next_15m
 
 The target label is a synthetic future outcome, not a direct current-event score.
 
-`models/scenario_predictions.json` must include:
+Both prediction artifacts must include `target`, `prediction_horizon` and `assessment` metadata. Scenario predictions identify replay events; routine live predictions identify telemetry samples and vehicles:
 
 ```json
 {
@@ -72,6 +72,30 @@ The target label is a synthetic future outcome, not a direct current-event score
 }
 ```
 
+```json
+{
+  "target": "near_miss_within_next_15m",
+  "prediction_horizon": "15m",
+  "predictions": [
+    {
+      "sample_id": "routine-live-0001",
+      "vehicle_id": "PM-101",
+      "zone_id": "YARD-C4",
+      "assessment": {
+        "synthetic_near_miss_risk_score": 0.77,
+        "safety_incident_risk_score": 0.77,
+        "prediction_horizon": "15m",
+        "evidence_authority": "SYNTHETIC_DATA",
+        "risk_band": "High",
+        "confidence": "high",
+        "uncertainty_reason": null,
+        "top_risk_reasons": []
+      }
+    }
+  ]
+}
+```
+
 ## Application Modules
 
 - Types should expose rolling telemetry features and risk assessment metadata: `prediction_horizon` and `evidence_authority`.
@@ -79,6 +103,7 @@ The target label is a synthetic future outcome, not a direct current-event score
 - The feature aggregator should apply a 10-second reaction window after an intervention signal; unsafe telemetry inside that window is not `post_intervention_noncompliance`.
 - The live feature aggregator should compute same-zone nearby PM count within 50m, nearest PM distance, nearest PM relative speed and closing rate when position data is usable.
 - The risk service should consume exported scenario predictions for replay reliability.
+- Routine Live Monitoring should consume exported routine live predictions for deterministic trained-model scoring.
 - The policy engine should map continuous ML risk scores to intervention thresholds and remain responsible for action class.
 - The tool layer should keep simulated notifications, fallback notification, approval request, zone advisory recommendation and safety case creation.
 - The dashboard should label the score as synthetic near-miss risk within the next 15 minutes and show that deterministic policy/human approval control interventions.
@@ -95,7 +120,7 @@ The target label is a synthetic future outcome, not a direct current-event score
 5. Record label provenance and review metadata.
 6. Exclude `intervention_contaminated_window=true` rows from default MVP training and record the excluded row count in metrics.
 7. Train a scikit-learn `HistGradientBoostingClassifier`.
-8. Export the model artifact, basic holdout metrics and deterministic replay predictions.
+8. Export the model artifact, basic holdout metrics, deterministic scenario predictions and deterministic routine live predictions.
 9. Preserve clear language: the output is synthetic risk evidence, not PSA production probability.
 
 ## Future Retraining Loop
@@ -132,6 +157,7 @@ Production roadmap items should remain explicit: richer topology-aware multi-veh
 Run:
 
 - `npm run model:train`
+- `npm run lint`
 - `npm test`
 - `npm run build`
 

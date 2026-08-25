@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document is the source of truth for NearGuard's synthetic telemetry, labelled training snapshots and model methodology. The MVP demonstrates a supervised-learning pipeline for Prime Mover safety intervention without claiming access to real PSA incident labels.
+This document owns NearGuard's synthetic telemetry, labelled training snapshots and model methodology. The MVP demonstrates a supervised-learning pipeline for Prime Mover safety intervention without claiming access to real PSA incident labels.
 
 NearGuard uses synthetic data because real PSA production telemetry, reviewed near-miss records, incident outcomes and internal safety policy are not available for the prototype. Synthetic labels demonstrate how telemetry-driven risk evidence can feed an agentic workflow; they are not evidence of production accident prediction accuracy.
 
@@ -53,7 +53,7 @@ The MVP is synthetic, but each field still has a defined role. This avoids mixin
 | Scenario Prime Mover telemetry | Scenario-specific Prime Mover movement and data quality. | `data/scenario_prime_mover_telemetry/{scenario}.json` | Telematics, GPS/RTLS, vehicle system events. | Seconds. |
 | Derived features | Rolling windows and engineered context. | `scripts/train_model.py`, `lib/model/features.ts` | Feature service using approved window definitions. | Per evaluation snapshot. |
 | Labels | Future outcome used for training. | Synthetic latent process in generated CSV. | Safety-reviewed incident or near-miss labels plus matched normal windows. | Batch dataset rebuild. |
-| Model output | Per-PM risk evidence. | `models/scenario_predictions.json` and `.joblib` artifact. | Versioned approved model service or artifact. | Per event/snapshot. |
+| Model output | Per-PM risk evidence. | `models/scenario_predictions.json`, `models/routine_live_predictions.json` and `.joblib` artifact. | Versioned approved model service or artifact. | Per event/snapshot. |
 
 `VehicleEvent` remains the sparse decision-evidence replay input:
 
@@ -100,6 +100,7 @@ The dashboard uses four checked-in demo data layers:
 | Scenario decision points | `data/scenario_decision_points/{scenario}.json` | Sparse threshold-relevant assessment anchors consumed by replay, risk assessment, policy and tool simulation. |
 | Scenario Prime Mover stream | `data/scenario_prime_mover_telemetry/{scenario}.json` | Dense 1-second primary Prime Mover telemetry for visual scenario playback between decision points. |
 | Scenario live zone stream | `data/scenario_live_zone_telemetry/{scenario}.json` | Dense 1-second dynamic zone risk/context telemetry aligned to the selected scenario. |
+| Model prediction artifacts | `models/scenario_predictions.json`, `models/routine_live_predictions.json` | Deterministic trained-model outputs used by scenario replay and routine live monitoring. |
 
 Dense scenario telemetry is presentation/demo input. It makes the dashboard feel continuous; sparse decision points show when continuous scoring crosses a policy threshold or records stabilization.
 
@@ -108,11 +109,11 @@ Runtime risk terms are intentionally separate:
 | Value | Meaning |
 | --- | --- |
 | Zone Operational Risk | Dashboard risk value calculated from live zone telemetry fields such as traffic pressure, speed compliance, GPS quality, recent harsh-brake/sharp-turn counts, weather, restrictions and pedestrian exposure. It is not the vehicle ML model output. |
-| Vehicle Near-Miss Risk | Continuous model assessment from live Prime Mover telemetry, rolling-window features and current zone context. Routine monitoring uses the exported deterministic prediction path; replay decision points use exported scenario predictions for demo repeatability. |
+| Vehicle Near-Miss Risk | Continuous trained-model assessment from Prime Mover telemetry, rolling-window features and current zone context. Routine monitoring and scenario replay both use exported deterministic prediction artifacts for demo repeatability. |
 | `safety_incident_risk_score` | ML model output: per-PM rolling synthetic near-miss risk assessment within the next 15 minutes. This score updates continuously, while interventions are opened only when policy thresholds are crossed. |
 | `risk_band` | Deterministic banding from model score, confidence and prior action state; policy thresholds use this band to decide intervention class. |
 
-Live Monitoring calculates Zone Operational Risk from zone telemetry, then continuously aggregates rolling Prime Mover features and runs the vehicle model assessment path for Vehicle Near-Miss Risk. During scenario replay, dense scenario PM/zone telemetry keeps the vehicle score moving between sparse decision points, while intervention actions remain conditional on deterministic policy thresholds. The dashboard does not blend zone telemetry risk with vehicle model risk.
+Live Monitoring calculates Zone Operational Risk from zone telemetry, then reads exported trained-model predictions for Vehicle Near-Miss Risk. During scenario replay, dense scenario PM/zone telemetry keeps the display continuous while replay decision points use exported trained-model predictions for policy thresholds. The dashboard does not blend zone telemetry risk with vehicle model risk.
 
 ## Rolling Features
 
@@ -198,9 +199,9 @@ The MVP trains a local scikit-learn tabular classifier:
 - Model: `HistGradientBoostingClassifier`.
 - Target: `near_miss_within_next_15m`.
 - Output: synthetic near-miss risk score, risk band, confidence, reasons, `prediction_horizon = 15m`, `evidence_authority = SYNTHETIC_DATA`.
-- Runtime: checked-in model artifact and exported scenario predictions for deterministic demo playback.
+- Runtime: checked-in model artifact plus exported scenario and routine live predictions for deterministic demo playback.
 
-`data/synthetic_training_data.csv` is the model training/evaluation table. It is not the dashboard replay stream. Replay uses `data/scenario_decision_points/{scenario}.json` for decision-point anchors plus scenario-specific dense telemetry JSON for visual continuity.
+`data/synthetic_training_data.csv` is the model training/evaluation table. It is not the dashboard replay stream. Replay uses `data/scenario_decision_points/{scenario}.json` for decision-point anchors plus scenario-specific dense telemetry JSON for visual continuity; routine live monitoring uses the routine telemetry JSON plus `models/routine_live_predictions.json`.
 
 `HistGradientBoostingClassifier` is a decision-tree-family gradient boosting model. It does not react to one isolated event as a single rule. It learns from engineered rolling-window features and context so the MVP can demonstrate how weak signals combine over time.
 

@@ -1,5 +1,5 @@
-import { listLiveTelemetrySamples } from "@/lib/data/repository";
+import { listLivePredictions, listLiveTelemetrySamples } from "@/lib/data/repository";
 
 export async function GET() {
-  return Response.json({ samples: listLiveTelemetrySamples() });
+  return Response.json({ samples: listLiveTelemetrySamples(), predictions: listLivePredictions() });
 }
