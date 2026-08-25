@@ -46,9 +46,11 @@ The MVP is synthetic, but each field still has a defined role. This avoids mixin
 
 | Class | Meaning | MVP Source | Future Source | Cadence |
 | --- | --- | --- | --- | --- |
-| Static registry | Slowly changing zone metadata and priors. | `data/zones.json` | Approved master data, yard map registry or safety configuration. | Controlled release. |
-| Dynamic zone telemetry | Current zone operating state for dashboard zone cards. | `data/live_zone_telemetry.json`, `data/scenario_zone_telemetry/{scenario}.json` | Weather, yard traffic, access control, telemetry aggregation, approved pedestrian-density source. | Seconds to minutes. |
-| Vehicle telemetry | Prime Mover movement and data quality. | `data/scenarios.json`, `data/scenario_telemetry/{scenario}.json` | Telematics, GPS/RTLS, vehicle system events. | Seconds. |
+| Static zone registry | Slowly changing zone metadata, map geometry and synthetic historical prior only. | `data/zone_registry.json` | Approved master data, yard map registry or safety configuration. | Controlled release. |
+| Routine live zone telemetry | Normal zone monitoring stream when no replay scenario is selected. | `data/routine_live_zone_telemetry.json` | Weather, yard traffic, access control, telemetry aggregation, approved pedestrian-density source. | Seconds to minutes. |
+| Routine Prime Mover telemetry | Normal Prime Mover snapshot stream when no replay scenario is selected. | `data/routine_prime_mover_telemetry.json` | Telematics, GPS/RTLS, vehicle system events. | Seconds. |
+| Scenario live zone telemetry | Scenario-specific live zone operating state aligned to replay. | `data/scenario_live_zone_telemetry/{scenario}.json` | Weather, yard traffic, access control, telemetry aggregation, approved pedestrian-density source. | Seconds to minutes. |
+| Scenario Prime Mover telemetry | Scenario-specific Prime Mover movement and data quality. | `data/scenario_prime_mover_telemetry/{scenario}.json` | Telematics, GPS/RTLS, vehicle system events. | Seconds. |
 | Derived features | Rolling windows and engineered context. | `scripts/train_model.py`, `lib/model/features.ts` | Feature service using approved window definitions. | Per evaluation snapshot. |
 | Labels | Future outcome used for training. | Synthetic latent process in generated CSV. | Safety-reviewed incident or near-miss labels plus matched normal windows. | Batch dataset rebuild. |
 | Model output | Per-PM risk evidence. | `models/scenario_predictions.json` and `.joblib` artifact. | Versioned approved model service or artifact. | Per event/snapshot. |
@@ -60,13 +62,20 @@ The MVP is synthetic, but each field still has a defined role. This avoids mixin
 | `timestamp`, `vehicle_id`, `zone_id` | Identify the vehicle, time and operating zone. |
 | `event_type` | `normal_update`, `speeding`, `harsh_brake`, `sharp_turn`, `stale_gps`, `speed_normalized`, `risk_persistent`. |
 | `speed`, `speed_limit`, `gps_freshness` | Primary telemetry and confidence signals. |
+| `position`, `heading_degrees`, `accuracy_m` | Synthetic yard-map pose used for MVP+ interaction features. Position is expressed in map units; V2V calculation converts using `10m` per map unit for demo consistency. |
 
-`ZoneContext` provides registry defaults and a static synthetic prior:
+`ZoneRegistryEntry` provides static zone metadata and a synthetic prior:
 
 | Field | Notes |
 | --- | --- |
 | `zone_historical_risk` | Static synthetic zone prior in the MVP. It is an input feature, not a model output and not updated by the live stream. |
-| `traffic_level`, `weather`, `restriction_level`, `slow_down_zone_active`, `pedestrian_exposure` | MVP defaults. In production these are dynamic operating-context fields when live sources are available. |
+| `zone_id`, `zone_name`, `map_region`, `center`, `bounds` | Static identity and map display fields. |
+
+`ZoneContext` is runtime operating context assembled from the static registry plus live telemetry:
+
+| Field | Notes |
+| --- | --- |
+| `traffic_level`, `weather`, `restriction_level`, `slow_down_zone_active`, `pedestrian_exposure` | Dynamic operating-context fields. During scenario replay, the feature path overlays these fields from `data/scenario_live_zone_telemetry/{scenario}.json` before feature derivation. In production, the feature service should consume the latest approved operating-context stream. |
 
 Current `zone_historical_risk` values are hand-authored assumptions: `YARD-C4 = 0.72`, `PPT-LINK-25 = 0.60`, `WHARF-C4 = 0.78`, `YARD-U2 = 0.66`. They represent a synthetic prior for demo differentiation. In production, this value should be calculated offline from reviewed historical evidence, for example:
 
@@ -86,33 +95,24 @@ The dashboard uses four checked-in demo data layers:
 
 | Layer | Files | Purpose |
 | --- | --- | --- |
-| Idle zone stream | `data/live_zone_telemetry.json` | Loopable 1-second zone/Prime Mover monitoring when no intervention evidence is active. |
-| Decision anchors | `data/scenarios.json` | Sparse evidence events consumed by replay, risk assessment, policy and tool simulation. |
-| Scenario PM stream | `data/scenario_telemetry/{scenario}.json` | Dense 1-second primary Prime Mover telemetry for visual scenario playback between evidence anchors. |
-| Scenario zone stream | `data/scenario_zone_telemetry/{scenario}.json` | Dense 1-second dynamic zone risk/context telemetry aligned to the selected scenario. |
+| Routine live zone stream | `data/routine_live_zone_telemetry.json` | Loopable 1-second zone monitoring when no replay scenario is active. |
+| Routine Prime Mover stream | `data/routine_prime_mover_telemetry.json` | Loopable 1-second Prime Mover snapshots joined into routine zone context at runtime. |
+| Scenario decision points | `data/scenario_decision_points/{scenario}.json` | Sparse threshold-relevant assessment anchors consumed by replay, risk assessment, policy and tool simulation. |
+| Scenario Prime Mover stream | `data/scenario_prime_mover_telemetry/{scenario}.json` | Dense 1-second primary Prime Mover telemetry for visual scenario playback between decision points. |
+| Scenario live zone stream | `data/scenario_live_zone_telemetry/{scenario}.json` | Dense 1-second dynamic zone risk/context telemetry aligned to the selected scenario. |
 
-Dense scenario telemetry is presentation/demo input. It makes the dashboard feel continuous, but only sparse decision anchors are traced as risk evidence and policy/tool events.
+Dense scenario telemetry is presentation/demo input. It makes the dashboard feel continuous; sparse decision points show when continuous scoring crosses a policy threshold or records stabilization.
 
 Runtime risk terms are intentionally separate:
 
 | Value | Meaning |
 | --- | --- |
-| `live_risk` | Zone-level operational risk from live or scenario zone telemetry. It is not the ML model output. |
-| `eventRisk` | Heuristic PM event impact used to make a scenario zone react. |
-| `safety_incident_risk_score` | ML model output: per-PM, per-event synthetic near-miss risk evidence within the next 15 minutes. |
-| `risk_band` | Deterministic banding from model score, confidence and prior action state. |
+| Zone Operational Risk | Dashboard risk value calculated from live zone telemetry fields such as traffic pressure, speed compliance, GPS quality, recent harsh-brake/sharp-turn counts, weather, restrictions and pedestrian exposure. It is not the vehicle ML model output. |
+| Vehicle Near-Miss Risk | Continuous model assessment from live Prime Mover telemetry, rolling-window features and current zone context. Routine monitoring uses the exported deterministic prediction path; replay decision points use exported scenario predictions for demo repeatability. |
+| `safety_incident_risk_score` | ML model output: per-PM rolling synthetic near-miss risk assessment within the next 15 minutes. This score updates continuously, while interventions are opened only when policy thresholds are crossed. |
+| `risk_band` | Deterministic banding from model score, confidence and prior action state; policy thresholds use this band to decide intervention class. |
 
-Live Monitoring reads `live_risk` directly from the looped zone telemetry stream and maps it to `Low`, `Medium` or `High`. During scenario replay, the active zone card blends zone telemetry, event impact, the latest agent/model risk score and the zone prior:
-
-```text
-scenario_zone_risk =
-  0.50 * telemetry_risk
-+ 0.20 * event_risk
-+ 0.20 * safety_incident_risk_score
-+ 0.10 * zone_historical_risk
-```
-
-The dashboard floors this blended value at `0.85 * zone_historical_risk` and caps it at `0.96`. This blend is a UI/replay overlay, not a retrained zone model.
+Live Monitoring calculates Zone Operational Risk from zone telemetry, then continuously aggregates rolling Prime Mover features and runs the vehicle model assessment path for Vehicle Near-Miss Risk. During scenario replay, dense scenario PM/zone telemetry keeps the vehicle score moving between sparse decision points, while intervention actions remain conditional on deterministic policy thresholds. The dashboard does not blend zone telemetry risk with vehicle model risk.
 
 ## Rolling Features
 
@@ -123,8 +123,9 @@ Each training row represents an evaluation snapshot. Features are computed from 
 | Current telemetry | `speed`, `speed_limit`, `speed_over_limit`, `speed_over_limit_band`, `event_type`, `gps_freshness` |
 | Rolling speed | `speeding_ratio_5m`, `speeding_ratio_10m`, `mean_speed_5m`, `mean_speed_30m`, `max_speed_5m`, `speed_std_10m`, `speed_delta_last_3_events` |
 | Rolling alerts | `harsh_brake_count_10m`, `sharp_turn_count_10m`, `alert_density_30m`, `risk_escalation_rate` |
+| V2V / V2X interaction | `nearby_vehicle_count_50m`, `nearest_vehicle_distance_m`, `nearest_vehicle_relative_speed_kmh`, `closing_rate_mps`, `interaction_features_available` |
 | Context | `traffic_level`, `weather`, `zone_historical_risk`, `restriction_level`, `pedestrian_exposure`, `traffic_weather_compound_index`, `zone_transition_risk` |
-| Operational history | `shift_hours`, `night_flag`, `time_since_last_intervention`, `post_intervention_noncompliance`, `previous_risk`, `risk_trend` |
+| Operational history | `shift_hours`, `night_flag`, `time_since_last_intervention`, `reaction_window_active`, `post_intervention_noncompliance`, `previous_risk`, `risk_trend` |
 
 Future telemetry rows must not be used to compute these features. Future outcomes are used only to create labels.
 
@@ -135,11 +136,20 @@ NearGuard groups model inputs into four practical safety feature layers:
 | Layer | NearGuard Features | Purpose |
 | --- | --- | --- |
 | Vehicle dynamics | `speed`, `speed_over_limit`, `speeding_ratio_5m`, `speeding_ratio_10m`, `mean_speed_5m`, `speed_std_10m`, `harsh_brake_count_10m`, `sharp_turn_count_10m` | Captures recent vehicle behaviour and instability. |
-| Operational context | `zone_historical_risk`, `traffic_level`, `weather`, `restriction_level`, `pedestrian_exposure`, `slow_down_zone_active` | Adds where and under what operating conditions the vehicle is moving. In the MVP model pipeline these context values come from `data/zones.json`; production should prefer latest approved dynamic context where available. |
-| Human / behaviour proxy | `shift_hours`, `night_flag`, `time_since_last_intervention`, `post_intervention_noncompliance` | Represents fatigue-like and response-to-advisory signals without using private biometrics. |
+| V2V / V2X interaction | `nearby_vehicle_count_50m`, `nearest_vehicle_distance_m`, `nearest_vehicle_relative_speed_kmh`, `closing_rate_mps`, `interaction_features_available` | Adds same-zone surrounding PM proximity and relative-motion pressure. Missing, stale or low-accuracy position data disables these features and reduces confidence. |
+| Operational context | `zone_historical_risk`, `traffic_level`, `weather`, `restriction_level`, `pedestrian_exposure`, `slow_down_zone_active` | Adds where and under what operating conditions the vehicle is moving. `zone_historical_risk` comes from `data/zone_registry.json`; all other operating-context fields come from live zone telemetry, with a conservative fallback only for missing-context demos. |
+| Human / behaviour proxy | `shift_hours`, `night_flag`, `time_since_last_intervention`, `reaction_window_active`, `post_intervention_noncompliance` | Represents fatigue-like and response-to-advisory signals without using private biometrics. A 10-second MVP reaction window prevents immediate unsafe telemetry after a warning from being treated as noncompliance before the driver has had physical response time. |
 | Engineered risk signals | `alert_density_30m`, `risk_escalation_rate`, `traffic_weather_compound_index`, `zone_transition_risk`, `previous_risk`, `risk_trend` | Summarizes temporal accumulation and compound risk. |
 
 Privacy-heavy signals such as eye tracking, HRV or driver biometrics are not part of the MVP. They remain future inputs only if approved and governed.
+
+This MVP+ implements the first surrounding-vehicle proxy only: same-zone nearby PM count within 50m, nearest PM distance, nearest PM relative speed and nearest PM closing rate. Future production feature expansion should evaluate richer port-yard interaction and physics proxies:
+
+- nearby PM density within additional configured radii such as 25m
+- relative heading bands and lane/topology-aware interaction features for surrounding vehicles
+- lane-change, junction-crossing and blind-spot proximity indicators
+- lateral acceleration or sharp-turn severity for rollover-sensitive manoeuvres
+- chassis attached, bobtail/laden state and container weight class where approved
 
 ### Label Governance Metadata
 
@@ -150,21 +160,36 @@ Each row also carries label governance metadata:
 | `label_source` | `SYNTHETIC_LATENT_PROCESS` | `SAFETY_REVIEWED_INCIDENT`, `SAFETY_REVIEWED_NEAR_MISS` or approved proxy source. |
 | `review_status` | `synthetic_reviewed` | Only `safety_reviewed` rows are eligible for production training. |
 | `matched_normal_window` | `false` for generated synthetic rows | `true` when a normal/safe window is deliberately sampled to match positive windows by zone, shift, traffic and weather. |
+| `intervention_contaminated_window` | `true` for post-intervention negative windows with residual risk signals that may have been changed by a successful warning. | Exclude from default training or route to counterfactual evaluation so successful interventions are not learned as ordinary safe negatives. |
+
+MVP training excludes `intervention_contaminated_window=true` rows and records the excluded count in model metrics. This is a bias-control guardrail, not production counterfactual causal modeling.
 
 ## Synthetic Label Recipe
 
 The generator creates a latent risk pressure over time rather than assigning a direct row-level score. Risk pressure increases when multiple conditions accumulate:
 
-- sustained speeding over recent windows
-- repeated harsh braking or sharp turns
+- sustained speeding or near-limit speed over recent windows
+- harsh braking or sharp turns as manoeuvre-instability proxy signals
 - speed volatility and rising trend
 - high zone baseline risk
 - high traffic combined with rain or heavy rain
 - high pedestrian exposure or wharf-like restrictions
 - longer shift duration or night operation
 - noncompliance after an intervention signal
+- nearby PM proximity, higher closing rate and larger relative speed
 
 A random shock is added with a fixed seed, then the generator samples whether a synthetic near-miss event occurs in the next 15 minutes. This creates both positive and negative examples for the classifier while preserving a documented relationship between risk factors and outcomes.
+
+For production labels, positive windows must be defined by lead time rather than by post-event data. A recommended rule is:
+
+```text
+near-miss at time T
+positive training windows: T-15m through T-1m
+action dead zone: T-1m through T, excluded from training
+post-incident period: excluded until reviewed and stabilized
+```
+
+This prevents data leakage from telemetry that would not have been available early enough to act. If an intervention was issued and the near-miss did not occur, the window should not be treated as an ordinary negative sample. It is tagged as `intervention_contaminated_window` in the MVP and excluded from default training, because successful warnings can otherwise teach the model that dangerous pre-intervention patterns are safe.
 
 ## Model Methodology
 
@@ -175,11 +200,13 @@ The MVP trains a local scikit-learn tabular classifier:
 - Output: synthetic near-miss risk score, risk band, confidence, reasons, `prediction_horizon = 15m`, `evidence_authority = SYNTHETIC_DATA`.
 - Runtime: checked-in model artifact and exported scenario predictions for deterministic demo playback.
 
-`data/synthetic_training_data.csv` is the model training/evaluation table. It is not the dashboard replay stream. Replay uses `data/scenarios.json` for evidence anchors plus scenario-specific dense telemetry JSON for visual continuity.
+`data/synthetic_training_data.csv` is the model training/evaluation table. It is not the dashboard replay stream. Replay uses `data/scenario_decision_points/{scenario}.json` for decision-point anchors plus scenario-specific dense telemetry JSON for visual continuity.
 
 `HistGradientBoostingClassifier` is a decision-tree-family gradient boosting model. It does not react to one isolated event as a single rule. It learns from engineered rolling-window features and context so the MVP can demonstrate how weak signals combine over time.
 
-Simple safety violations can be handled by rules. For example, a speed-limit breach can trigger a deterministic advisory. The ML model is used for the harder prioritization problem: recent speeding ratio, harsh braking, speed volatility, traffic, weather, pedestrian exposure and intervention response may be individually tolerable but jointly indicate elevated near-miss risk.
+Simple safety violations can be handled by rules. For example, a speed-limit breach can trigger a deterministic advisory, and repeated post-advisory instability can drive deterministic escalation. The ML model is used for the harder prioritization problem: near-limit speed, mild manoeuvre instability, speed volatility, traffic, weather, zone prior, pedestrian exposure and intervention response may be individually tolerable but jointly indicate elevated near-miss risk.
+
+The MVP intentionally uses tabular gradient boosting rather than an LLM, temporal transformer or graph neural network because the demo prioritizes millisecond-scale lightweight inference, strong performance on structured telemetry, deterministic governance and inspectable feature reasons. A production roadmap can evaluate temporal deep learning or graph models once multi-vehicle proximity, edge telemetry and reviewed labels exist at sufficient quality.
 
 The model is useful in the MVP because it demonstrates the supervised pipeline that would later use reviewed real labels. It does not prove real-world causality or PSA production accuracy.
 
@@ -203,7 +230,9 @@ Confidence is derived from data quality and signal coverage:
 - `medium`: delayed GPS or sparse recent history.
 - `low`: stale GPS, missing context or severe uncertainty.
 
-Explanations should name active rolling/context factors, such as speeding ratio, harsh braking, traffic-weather compound risk, pedestrian exposure, stale GPS or post-intervention noncompliance.
+Explanations should name active rolling/context factors, such as near-limit speed, speeding ratio, manoeuvre instability, nearby PM distance, closing rate, traffic-weather compound risk, zone prior, pedestrian exposure, stale GPS or post-intervention noncompliance. When surrounding-vehicle position is unavailable, the system keeps the 15-minute risk path working but lowers confidence with an uncertainty reason.
+
+For a production safety case, confidence should be upgraded from rule labels to statistical uncertainty. Candidate approaches include conformal prediction for calibrated risk sets or quantile/interval models for numerical uncertainty bands. Multi-horizon targets should also be evaluated: 1-2 minutes for immediate avoidance, 5-15 minutes for route or slow-down intervention, and 30-60 minutes for shift or zone-level planning.
 
 ## AI Safety Boundary
 

@@ -49,18 +49,21 @@ export interface VehicleEvent {
   lng?: number;
 }
 
-export interface ZoneContext {
+export interface ZoneRegistryEntry {
   zone_id: string;
   zone_name: string;
-  traffic_level: TrafficLevel;
-  weather: Weather;
   zone_historical_risk: number;
-  restriction_level: RestrictionLevel;
-  slow_down_zone_active: boolean;
-  pedestrian_exposure: PedestrianExposure;
   map_region?: string;
   center?: MapPosition;
   bounds?: MapBounds;
+}
+
+export interface ZoneContext extends ZoneRegistryEntry {
+  traffic_level: TrafficLevel;
+  weather: Weather;
+  restriction_level: RestrictionLevel;
+  slow_down_zone_active: boolean;
+  pedestrian_exposure: PedestrianExposure;
 }
 
 export interface LivePrimeMoverSnapshot {
@@ -69,13 +72,14 @@ export interface LivePrimeMoverSnapshot {
   speed_limit: number;
   gps_freshness: GpsFreshness;
   state: LivePrimeMoverState;
-  rolling_risk_contribution: number;
+  position?: MapPosition;
+  heading_degrees?: number;
+  accuracy_m?: number;
 }
 
 export interface LiveZoneSnapshot {
   zone_id: string;
   updated_at: string;
-  live_risk: number;
   active_prime_movers: number;
   avg_speed: number;
   speed_compliance: number;
@@ -107,7 +111,6 @@ export interface ScenarioTelemetrySample {
   speed_limit: number;
   gps_freshness: GpsFreshness;
   state: LivePrimeMoverState;
-  rolling_risk_contribution: number;
   event_anchor_id: string | null;
   position?: MapPosition;
   accuracy_m?: number;
@@ -119,7 +122,6 @@ export interface ScenarioZoneTelemetrySample {
   timestamp: string;
   scenario_id: string;
   zone_id: string;
-  live_risk: number;
   active_prime_movers: number;
   avg_speed: number;
   speed_compliance: number;
@@ -175,9 +177,15 @@ export interface DerivedFeatures {
   shift_hours: number;
   night_flag: boolean;
   time_since_last_intervention: number;
+  reaction_window_active: boolean;
   post_intervention_noncompliance: boolean;
   traffic_weather_compound_index: number;
   zone_transition_risk: number;
+  nearby_vehicle_count_50m: number;
+  nearest_vehicle_distance_m: number;
+  nearest_vehicle_relative_speed_kmh: number;
+  closing_rate_mps: number;
+  interaction_features_available: boolean;
   previous_risk: number;
   risk_trend: "decreasing" | "stable" | "increasing";
 }

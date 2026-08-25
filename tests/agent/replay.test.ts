@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { advanceReplay, createInitialReplayState, decideApproval, isEvidenceEvent, validateEvent } from "@/lib/agent/replay";
+import { advanceReplay, createInitialReplayState, decideApproval, isDecisionPointEvent, rewindReplay, validateEvent } from "@/lib/agent/replay";
 import type { ReplayState } from "@/lib/types/domain";
 
 function runScenario(scenarioId: string): ReplayState {
@@ -40,14 +40,43 @@ describe("agent replay", () => {
     expect(state.traceEvents.some((trace) => trace.event_type === "safety_case_created")).toBe(true);
   });
 
-  it("steps to the next evidence event instead of tracing normal telemetry", () => {
+  it("steps to the next decision point instead of tracing every normal telemetry sample", () => {
     const initial = createInitialReplayState("ppt-link-slow-down-zone");
     const state = advanceReplay(initial);
 
     expect(state.currentEvent?.event_id).toBe("ppt-002");
     expect(state.currentEvent?.event_type).toBe("speeding");
     expect(state.traceEvents.some((trace) => trace.message.includes("normal_update"))).toBe(false);
-    expect(initial.selectedScenario.events.filter(isEvidenceEvent).map((event) => event.event_id)).toEqual(["ppt-002", "ppt-003"]);
+    expect(initial.selectedScenario.events.filter(isDecisionPointEvent).map((event) => event.event_id)).toEqual(["ppt-002", "ppt-003"]);
+  });
+
+  it("rewinds to the previous decision point", () => {
+    let state = createInitialReplayState("ppt-link-slow-down-zone");
+    state = advanceReplay(state);
+    state = advanceReplay(state);
+
+    expect(state.currentEvent?.event_id).toBe("ppt-003");
+
+    const rewinded = rewindReplay(state);
+
+    expect(rewinded.currentEvent?.event_id).toBe("ppt-002");
+    expect(rewinded.currentEvent?.event_type).toBe("speeding");
+  });
+
+  it("preserves completed approvals and safety cases when rewinding", () => {
+    let state = runScenario("pm27-persistent-high-risk");
+    const approval = state.pendingApprovals.find((item) => item.status === "pending");
+    expect(approval).toBeDefined();
+
+    state = decideApproval(state, approval!.approval_id, true, "Safety Supervisor");
+    const rewinded = rewindReplay(state);
+
+    expect(rewinded.pendingApprovals.find((item) => item.approval_id === approval!.approval_id)?.status).toBe("approved");
+    expect(rewinded.selectedCase?.status).toBe("escalated");
+    expect(rewinded.selectedCase?.pending_approval).toBe(false);
+    expect(rewinded.safetyCases).toHaveLength(1);
+    expect(rewinded.toolCalls.some((tool) => tool.tool_name === "recommend_zone_advisory")).toBe(true);
+    expect(rewinded.traceEvents.some((trace) => trace.event_type === "safety_case_created")).toBe(true);
   });
 
   it("stabilizes the slow-down-zone scenario after speed normalizes", () => {

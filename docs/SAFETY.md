@@ -14,6 +14,8 @@ NearGuard is a local hackathon MVP. It uses synthetic Prime Mover telemetry, syn
 - Missing data must reduce confidence; it must not be hallucinated.
 - Tool failure must remain visible in the trace and must not be marked as resolved risk.
 - Unsafe residual risk must not be marked stabilized or closed.
+- Unsafe telemetry inside the 10-second MVP reaction window after a driver warning must not be counted as post-intervention noncompliance.
+- Successful intervention windows with residual risk signals must not be treated as ordinary safe negative training examples.
 - All prototype interventions are simulation-only.
 
 ## Evidence Authority
@@ -32,6 +34,8 @@ The served `safety_incident_risk_score` means synthetic near-miss risk evidence 
 ## Prototype Assumptions
 
 Current assumptions include risk-band thresholds, synthetic zone risk values, synthetic traffic/weather context, intervention thresholds, confidence rules and simulated tool outcomes. These assumptions are centrally documented here and in `docs/ai_and_data.md`; they are not PSA-approved production thresholds.
+
+Reaction-window and intervention-contamination handling are MVP-level bias controls. They are not production counterfactual modeling or causal proof that an intervention prevented an incident.
 
 Real-time vehicle-person interaction risk is not part of the MVP authority path. A future version may add deterministic distance, TTC, trajectory conflict and stopping-margin calculations only if approved person-position data is available.
 

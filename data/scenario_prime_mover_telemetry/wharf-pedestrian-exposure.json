@@ -1,0 +1,2272 @@
+{
+  "samples": [
+    {
+      "sample_id": "wharf-pedestrian-exposure-0001",
+      "timestamp": "2026-08-19T03:20:00.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 12,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": "wharf-001",
+      "position": {
+        "x": 67,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0002",
+      "timestamp": "2026-08-19T03:20:01.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 12,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 67.33,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0003",
+      "timestamp": "2026-08-19T03:20:02.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 12,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 67.67,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0004",
+      "timestamp": "2026-08-19T03:20:03.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 13,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 68.03,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0005",
+      "timestamp": "2026-08-19T03:20:04.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 13,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 68.39,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0006",
+      "timestamp": "2026-08-19T03:20:05.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 13,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 68.75,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0007",
+      "timestamp": "2026-08-19T03:20:06.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 13,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 69.11,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0008",
+      "timestamp": "2026-08-19T03:20:07.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 13,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 69.47,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0009",
+      "timestamp": "2026-08-19T03:20:08.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 13,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 69.83,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0010",
+      "timestamp": "2026-08-19T03:20:09.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 13,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 70.19,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0011",
+      "timestamp": "2026-08-19T03:20:10.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 13,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 70.56,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0012",
+      "timestamp": "2026-08-19T03:20:11.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 70.94,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0013",
+      "timestamp": "2026-08-19T03:20:12.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 71.33,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0014",
+      "timestamp": "2026-08-19T03:20:13.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 71.72,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0015",
+      "timestamp": "2026-08-19T03:20:14.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 72.11,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0016",
+      "timestamp": "2026-08-19T03:20:15.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 72.5,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0017",
+      "timestamp": "2026-08-19T03:20:16.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 72.89,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0018",
+      "timestamp": "2026-08-19T03:20:17.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 73.28,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0019",
+      "timestamp": "2026-08-19T03:20:18.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 73.67,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0020",
+      "timestamp": "2026-08-19T03:20:19.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 74.06,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0021",
+      "timestamp": "2026-08-19T03:20:20.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 74.44,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0022",
+      "timestamp": "2026-08-19T03:20:21.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 74.83,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0023",
+      "timestamp": "2026-08-19T03:20:22.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 75.22,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0024",
+      "timestamp": "2026-08-19T03:20:23.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 75.61,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0025",
+      "timestamp": "2026-08-19T03:20:24.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 76,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0026",
+      "timestamp": "2026-08-19T03:20:25.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 76.39,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0027",
+      "timestamp": "2026-08-19T03:20:26.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 76.78,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0028",
+      "timestamp": "2026-08-19T03:20:27.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 77.17,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0029",
+      "timestamp": "2026-08-19T03:20:28.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 77.56,
+        "y": 78.16
+      },
+      "accuracy_m": 4,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0030",
+      "timestamp": "2026-08-19T03:20:29.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 15,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 77.97,
+        "y": 78.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0031",
+      "timestamp": "2026-08-19T03:20:30.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 15,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 78.39,
+        "y": 78.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0032",
+      "timestamp": "2026-08-19T03:20:31.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 15,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 78.81,
+        "y": 78.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0033",
+      "timestamp": "2026-08-19T03:20:32.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 15,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 79.22,
+        "y": 78.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0034",
+      "timestamp": "2026-08-19T03:20:33.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 15,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 79.64,
+        "y": 78.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0035",
+      "timestamp": "2026-08-19T03:20:34.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 15,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 80.06,
+        "y": 78.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0036",
+      "timestamp": "2026-08-19T03:20:35.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 15,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 80.47,
+        "y": 78.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0037",
+      "timestamp": "2026-08-19T03:20:36.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 80.92,
+        "y": 78.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0038",
+      "timestamp": "2026-08-19T03:20:37.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 81.36,
+        "y": 78.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0039",
+      "timestamp": "2026-08-19T03:20:38.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 81.81,
+        "y": 78.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0040",
+      "timestamp": "2026-08-19T03:20:39.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 82.25,
+        "y": 78.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0041",
+      "timestamp": "2026-08-19T03:20:40.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 82.69,
+        "y": 78.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0042",
+      "timestamp": "2026-08-19T03:20:41.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 83.14,
+        "y": 78.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0043",
+      "timestamp": "2026-08-19T03:20:42.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 17,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 83.61,
+        "y": 78.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0044",
+      "timestamp": "2026-08-19T03:20:43.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 17,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 84.08,
+        "y": 78.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0045",
+      "timestamp": "2026-08-19T03:20:44.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 17,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 84.56,
+        "y": 78.16
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0046",
+      "timestamp": "2026-08-19T03:20:45.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 17,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 78.13
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0047",
+      "timestamp": "2026-08-19T03:20:46.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 17,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 77.66
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0048",
+      "timestamp": "2026-08-19T03:20:47.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 17,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 77.19
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0049",
+      "timestamp": "2026-08-19T03:20:48.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 17,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 76.72
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0050",
+      "timestamp": "2026-08-19T03:20:49.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 17,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "normal",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 76.24
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0051",
+      "timestamp": "2026-08-19T03:20:50.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 18,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 75.74
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0052",
+      "timestamp": "2026-08-19T03:20:51.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 18,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 75.24
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0053",
+      "timestamp": "2026-08-19T03:20:52.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 18,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 74.74
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0054",
+      "timestamp": "2026-08-19T03:20:53.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 18,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 74.24
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0055",
+      "timestamp": "2026-08-19T03:20:54.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 18,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 73.74
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0056",
+      "timestamp": "2026-08-19T03:20:55.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 18,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 73.24
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0057",
+      "timestamp": "2026-08-19T03:20:56.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 18,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 72.74
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0058",
+      "timestamp": "2026-08-19T03:20:57.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 18,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 72.24
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0059",
+      "timestamp": "2026-08-19T03:20:58.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 18,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "sharp turn",
+      "event_anchor_id": "wharf-002",
+      "position": {
+        "x": 85,
+        "y": 71.74
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0060",
+      "timestamp": "2026-08-19T03:20:59.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 18,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 71.24
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0061",
+      "timestamp": "2026-08-19T03:21:00.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 17,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 70.77
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0062",
+      "timestamp": "2026-08-19T03:21:01.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 17,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 70.3
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0063",
+      "timestamp": "2026-08-19T03:21:02.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 17,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 69.83
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0064",
+      "timestamp": "2026-08-19T03:21:03.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 17,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 69.35
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0065",
+      "timestamp": "2026-08-19T03:21:04.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 17,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 68.88
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0066",
+      "timestamp": "2026-08-19T03:21:05.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 17,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 68.41
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0067",
+      "timestamp": "2026-08-19T03:21:06.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 67.97
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0068",
+      "timestamp": "2026-08-19T03:21:07.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 67.52
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0069",
+      "timestamp": "2026-08-19T03:21:08.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 85,
+        "y": 67.08
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0070",
+      "timestamp": "2026-08-19T03:21:09.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 84.67,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0071",
+      "timestamp": "2026-08-19T03:21:10.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 84.23,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0072",
+      "timestamp": "2026-08-19T03:21:11.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 83.78,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0073",
+      "timestamp": "2026-08-19T03:21:12.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 83.34,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0074",
+      "timestamp": "2026-08-19T03:21:13.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 82.89,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0075",
+      "timestamp": "2026-08-19T03:21:14.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 82.45,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0076",
+      "timestamp": "2026-08-19T03:21:15.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 82.01,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0077",
+      "timestamp": "2026-08-19T03:21:16.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 81.56,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0078",
+      "timestamp": "2026-08-19T03:21:17.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 81.12,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0079",
+      "timestamp": "2026-08-19T03:21:18.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 16,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 80.67,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0080",
+      "timestamp": "2026-08-19T03:21:19.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 15,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 80.26,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0081",
+      "timestamp": "2026-08-19T03:21:20.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 15,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 79.84,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0082",
+      "timestamp": "2026-08-19T03:21:21.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 15,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 79.42,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0083",
+      "timestamp": "2026-08-19T03:21:22.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 15,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 79.01,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0084",
+      "timestamp": "2026-08-19T03:21:23.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 15,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 78.59,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0085",
+      "timestamp": "2026-08-19T03:21:24.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 15,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 78.17,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0086",
+      "timestamp": "2026-08-19T03:21:25.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 15,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 77.76,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0087",
+      "timestamp": "2026-08-19T03:21:26.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 15,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 77.34,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0088",
+      "timestamp": "2026-08-19T03:21:27.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 15,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 76.92,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0089",
+      "timestamp": "2026-08-19T03:21:28.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 76.53,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0090",
+      "timestamp": "2026-08-19T03:21:29.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 76.14,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0091",
+      "timestamp": "2026-08-19T03:21:30.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 75.76,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0092",
+      "timestamp": "2026-08-19T03:21:31.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 75.37,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0093",
+      "timestamp": "2026-08-19T03:21:32.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 14,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 74.98,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0094",
+      "timestamp": "2026-08-19T03:21:33.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 13,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 74.62,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0095",
+      "timestamp": "2026-08-19T03:21:34.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 13,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 74.26,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0096",
+      "timestamp": "2026-08-19T03:21:35.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 13,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 73.89,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0097",
+      "timestamp": "2026-08-19T03:21:36.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 13,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 73.53,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0098",
+      "timestamp": "2026-08-19T03:21:37.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 13,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 73.17,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0099",
+      "timestamp": "2026-08-19T03:21:38.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 12,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 72.84,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0100",
+      "timestamp": "2026-08-19T03:21:39.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 12,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 72.51,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0101",
+      "timestamp": "2026-08-19T03:21:40.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 12,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 72.17,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0102",
+      "timestamp": "2026-08-19T03:21:41.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 12,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 71.84,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0103",
+      "timestamp": "2026-08-19T03:21:42.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 12,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 71.51,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0104",
+      "timestamp": "2026-08-19T03:21:43.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 12,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 71.17,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0105",
+      "timestamp": "2026-08-19T03:21:44.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 11,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 70.87,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0106",
+      "timestamp": "2026-08-19T03:21:45.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 11,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 70.56,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0107",
+      "timestamp": "2026-08-19T03:21:46.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 11,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 70.26,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0108",
+      "timestamp": "2026-08-19T03:21:47.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 11,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 69.95,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0109",
+      "timestamp": "2026-08-19T03:21:48.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 11,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 69.64,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0110",
+      "timestamp": "2026-08-19T03:21:49.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 11,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 69.34,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0111",
+      "timestamp": "2026-08-19T03:21:50.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 11,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 69.03,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0112",
+      "timestamp": "2026-08-19T03:21:51.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 11,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 68.73,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0113",
+      "timestamp": "2026-08-19T03:21:52.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 11,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 68.42,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0114",
+      "timestamp": "2026-08-19T03:21:53.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 11,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 68.12,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0115",
+      "timestamp": "2026-08-19T03:21:54.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 11,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 67.81,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0116",
+      "timestamp": "2026-08-19T03:21:55.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 10,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 67.53,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0117",
+      "timestamp": "2026-08-19T03:21:56.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 10,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 67.26,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0118",
+      "timestamp": "2026-08-19T03:21:57.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 10,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 66.98,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0119",
+      "timestamp": "2026-08-19T03:21:58.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 10,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 66.7,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0120",
+      "timestamp": "2026-08-19T03:21:59.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 10,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 66.42,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0121",
+      "timestamp": "2026-08-19T03:22:00.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 10,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 66.14,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0122",
+      "timestamp": "2026-08-19T03:22:01.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 10,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 65.87,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0123",
+      "timestamp": "2026-08-19T03:22:02.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 10,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 65.59,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0124",
+      "timestamp": "2026-08-19T03:22:03.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 10,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 65.31,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0125",
+      "timestamp": "2026-08-19T03:22:04.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 10,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 65.03,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "wharf-pedestrian-exposure-0126",
+      "timestamp": "2026-08-19T03:22:05.000Z",
+      "scenario_id": "wharf-pedestrian-exposure",
+      "vehicle_id": "PM-31",
+      "zone_id": "WHARF-C4",
+      "speed": 9,
+      "speed_limit": 15,
+      "gps_freshness": "fresh",
+      "state": "recovering",
+      "event_anchor_id": "wharf-003",
+      "position": {
+        "x": 64.78,
+        "y": 66.96
+      },
+      "accuracy_m": 5,
+      "heading_degrees": 270
+    }
+  ]
+}

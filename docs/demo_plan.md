@@ -18,11 +18,11 @@ Near-miss prevention is the headline use case. In the MVP, the model target is `
 
 The demo is designed for PSA Code Sprint 2.0: Agentic AI in Action. It should make the evaluation criteria visible: agentic reasoning, decision-making, tool orchestration, uncertainty handling, human oversight, auditability, responsible AI and clear presentation.
 
-NearGuard should be narrated as a rolling-window risk predictor, not a single-event alert. The model uses recent telemetry and context to prioritize synthetic next-15-minute near-miss risk, while deterministic policy and human approval control intervention authority.
+NearGuard should be narrated as a continuous rolling-window risk predictor, not a single-event alert. The model keeps scoring vehicle risk from recent telemetry and context; deterministic policy opens interventions only when risk crosses configured thresholds, with human approval for disruptive actions.
 
 ## Demo Story
 
-Vehicle `PM-27` enters a rainy high-risk zone during heavy traffic. The synthetic event stream shows near-limit speed, a sharp turn, repeated harsh braking and persistent risk after intervention. NearGuard predicts elevated synthetic near-miss risk within the next 15 minutes, explains the compound rolling telemetry drivers, warns the driver, notifies the supervisor, handles a supervisor notification timeout, reassesses risk, asks for approval for a zone advisory and creates a safety case.
+Vehicle `PM-27` enters a rainy high-risk zone during heavy traffic. Continuous scoring rises as near-limit speed, a sharp turn, repeated harsh braking and post-advisory persistence accumulate. NearGuard explains why the vehicle crossed intervention thresholds, warns the driver, notifies the supervisor, handles a supervisor notification timeout, reassesses risk, asks for approval for a zone advisory and creates a safety case.
 
 The scenario is inspired by public PSA safety themes such as responsible driving, speed-limit compliance, pedestrian exposure, wharf movement caution and reporting of safety hazards. It does not use real PSA incident data or internal PSA policy.
 
@@ -40,6 +40,8 @@ The scenario is inspired by public PSA safety themes such as responsible driving
 | 7:00-8:00 | Human approval | Agent requests approval for zone advisory because stronger action is disruptive. |
 | 8:00-9:00 | Safety case | Approval is granted and safety case is created. |
 | 9:00-10:00 | Trace and evaluation fit | Show complete trace, responsible AI boundaries, public-reference limits and how the demo meets Code Sprint criteria. |
+
+Use 30-60 seconds in the Responsible AI or Human Oversight segment to say: `LLM is not the Safety Authority`. NearGuard can summarize context and orchestrate simulated tools, but deterministic policy and human approval decide whether disruptive safety actions are allowed.
 
 ## Required Demo Screens
 
@@ -62,7 +64,7 @@ The scenario is inspired by public PSA safety themes such as responsible driving
 09:14:05  Zone context loaded: high traffic, rain, caution restriction
 09:14:06  Freshness check passed: gps_freshness = fresh
 09:15:26  Telemetry model returned synthetic near-miss risk within next 15m = 0.66
-09:15:27  Top reasons: rolling instability, traffic-weather compound risk, alert density and prior intervention persistence
+09:15:27  Top reasons: near-limit speed in rainy high-traffic context, manoeuvre instability, alert density and prior intervention persistence
 09:15:28  Policy decision: High risk, warn driver and notify supervisor
 09:15:28  notify_driver succeeded
 09:15:29  notify_supervisor failed: timeout
@@ -79,7 +81,7 @@ The scenario is inspired by public PSA safety themes such as responsible driving
 | Scenario | Purpose | Public Context Link |
 | --- | --- | --- |
 | `PM-27 Persistent High Risk` | Main end-to-end demo: rolling telemetry risk rises, supervisor notification intentionally times out, fallback succeeds, human approval is requested and a safety case is created. | Public PSA driver safety and safety infringement themes. |
-| `PPT Link Slow Down Zone` | Successful intervention case: speeding appears in a slow-down zone, speed normalizes and the case stabilizes. | PSA Slow Down Zone (25km/h) along Pasir Panjang Terminal Link circular. |
+| `PPT Link Slow Down Zone` | Successful intervention case: vehicle risk crosses the advisory threshold in a slow-down zone, speed normalizes and the case stabilizes. | PSA Slow Down Zone (25km/h) along Pasir Panjang Terminal Link circular. |
 | `Wharf Pedestrian Exposure` | Context case: wharf and pedestrian-exposure context raise risk without claiming real-time person tracking. | PSA Review of Pedestrian Movement at Wharf circular and HSS Rules. |
 | `Telemetry Uncertainty` | Responsible-AI case: stale GPS and missing context reduce confidence, avoid hallucinated certainty and trigger human review. | Responsible AI and safety-boundary requirement. |
 
@@ -110,6 +112,20 @@ Expected behaviour:
 
 Worker daily potential-risk reports should be presented as future enrichment, not the MVP core loop. In the pitch, say that worker-written safety observations could later be parsed by an LLM into structured zone or vehicle context, but the MVP remains telematics-first and no report directly triggers disruptive action without policy checks and human approval.
 
+## Judge Question Defenses
+
+If asked why the MVP uses tabular `HistGradientBoosting` instead of an LLM, foundation model or temporal transformer, answer:
+
+> The safety signal is structured telemetry, not language. For this MVP we chose tabular gradient boosting because it is lightweight, fast, deterministic to serve locally and easier to explain with feature reasons. The model is decision support; deterministic policy and human approval remain the safety authority.
+
+If asked whether NearGuard is really agentic when the policy is deterministic, answer:
+
+> We intentionally constrain the safety authority. The agentic value is the closed loop: observe telemetry, enrich context, assess risk, choose permitted tools, handle timeout failure with fallback, monitor new telemetry, reassess and escalate or close with a trace. It is agentic orchestration inside a deterministic safety envelope.
+
+If asked how this compares with production fleet-safety systems, answer:
+
+> The MVP+ is telematics-first and privacy-preserving, with a narrow V2V layer for nearby Prime Mover proximity and closing motion. Production extensions would add calibrated uncertainty, multi-horizon targets, richer topology-aware interaction features, reaction-window handling after warnings, chassis/laden-state physics proxies and edge alerts for immediate in-cab response. Those are roadmap items, not claims made by this prototype.
+
 ## Demo Success Checklist
 
 - The audience sees a live or replayed synthetic event stream.
@@ -134,7 +150,7 @@ Worker daily potential-risk reports should be presented as future enrichment, no
 | 4 | Architecture | Components, state management and simulated tool orchestration. |
 | 5 | Data And Features | Vehicle events, rolling windows, future synthetic labels and model outputs. |
 | 6 | Risk Model | Tabular ML as decision-support tool for synthetic next-15m near-miss risk, with confidence and uncertainty. |
-| 7 | Human Oversight | Approval boundaries and deterministic safety policy. |
+| 7 | Human Oversight | `LLM is not the Safety Authority`, approval boundaries and deterministic safety policy. |
 | 8 | Demo Scenario | PM-27 story, failure handling and expected trace. |
 | 9 | Responsible AI | Synthetic data limits, explainability, auditability and public-reference boundaries. |
 | 10 | Impact And Next Steps | Potential safety value, scalability path, worker-report enrichment and approved pilot requirements. |

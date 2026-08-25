@@ -1,0 +1,2722 @@
+{
+  "samples": [
+    {
+      "sample_id": "telemetry-uncertainty-0001",
+      "timestamp": "2026-08-19T05:05:00.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": "uncertain-001",
+      "position": {
+        "x": 17,
+        "y": 78.16
+      },
+      "accuracy_m": 34,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0002",
+      "timestamp": "2026-08-19T05:05:01.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 17.78,
+        "y": 78.16
+      },
+      "accuracy_m": 34,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0003",
+      "timestamp": "2026-08-19T05:05:02.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 18.56,
+        "y": 78.16
+      },
+      "accuracy_m": 34,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0004",
+      "timestamp": "2026-08-19T05:05:03.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 19.33,
+        "y": 78.16
+      },
+      "accuracy_m": 33,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0005",
+      "timestamp": "2026-08-19T05:05:04.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 20.11,
+        "y": 78.16
+      },
+      "accuracy_m": 33,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0006",
+      "timestamp": "2026-08-19T05:05:05.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 20.89,
+        "y": 78.16
+      },
+      "accuracy_m": 33,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0007",
+      "timestamp": "2026-08-19T05:05:06.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 21.67,
+        "y": 78.16
+      },
+      "accuracy_m": 33,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0008",
+      "timestamp": "2026-08-19T05:05:07.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 22.44,
+        "y": 78.16
+      },
+      "accuracy_m": 32,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0009",
+      "timestamp": "2026-08-19T05:05:08.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 23.22,
+        "y": 78.16
+      },
+      "accuracy_m": 32,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0010",
+      "timestamp": "2026-08-19T05:05:09.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 24,
+        "y": 78.16
+      },
+      "accuracy_m": 32,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0011",
+      "timestamp": "2026-08-19T05:05:10.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 24.78,
+        "y": 78.16
+      },
+      "accuracy_m": 32,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0012",
+      "timestamp": "2026-08-19T05:05:11.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 25.56,
+        "y": 78.16
+      },
+      "accuracy_m": 31,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0013",
+      "timestamp": "2026-08-19T05:05:12.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 26.33,
+        "y": 78.16
+      },
+      "accuracy_m": 31,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0014",
+      "timestamp": "2026-08-19T05:05:13.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 27.11,
+        "y": 78.16
+      },
+      "accuracy_m": 31,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0015",
+      "timestamp": "2026-08-19T05:05:14.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 27.89,
+        "y": 78.16
+      },
+      "accuracy_m": 31,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0016",
+      "timestamp": "2026-08-19T05:05:15.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 28.67,
+        "y": 78.16
+      },
+      "accuracy_m": 31,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0017",
+      "timestamp": "2026-08-19T05:05:16.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 29.44,
+        "y": 78.16
+      },
+      "accuracy_m": 30,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0018",
+      "timestamp": "2026-08-19T05:05:17.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 30.22,
+        "y": 78.16
+      },
+      "accuracy_m": 30,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0019",
+      "timestamp": "2026-08-19T05:05:18.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 31,
+        "y": 78.16
+      },
+      "accuracy_m": 30,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0020",
+      "timestamp": "2026-08-19T05:05:19.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 31.78,
+        "y": 78.16
+      },
+      "accuracy_m": 30,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0021",
+      "timestamp": "2026-08-19T05:05:20.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 32.56,
+        "y": 78.16
+      },
+      "accuracy_m": 29,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0022",
+      "timestamp": "2026-08-19T05:05:21.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 33.33,
+        "y": 78.16
+      },
+      "accuracy_m": 29,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0023",
+      "timestamp": "2026-08-19T05:05:22.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 34.08,
+        "y": 78.16
+      },
+      "accuracy_m": 29,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0024",
+      "timestamp": "2026-08-19T05:05:23.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 34.83,
+        "y": 78.16
+      },
+      "accuracy_m": 29,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0025",
+      "timestamp": "2026-08-19T05:05:24.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 35.58,
+        "y": 78.16
+      },
+      "accuracy_m": 29,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0026",
+      "timestamp": "2026-08-19T05:05:25.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 36.33,
+        "y": 78.16
+      },
+      "accuracy_m": 28,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0027",
+      "timestamp": "2026-08-19T05:05:26.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 37.08,
+        "y": 78.16
+      },
+      "accuracy_m": 28,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0028",
+      "timestamp": "2026-08-19T05:05:27.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 37.83,
+        "y": 78.16
+      },
+      "accuracy_m": 28,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0029",
+      "timestamp": "2026-08-19T05:05:28.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 38.58,
+        "y": 78.16
+      },
+      "accuracy_m": 28,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0030",
+      "timestamp": "2026-08-19T05:05:29.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 77.83
+      },
+      "accuracy_m": 27,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0031",
+      "timestamp": "2026-08-19T05:05:30.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 77.08
+      },
+      "accuracy_m": 27,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0032",
+      "timestamp": "2026-08-19T05:05:31.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 76.33
+      },
+      "accuracy_m": 27,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0033",
+      "timestamp": "2026-08-19T05:05:32.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 75.58
+      },
+      "accuracy_m": 27,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0034",
+      "timestamp": "2026-08-19T05:05:33.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 74.83
+      },
+      "accuracy_m": 26,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0035",
+      "timestamp": "2026-08-19T05:05:34.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 74.08
+      },
+      "accuracy_m": 26,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0036",
+      "timestamp": "2026-08-19T05:05:35.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 73.33
+      },
+      "accuracy_m": 26,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0037",
+      "timestamp": "2026-08-19T05:05:36.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 72.58
+      },
+      "accuracy_m": 26,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0038",
+      "timestamp": "2026-08-19T05:05:37.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 71.83
+      },
+      "accuracy_m": 26,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0039",
+      "timestamp": "2026-08-19T05:05:38.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 71.08
+      },
+      "accuracy_m": 25,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0040",
+      "timestamp": "2026-08-19T05:05:39.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 70.3
+      },
+      "accuracy_m": 25,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0041",
+      "timestamp": "2026-08-19T05:05:40.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 69.52
+      },
+      "accuracy_m": 25,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0042",
+      "timestamp": "2026-08-19T05:05:41.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 68.74
+      },
+      "accuracy_m": 25,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0043",
+      "timestamp": "2026-08-19T05:05:42.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 67.97
+      },
+      "accuracy_m": 24,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0044",
+      "timestamp": "2026-08-19T05:05:43.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 67.19
+      },
+      "accuracy_m": 24,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0045",
+      "timestamp": "2026-08-19T05:05:44.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 38.45,
+        "y": 66.96
+      },
+      "accuracy_m": 24,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0046",
+      "timestamp": "2026-08-19T05:05:45.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "stale",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 37.67,
+        "y": 66.96
+      },
+      "accuracy_m": 24,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0047",
+      "timestamp": "2026-08-19T05:05:46.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 36.89,
+        "y": 66.96
+      },
+      "accuracy_m": 23,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0048",
+      "timestamp": "2026-08-19T05:05:47.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 36.12,
+        "y": 66.96
+      },
+      "accuracy_m": 23,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0049",
+      "timestamp": "2026-08-19T05:05:48.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 35.34,
+        "y": 66.96
+      },
+      "accuracy_m": 23,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0050",
+      "timestamp": "2026-08-19T05:05:49.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 34.56,
+        "y": 66.96
+      },
+      "accuracy_m": 23,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0051",
+      "timestamp": "2026-08-19T05:05:50.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 33.78,
+        "y": 66.96
+      },
+      "accuracy_m": 23,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0052",
+      "timestamp": "2026-08-19T05:05:51.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 33.01,
+        "y": 66.96
+      },
+      "accuracy_m": 22,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0053",
+      "timestamp": "2026-08-19T05:05:52.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 32.23,
+        "y": 66.96
+      },
+      "accuracy_m": 22,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0054",
+      "timestamp": "2026-08-19T05:05:53.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 31.48,
+        "y": 66.96
+      },
+      "accuracy_m": 22,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0055",
+      "timestamp": "2026-08-19T05:05:54.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 30.73,
+        "y": 66.96
+      },
+      "accuracy_m": 22,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0056",
+      "timestamp": "2026-08-19T05:05:55.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 29.98,
+        "y": 66.96
+      },
+      "accuracy_m": 21,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0057",
+      "timestamp": "2026-08-19T05:05:56.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 29.23,
+        "y": 66.96
+      },
+      "accuracy_m": 21,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0058",
+      "timestamp": "2026-08-19T05:05:57.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 28.48,
+        "y": 66.96
+      },
+      "accuracy_m": 21,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0059",
+      "timestamp": "2026-08-19T05:05:58.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 27.73,
+        "y": 66.96
+      },
+      "accuracy_m": 21,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0060",
+      "timestamp": "2026-08-19T05:05:59.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 26.98,
+        "y": 66.96
+      },
+      "accuracy_m": 21,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0061",
+      "timestamp": "2026-08-19T05:06:00.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 26.23,
+        "y": 66.96
+      },
+      "accuracy_m": 20,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0062",
+      "timestamp": "2026-08-19T05:06:01.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 25.48,
+        "y": 66.96
+      },
+      "accuracy_m": 20,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0063",
+      "timestamp": "2026-08-19T05:06:02.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 24.73,
+        "y": 66.96
+      },
+      "accuracy_m": 20,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0064",
+      "timestamp": "2026-08-19T05:06:03.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 23.98,
+        "y": 66.96
+      },
+      "accuracy_m": 20,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0065",
+      "timestamp": "2026-08-19T05:06:04.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 23.23,
+        "y": 66.96
+      },
+      "accuracy_m": 19,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0066",
+      "timestamp": "2026-08-19T05:06:05.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 22.48,
+        "y": 66.96
+      },
+      "accuracy_m": 19,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0067",
+      "timestamp": "2026-08-19T05:06:06.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 21.73,
+        "y": 66.96
+      },
+      "accuracy_m": 19,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0068",
+      "timestamp": "2026-08-19T05:06:07.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 20.98,
+        "y": 66.96
+      },
+      "accuracy_m": 19,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0069",
+      "timestamp": "2026-08-19T05:06:08.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 20.23,
+        "y": 66.96
+      },
+      "accuracy_m": 18,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0070",
+      "timestamp": "2026-08-19T05:06:09.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "stale GPS",
+      "event_anchor_id": null,
+      "position": {
+        "x": 19.48,
+        "y": 66.96
+      },
+      "accuracy_m": 18,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0071",
+      "timestamp": "2026-08-19T05:06:10.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "normal",
+      "event_anchor_id": "uncertain-002",
+      "position": {
+        "x": 18.73,
+        "y": 66.96
+      },
+      "accuracy_m": 18,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0072",
+      "timestamp": "2026-08-19T05:06:11.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 17.98,
+        "y": 66.96
+      },
+      "accuracy_m": 18,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0073",
+      "timestamp": "2026-08-19T05:06:12.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 17.23,
+        "y": 66.96
+      },
+      "accuracy_m": 18,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0074",
+      "timestamp": "2026-08-19T05:06:13.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 16.48,
+        "y": 66.96
+      },
+      "accuracy_m": 18,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0075",
+      "timestamp": "2026-08-19T05:06:14.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15.73,
+        "y": 66.96
+      },
+      "accuracy_m": 17,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0076",
+      "timestamp": "2026-08-19T05:06:15.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15,
+        "y": 66.98
+      },
+      "accuracy_m": 17,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0077",
+      "timestamp": "2026-08-19T05:06:16.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15,
+        "y": 67.73
+      },
+      "accuracy_m": 17,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0078",
+      "timestamp": "2026-08-19T05:06:17.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 27,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15,
+        "y": 68.48
+      },
+      "accuracy_m": 17,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0079",
+      "timestamp": "2026-08-19T05:06:18.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15,
+        "y": 69.2
+      },
+      "accuracy_m": 17,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0080",
+      "timestamp": "2026-08-19T05:06:19.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15,
+        "y": 69.93
+      },
+      "accuracy_m": 17,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0081",
+      "timestamp": "2026-08-19T05:06:20.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15,
+        "y": 70.65
+      },
+      "accuracy_m": 17,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0082",
+      "timestamp": "2026-08-19T05:06:21.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15,
+        "y": 71.37
+      },
+      "accuracy_m": 16,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0083",
+      "timestamp": "2026-08-19T05:06:22.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15,
+        "y": 72.09
+      },
+      "accuracy_m": 16,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0084",
+      "timestamp": "2026-08-19T05:06:23.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15,
+        "y": 72.82
+      },
+      "accuracy_m": 16,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0085",
+      "timestamp": "2026-08-19T05:06:24.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15,
+        "y": 73.54
+      },
+      "accuracy_m": 16,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0086",
+      "timestamp": "2026-08-19T05:06:25.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15,
+        "y": 74.26
+      },
+      "accuracy_m": 16,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0087",
+      "timestamp": "2026-08-19T05:06:26.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15,
+        "y": 74.98
+      },
+      "accuracy_m": 16,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0088",
+      "timestamp": "2026-08-19T05:06:27.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15,
+        "y": 75.7
+      },
+      "accuracy_m": 16,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0089",
+      "timestamp": "2026-08-19T05:06:28.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15,
+        "y": 76.43
+      },
+      "accuracy_m": 16,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0090",
+      "timestamp": "2026-08-19T05:06:29.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15,
+        "y": 77.15
+      },
+      "accuracy_m": 15,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0091",
+      "timestamp": "2026-08-19T05:06:30.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 26,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15,
+        "y": 77.87
+      },
+      "accuracy_m": 15,
+      "heading_degrees": 180
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0092",
+      "timestamp": "2026-08-19T05:06:31.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 15.41,
+        "y": 78.16
+      },
+      "accuracy_m": 15,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0093",
+      "timestamp": "2026-08-19T05:06:32.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 16.1,
+        "y": 78.16
+      },
+      "accuracy_m": 15,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0094",
+      "timestamp": "2026-08-19T05:06:33.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 16.79,
+        "y": 78.16
+      },
+      "accuracy_m": 15,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0095",
+      "timestamp": "2026-08-19T05:06:34.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 17.49,
+        "y": 78.16
+      },
+      "accuracy_m": 15,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0096",
+      "timestamp": "2026-08-19T05:06:35.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 18.18,
+        "y": 78.16
+      },
+      "accuracy_m": 15,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0097",
+      "timestamp": "2026-08-19T05:06:36.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 25,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 18.88,
+        "y": 78.16
+      },
+      "accuracy_m": 14,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0098",
+      "timestamp": "2026-08-19T05:06:37.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 19.54,
+        "y": 78.16
+      },
+      "accuracy_m": 14,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0099",
+      "timestamp": "2026-08-19T05:06:38.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 20.21,
+        "y": 78.16
+      },
+      "accuracy_m": 14,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0100",
+      "timestamp": "2026-08-19T05:06:39.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 20.88,
+        "y": 78.16
+      },
+      "accuracy_m": 14,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0101",
+      "timestamp": "2026-08-19T05:06:40.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 21.54,
+        "y": 78.16
+      },
+      "accuracy_m": 14,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0102",
+      "timestamp": "2026-08-19T05:06:41.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 22.21,
+        "y": 78.16
+      },
+      "accuracy_m": 14,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0103",
+      "timestamp": "2026-08-19T05:06:42.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 22.88,
+        "y": 78.16
+      },
+      "accuracy_m": 14,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0104",
+      "timestamp": "2026-08-19T05:06:43.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 23.54,
+        "y": 78.16
+      },
+      "accuracy_m": 13,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0105",
+      "timestamp": "2026-08-19T05:06:44.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 24,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 24.21,
+        "y": 78.16
+      },
+      "accuracy_m": 13,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0106",
+      "timestamp": "2026-08-19T05:06:45.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 24.85,
+        "y": 78.16
+      },
+      "accuracy_m": 13,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0107",
+      "timestamp": "2026-08-19T05:06:46.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 25.49,
+        "y": 78.16
+      },
+      "accuracy_m": 13,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0108",
+      "timestamp": "2026-08-19T05:06:47.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 26.13,
+        "y": 78.16
+      },
+      "accuracy_m": 13,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0109",
+      "timestamp": "2026-08-19T05:06:48.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 26.77,
+        "y": 78.16
+      },
+      "accuracy_m": 13,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0110",
+      "timestamp": "2026-08-19T05:06:49.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 27.41,
+        "y": 78.16
+      },
+      "accuracy_m": 13,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0111",
+      "timestamp": "2026-08-19T05:06:50.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 28.04,
+        "y": 78.16
+      },
+      "accuracy_m": 13,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0112",
+      "timestamp": "2026-08-19T05:06:51.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 28.68,
+        "y": 78.16
+      },
+      "accuracy_m": 12,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0113",
+      "timestamp": "2026-08-19T05:06:52.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 29.32,
+        "y": 78.16
+      },
+      "accuracy_m": 12,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0114",
+      "timestamp": "2026-08-19T05:06:53.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 29.96,
+        "y": 78.16
+      },
+      "accuracy_m": 12,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0115",
+      "timestamp": "2026-08-19T05:06:54.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 30.6,
+        "y": 78.16
+      },
+      "accuracy_m": 12,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0116",
+      "timestamp": "2026-08-19T05:06:55.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 31.24,
+        "y": 78.16
+      },
+      "accuracy_m": 12,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0117",
+      "timestamp": "2026-08-19T05:06:56.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 31.88,
+        "y": 78.16
+      },
+      "accuracy_m": 12,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0118",
+      "timestamp": "2026-08-19T05:06:57.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 32.52,
+        "y": 78.16
+      },
+      "accuracy_m": 12,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0119",
+      "timestamp": "2026-08-19T05:06:58.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 33.16,
+        "y": 78.16
+      },
+      "accuracy_m": 11,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0120",
+      "timestamp": "2026-08-19T05:06:59.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 33.79,
+        "y": 78.16
+      },
+      "accuracy_m": 11,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0121",
+      "timestamp": "2026-08-19T05:07:00.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 34.43,
+        "y": 78.16
+      },
+      "accuracy_m": 11,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0122",
+      "timestamp": "2026-08-19T05:07:01.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 35.07,
+        "y": 78.16
+      },
+      "accuracy_m": 11,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0123",
+      "timestamp": "2026-08-19T05:07:02.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "delayed",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 35.71,
+        "y": 78.16
+      },
+      "accuracy_m": 11,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0124",
+      "timestamp": "2026-08-19T05:07:03.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 36.35,
+        "y": 78.16
+      },
+      "accuracy_m": 11,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0125",
+      "timestamp": "2026-08-19T05:07:04.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 36.99,
+        "y": 78.16
+      },
+      "accuracy_m": 11,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0126",
+      "timestamp": "2026-08-19T05:07:05.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 23,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 37.63,
+        "y": 78.16
+      },
+      "accuracy_m": 10,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0127",
+      "timestamp": "2026-08-19T05:07:06.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 22,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 38.24,
+        "y": 78.16
+      },
+      "accuracy_m": 10,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0128",
+      "timestamp": "2026-08-19T05:07:07.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 22,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 38.85,
+        "y": 78.16
+      },
+      "accuracy_m": 10,
+      "heading_degrees": 90
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0129",
+      "timestamp": "2026-08-19T05:07:08.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 22,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 77.7
+      },
+      "accuracy_m": 10,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0130",
+      "timestamp": "2026-08-19T05:07:09.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 22,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 77.09
+      },
+      "accuracy_m": 10,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0131",
+      "timestamp": "2026-08-19T05:07:10.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 22,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 76.48
+      },
+      "accuracy_m": 10,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0132",
+      "timestamp": "2026-08-19T05:07:11.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 22,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 75.87
+      },
+      "accuracy_m": 10,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0133",
+      "timestamp": "2026-08-19T05:07:12.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 22,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 75.25
+      },
+      "accuracy_m": 9,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0134",
+      "timestamp": "2026-08-19T05:07:13.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 21,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 74.67
+      },
+      "accuracy_m": 9,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0135",
+      "timestamp": "2026-08-19T05:07:14.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 21,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 74.09
+      },
+      "accuracy_m": 9,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0136",
+      "timestamp": "2026-08-19T05:07:15.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 21,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 73.5
+      },
+      "accuracy_m": 9,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0137",
+      "timestamp": "2026-08-19T05:07:16.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 21,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 72.92
+      },
+      "accuracy_m": 9,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0138",
+      "timestamp": "2026-08-19T05:07:17.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 21,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 72.34
+      },
+      "accuracy_m": 9,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0139",
+      "timestamp": "2026-08-19T05:07:18.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 21,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 71.75
+      },
+      "accuracy_m": 9,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0140",
+      "timestamp": "2026-08-19T05:07:19.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 21,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 71.17
+      },
+      "accuracy_m": 9,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0141",
+      "timestamp": "2026-08-19T05:07:20.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 20,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 70.62
+      },
+      "accuracy_m": 8,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0142",
+      "timestamp": "2026-08-19T05:07:21.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 20,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 70.06
+      },
+      "accuracy_m": 8,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0143",
+      "timestamp": "2026-08-19T05:07:22.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 20,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 69.5
+      },
+      "accuracy_m": 8,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0144",
+      "timestamp": "2026-08-19T05:07:23.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 20,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 68.95
+      },
+      "accuracy_m": 8,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0145",
+      "timestamp": "2026-08-19T05:07:24.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 20,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 68.39
+      },
+      "accuracy_m": 8,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0146",
+      "timestamp": "2026-08-19T05:07:25.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 20,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 67.84
+      },
+      "accuracy_m": 8,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0147",
+      "timestamp": "2026-08-19T05:07:26.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 20,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 39,
+        "y": 67.28
+      },
+      "accuracy_m": 8,
+      "heading_degrees": 0
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0148",
+      "timestamp": "2026-08-19T05:07:27.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 20,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 38.77,
+        "y": 66.96
+      },
+      "accuracy_m": 7,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0149",
+      "timestamp": "2026-08-19T05:07:28.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 20,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 38.21,
+        "y": 66.96
+      },
+      "accuracy_m": 7,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0150",
+      "timestamp": "2026-08-19T05:07:29.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 20,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "watching",
+      "event_anchor_id": null,
+      "position": {
+        "x": 37.66,
+        "y": 66.96
+      },
+      "accuracy_m": 7,
+      "heading_degrees": 270
+    },
+    {
+      "sample_id": "telemetry-uncertainty-0151",
+      "timestamp": "2026-08-19T05:07:30.000Z",
+      "scenario_id": "telemetry-uncertainty",
+      "vehicle_id": "PM-09",
+      "zone_id": "YARD-U2",
+      "speed": 20,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "state": "recovering",
+      "event_anchor_id": "uncertain-003",
+      "position": {
+        "x": 37.1,
+        "y": 66.96
+      },
+      "accuracy_m": 7,
+      "heading_degrees": 270
+    }
+  ]
+}

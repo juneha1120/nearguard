@@ -1,0 +1,66 @@
+[
+  {
+    "zone_id": "YARD-C4",
+    "zone_name": "Yard C4 Transfer Lane",
+    "zone_historical_risk": 0.72,
+    "map_region": "Synthetic Yard Map",
+    "center": {
+      "x": 27,
+      "y": 32
+    },
+    "bounds": {
+      "x": 12,
+      "y": 18,
+      "width": 30,
+      "height": 28
+    }
+  },
+  {
+    "zone_id": "PPT-LINK-25",
+    "zone_name": "Pasir Panjang Terminal Link",
+    "zone_historical_risk": 0.6,
+    "map_region": "Synthetic Yard Map",
+    "center": {
+      "x": 73,
+      "y": 32
+    },
+    "bounds": {
+      "x": 58,
+      "y": 18,
+      "width": 30,
+      "height": 28
+    }
+  },
+  {
+    "zone_id": "WHARF-C4",
+    "zone_name": "Wharf C4 Access",
+    "zone_historical_risk": 0.78,
+    "map_region": "Synthetic Yard Map",
+    "center": {
+      "x": 73,
+      "y": 72
+    },
+    "bounds": {
+      "x": 58,
+      "y": 58,
+      "width": 30,
+      "height": 28
+    }
+  },
+  {
+    "zone_id": "YARD-U2",
+    "zone_name": "Yard U2 Service Lane",
+    "zone_historical_risk": 0.66,
+    "map_region": "Synthetic Yard Map",
+    "center": {
+      "x": 27,
+      "y": 72
+    },
+    "bounds": {
+      "x": 12,
+      "y": 58,
+      "width": 30,
+      "height": 28
+    }
+  }
+]

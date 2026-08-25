@@ -1,10 +1,29 @@
 import type { DerivedFeatures, VehicleCase, VehicleEvent, ZoneContext } from "@/lib/types/domain";
 
+export const REACTION_WINDOW_SECONDS = 10;
+
+const UNSAFE_AFTER_INTERVENTION_EVENTS = new Set(["speeding", "harsh_brake", "sharp_turn", "risk_persistent"]);
+
 export function speedOverLimitBand(value: number): DerivedFeatures["speed_over_limit_band"] {
   if (value <= 0) return "none";
   if (value <= 10) return "minor";
   if (value <= 20) return "moderate";
   return "severe";
+}
+
+function minutesSinceIntervention(eventTimestamp: string, vehicleCase: VehicleCase | null) {
+  const hasPriorIntervention =
+    vehicleCase?.status === "monitoring" || vehicleCase?.status === "pending_approval" || vehicleCase?.status === "escalated";
+  if (!hasPriorIntervention || !vehicleCase?.updated_at) return 999;
+
+  const eventTime = new Date(eventTimestamp).getTime();
+  const interventionTime = new Date(vehicleCase.updated_at).getTime();
+  if (Number.isNaN(eventTime) || Number.isNaN(interventionTime)) return 999;
+  return Math.max(0, (eventTime - interventionTime) / 60000);
+}
+
+export function isReactionWindowActive(timeSinceLastInterventionMinutes: number) {
+  return timeSinceLastInterventionMinutes * 60 <= REACTION_WINDOW_SECONDS;
 }
 
 export function deriveFeatures(
@@ -26,7 +45,9 @@ export function deriveFeatures(
   const speedingEvents = allWindowEvents.filter((item) => item.speed > item.speed_limit).length;
   const alertEvents = allWindowEvents.filter((item) => ["speeding", "harsh_brake", "sharp_turn", "stale_gps", "risk_persistent"].includes(item.event_type)).length;
   const hasPriorIntervention = vehicleCase?.status === "monitoring" || vehicleCase?.status === "pending_approval" || vehicleCase?.status === "escalated";
-  const unstableAfterIntervention = ["speeding", "harsh_brake", "sharp_turn", "risk_persistent"].includes(event.event_type);
+  const timeSinceLastIntervention = minutesSinceIntervention(event.timestamp, vehicleCase);
+  const reactionWindowActive = hasPriorIntervention && isReactionWindowActive(timeSinceLastIntervention);
+  const unstableAfterIntervention = UNSAFE_AFTER_INTERVENTION_EVENTS.has(event.event_type);
   const weatherIndex = { clear: 0, rain: 0.5, heavy_rain: 1 }[zone.weather];
   const trafficIndex = { low: 0, medium: 0.5, high: 1 }[zone.traffic_level];
   const restrictionIndex = { normal: 0, caution: 0.35, restricted: 0.7, wharf: 1 }[zone.restriction_level];
@@ -68,10 +89,16 @@ export function deriveFeatures(
     risk_escalation_rate: Number(Math.max(0, currentSignal - previousSignal).toFixed(3)),
     shift_hours: 4.2,
     night_flag: false,
-    time_since_last_intervention: hasPriorIntervention ? 3 : 999,
-    post_intervention_noncompliance: Boolean(hasPriorIntervention && unstableAfterIntervention),
+    time_since_last_intervention: Number(timeSinceLastIntervention.toFixed(2)),
+    reaction_window_active: reactionWindowActive,
+    post_intervention_noncompliance: Boolean(hasPriorIntervention && unstableAfterIntervention && !reactionWindowActive),
     traffic_weather_compound_index: Number(((trafficIndex + weatherIndex) / 2).toFixed(2)),
     zone_transition_risk: Number(restrictionIndex.toFixed(2)),
+    nearby_vehicle_count_50m: 0,
+    nearest_vehicle_distance_m: 999,
+    nearest_vehicle_relative_speed_kmh: 0,
+    closing_rate_mps: 0,
+    interaction_features_available: false,
     previous_risk: previousRisk,
     risk_trend: riskTrend
   };
