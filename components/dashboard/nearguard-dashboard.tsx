@@ -6,11 +6,13 @@ import {
   ClipboardCheck,
   Clock3,
   FastForward,
+  FileText,
   Layers,
   Pause,
   Play,
   RefreshCw,
   ShieldAlert,
+  Sparkles,
   StepBack,
   StepForward
 } from "lucide-react";
@@ -39,6 +41,7 @@ import {
   scoreSeverityLabel,
   speedSeverityClass,
   timeLabel,
+  toolLabel,
   toolRationale,
   trafficLevelFromPressure,
   trafficSeverityClass,
@@ -49,13 +52,19 @@ import {
   type ScenarioMetadata,
   type ZoneRiskCard
 } from "@/components/dashboard/dashboard-utils";
-import { calculateZoneOperationalRisk } from "@/lib/model/live-risk";
+import { calculateZoneOperationalRisk, assessLiveVehicleNearMissRisk } from "@/lib/model/live-risk";
+import {
+  applyWorkerReportToLiveSample,
+  describeWorkerReportInfluence,
+  workerReportApplicationState
+} from "@/lib/model/report-enrichment";
 import type {
   LivePrediction,
   LiveTelemetrySample,
   ReplayState,
   ScenarioTelemetrySample,
   ScenarioZoneTelemetrySample,
+  WorkerRiskReport,
   ZoneRegistryEntry
 } from "@/lib/types/domain";
 
@@ -64,6 +73,7 @@ export function NearGuardDashboard() {
   const [zones, setZones] = useState<ZoneRegistryEntry[]>([]);
   const [liveSamples, setLiveSamples] = useState<LiveTelemetrySample[]>([]);
   const [livePredictions, setLivePredictions] = useState<LivePrediction[]>([]);
+  const [livePredictionSampleId, setLivePredictionSampleId] = useState<string | null>(null);
   const [scenarioTelemetrySamples, setScenarioTelemetrySamples] = useState<ScenarioTelemetrySample[]>([]);
   const [scenarioZoneTelemetrySamples, setScenarioZoneTelemetrySamples] = useState<ScenarioZoneTelemetrySample[]>([]);
   const [liveSampleIndex, setLiveSampleIndex] = useState(0);
@@ -72,8 +82,16 @@ export function NearGuardDashboard() {
   const [state, setState] = useState<ReplayState | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [introScenario, setIntroScenario] = useState<ReplayState["selectedScenario"] | null>(null);
-  const [rightTab, setRightTab] = useState<"action" | "timeline">("action");
+  const [rightPanelView, setRightPanelView] = useState<"assessment" | "report">("assessment");
+  const [assessmentTab, setAssessmentTab] = useState<"action" | "timeline">("action");
   const [selectedLiveVehicleId, setSelectedLiveVehicleId] = useState<string | null>(null);
+  const [reportDescription, setReportDescription] = useState(
+    "Near the wharf, visibility around the container stack is poor and workers are crossing often."
+  );
+  const [workerReport, setWorkerReport] = useState<WorkerRiskReport | null>(null);
+  const [isWorkerReportResolved, setIsWorkerReportResolved] = useState(false);
+  const [isExtractingReport, setIsExtractingReport] = useState(false);
+  const [reportExtractionError, setReportExtractionError] = useState<string | null>(null);
   const replayRequestRef = useRef(0);
   const timerRef = useRef<number | null>(null);
   const liveTimerRef = useRef<number | null>(null);
@@ -152,6 +170,31 @@ export function NearGuardDashboard() {
       body: JSON.stringify({ approval_id: approvalId, approved })
     });
     setState(await response.json());
+  }
+
+  async function extractWorkerReport() {
+    const description = reportDescription.trim();
+    if (!description || isExtractingReport) return;
+
+    setIsExtractingReport(true);
+    setReportExtractionError(null);
+    try {
+      const response = await fetch("/api/worker-reports/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description, reporter_role: "daily_safety_report" })
+      });
+      const payload = (await response.json()) as { report?: WorkerRiskReport; error?: string };
+      if (!response.ok || !payload.report) {
+        throw new Error(payload.error ?? "Worker report extraction failed.");
+      }
+      setWorkerReport(payload.report);
+      setIsWorkerReportResolved(false);
+    } catch (error) {
+      setReportExtractionError(error instanceof Error ? error.message : "Worker report extraction failed.");
+    } finally {
+      setIsExtractingReport(false);
+    }
   }
 
   useEffect(() => {
@@ -246,6 +289,7 @@ export function NearGuardDashboard() {
       .then((payload) => {
         if (isCancelled) return;
         const predictions = (payload.predictions ?? []) as LivePrediction[];
+        if (predictions.length) setLivePredictionSampleId(rawLiveSample.sample_id);
         setLivePredictions((current) => {
           const retained = current.filter((prediction) => prediction.sample_id !== rawLiveSample.sample_id);
           return [...retained, ...predictions].slice(-240);
@@ -259,6 +303,25 @@ export function NearGuardDashboard() {
       isCancelled = true;
     };
   }, [rawLiveSample, state]);
+  const latestLivePredictions = useMemo(
+    () => livePredictions.filter((prediction) => prediction.sample_id === livePredictionSampleId),
+    [livePredictionSampleId, livePredictions]
+  );
+  const latestLivePredictionByVehicle = useMemo(() => {
+    const predictions = new Map<string, LivePrediction>();
+    for (const prediction of latestLivePredictions) {
+      predictions.set(prediction.vehicle_id, prediction);
+    }
+    return predictions;
+  }, [latestLivePredictions]);
+  const highestRiskLiveVehicleId = useMemo(() => {
+    return (
+      latestLivePredictions.reduce<LivePrediction | null>((highest, prediction) => {
+        if (!highest) return prediction;
+        return prediction.assessment.safety_incident_risk_score > highest.assessment.safety_incident_risk_score ? prediction : highest;
+      }, null)?.vehicle_id ?? null
+    );
+  }, [latestLivePredictions]);
   const scenarioClockTimestamp = scenarioClockMs === null ? null : new Date(scenarioClockMs).toISOString();
   const scenarioTelemetrySample = useMemo(() => {
     if (scenarioClockMs === null || !scenarioTelemetrySamples.length) return null;
@@ -295,6 +358,49 @@ export function NearGuardDashboard() {
       state?.selectedScenario
     ]
   );
+  const activeWorkerReport = isWorkerReportResolved ? null : workerReport;
+  const workerReportState = useMemo(() => workerReportApplicationState(liveSample, activeWorkerReport), [activeWorkerReport, liveSample]);
+  const enrichedLiveSample = useMemo(() => applyWorkerReportToLiveSample(liveSample, activeWorkerReport), [activeWorkerReport, liveSample]);
+  const workerReportZoneRisk = useMemo(() => {
+    if (!activeWorkerReport?.zone_id) return null;
+    const baselineZone = liveSample?.zones.find((zone) => zone.zone_id === activeWorkerReport.zone_id) ?? null;
+    const enrichedZone = enrichedLiveSample?.zones.find((zone) => zone.zone_id === activeWorkerReport.zone_id) ?? null;
+    if (!baselineZone || !enrichedZone) return null;
+
+    const before = calculateZoneOperationalRisk(baselineZone);
+    const after = calculateZoneOperationalRisk(enrichedZone);
+    return {
+      before,
+      after,
+      delta: Number((after - before).toFixed(3))
+    };
+  }, [activeWorkerReport, enrichedLiveSample, liveSample]);
+  const workerReportInfluencedFeatures = useMemo(
+    () => describeWorkerReportInfluence(liveSample, activeWorkerReport),
+    [activeWorkerReport, liveSample]
+  );
+  const workerReportStateCopy = isWorkerReportResolved && workerReport
+    ? "Resolved"
+    : {
+        empty: "No report extracted",
+        applied: "Applied to zone risk",
+        held_for_review: "Held for review",
+        missing_zone: "Zone not extracted",
+        zone_not_in_view: "Zone not in current view"
+      }[workerReportState];
+  const workerReportBadgeClass = isWorkerReportResolved
+    ? "neutral"
+    : workerReport
+      ? confidenceSeverityClass(workerReport.extraction_confidence)
+      : "neutral";
+  const liveSignalSample = useMemo(() => {
+    if (isScenarioMode) return enrichedLiveSample;
+    if (!livePredictionSampleId) return enrichedLiveSample;
+    return applyWorkerReportToLiveSample(
+      liveSamples.find((sample) => sample.sample_id === livePredictionSampleId) ?? enrichedLiveSample,
+      activeWorkerReport
+    );
+  }, [activeWorkerReport, enrichedLiveSample, isScenarioMode, livePredictionSampleId, liveSamples]);
   const decisionPointEvents = useMemo(() => {
     if (!state?.currentEvent) return [];
     const currentTime = new Date(state.currentEvent.timestamp).getTime();
@@ -317,7 +423,7 @@ export function NearGuardDashboard() {
   const zoneRiskCards = useMemo<ZoneRiskCard[]>(
     () =>
       zones.map((zone) => {
-        const live = liveSample?.zones.find((item) => item.zone_id === zone.zone_id) ?? null;
+        const live = enrichedLiveSample?.zones.find((item) => item.zone_id === zone.zone_id) ?? null;
         const operationalRisk = live ? calculateZoneOperationalRisk(live) : zone.zone_historical_risk;
         const level = live ? liveRiskLevel(operationalRisk) : baselineZoneRiskLevel(zone.zone_historical_risk);
         return {
@@ -329,12 +435,14 @@ export function NearGuardDashboard() {
           operationalRisk
         };
       }),
-    [liveSample?.zones, zones]
+    [enrichedLiveSample?.zones, zones]
   );
   const selectedLiveVehicle = useMemo(() => {
-    const liveZones = liveSample?.zones ?? [];
+    const liveZones = liveSignalSample?.zones ?? [];
+    const preferredVehicleId = selectedLiveVehicleId ?? (!isScenarioMode ? highestRiskLiveVehicleId : null);
+
     for (const liveZone of liveZones) {
-      const mover = liveZone.prime_movers.find((item) => item.vehicle_id === selectedLiveVehicleId);
+      const mover = liveZone.prime_movers.find((item) => item.vehicle_id === preferredVehicleId);
       if (mover) {
         return {
           mover,
@@ -353,15 +461,28 @@ export function NearGuardDashboard() {
       liveZone: firstLiveZone,
       zone: zones.find((item) => item.zone_id === firstLiveZone.zone_id) ?? null
     };
-  }, [liveSample?.zones, selectedLiveVehicleId, zones]);
+  }, [highestRiskLiveVehicleId, isScenarioMode, liveSignalSample?.zones, selectedLiveVehicleId, zones]);
   const liveVehiclePrediction = useMemo(() => {
-    if (isScenarioMode || !selectedLiveVehicle || !liveSample) return null;
-    return livePredictionBySampleVehicle.get(livePredictionKey(liveSample.sample_id, selectedLiveVehicle.mover.vehicle_id)) ?? null;
-  }, [isScenarioMode, livePredictionBySampleVehicle, liveSample, selectedLiveVehicle]);
+    if (isScenarioMode || !selectedLiveVehicle) return null;
+    return latestLivePredictionByVehicle.get(selectedLiveVehicle.mover.vehicle_id) ?? null;
+  }, [isScenarioMode, latestLivePredictionByVehicle, selectedLiveVehicle]);
+  const reportAdjustedLiveAssessment = useMemo(() => {
+    if (isScenarioMode || !activeWorkerReport || activeWorkerReport.extraction_confidence === "low" || !selectedLiveVehicle || !liveSignalSample) return null;
+    if (activeWorkerReport.zone_id && activeWorkerReport.zone_id !== selectedLiveVehicle.liveZone.zone_id) return null;
+    if (activeWorkerReport.vehicle_id && activeWorkerReport.vehicle_id !== selectedLiveVehicle.mover.vehicle_id) return null;
+    return assessLiveVehicleNearMissRisk(
+      [liveSignalSample],
+      liveSignalSample,
+      selectedLiveVehicle.liveZone,
+      selectedLiveVehicle.mover,
+      selectedLiveVehicle.zone
+    );
+  }, [activeWorkerReport, isScenarioMode, liveSignalSample, selectedLiveVehicle]);
   const liveVehicleAssessment = useMemo(() => {
+    if (reportAdjustedLiveAssessment) return reportAdjustedLiveAssessment;
     if (!liveVehiclePrediction) return null;
     return liveModelAssessment(liveVehiclePrediction);
-  }, [liveVehiclePrediction]);
+  }, [liveVehiclePrediction, reportAdjustedLiveAssessment]);
   const pendingApproval = state?.pendingApprovals.find((approval) => approval.status === "pending") ?? null;
   const hasIntervention = Boolean(
     pendingApproval ||
@@ -372,6 +493,12 @@ export function NearGuardDashboard() {
     () => explainAction(selectedCase, latestAssessment, pendingApproval),
     [latestAssessment, pendingApproval, selectedCase]
   );
+  const latestDriverAdvisory =
+    state?.toolCalls
+      .slice()
+      .reverse()
+      .find((tool) => tool.tool_name === "notify_driver" && tool.status === "delivered") ?? null;
+  const assessmentStatusCopy = pendingApproval ? "Approval" : latestDriverAdvisory ? "Advisory sent" : selectedCase?.authority_class ?? "Idle";
   const safetyCase = state?.safetyCases.at(-1) ?? null;
   const decisionTimeline = useMemo(
     () => buildDecisionTimeline(state?.traceEvents ?? [], latestAssessment, currentEvent),
@@ -397,7 +524,6 @@ export function NearGuardDashboard() {
       ? bandClass(latestAssessment.risk_band)
       : "neutral";
   const signalFeatures = liveVehicleAssessment?.features ?? state?.latestFeatures ?? null;
-  const signalReasons = liveVehicleAssessment?.assessment.top_risk_reasons ?? latestAssessment?.top_risk_reasons ?? [];
   const signalZoneRisk = selectedLiveVehicle ? calculateZoneOperationalRisk(selectedLiveVehicle.liveZone) : null;
   const signalSpeedClass = currentEvent
     ? speedSeverityClass(currentEvent.speed, currentEvent.speed_limit)
@@ -460,7 +586,6 @@ export function NearGuardDashboard() {
           <section className="scenario-modal" role="dialog" aria-modal="true" aria-labelledby="scenario-modal-title">
             <span className="scenario-modal-kicker">Scenario selected</span>
             <h2 id="scenario-modal-title">{introScenario.name}</h2>
-            <p>{introScenario.description}</p>
             <ul>
               {introScenario.highlights.map((highlight) => (
                 <li key={highlight}>{highlight}</li>
@@ -483,7 +608,6 @@ export function NearGuardDashboard() {
           <div className="panel-header">
             <div>
               <h2>{isScenarioMode ? "Scenario Zone Replay" : "Zone Monitor"}</h2>
-              <p className="small muted">{isScenarioMode ? "Scripted telemetry, paused at decision anchors" : "Operational zone telemetry"}</p>
             </div>
             <span className={`badge ${bandClass(latestAssessment?.risk_band)}`}>
               <ShieldAlert size={14} />
@@ -513,11 +637,19 @@ export function NearGuardDashboard() {
                 </div>
               </div>
               <div className="zone-risk-board">
-                {zoneRiskCards.map((card) => (
-                  <article
-                    className={`zone-live-card ${card.className} ${card.zone.zone_id === currentEvent?.zone_id ? "current" : ""}`}
-                    key={card.zone.zone_id}
-                  >
+                {zoneRiskCards.map((card) => {
+                  const isReportEnrichedZone = workerReportState === "applied" && workerReport?.zone_id === card.zone.zone_id;
+                  const isSelectedVehicleZone =
+                    Boolean(selectedLiveVehicleId) &&
+                    Boolean(card.live?.prime_movers.some((mover) => mover.vehicle_id === selectedLiveVehicleId));
+
+                  return (
+                    <article
+                      className={`zone-live-card ${card.className} ${card.zone.zone_id === currentEvent?.zone_id ? "current" : ""} ${
+                        isReportEnrichedZone ? "report-enriched" : ""
+                      } ${isSelectedVehicleZone ? "selected-vehicle-zone" : ""}`}
+                      key={card.zone.zone_id}
+                    >
                     <div className="zone-live-top">
                       <div>
                         <strong>{card.zone.zone_name}</strong>
@@ -525,7 +657,14 @@ export function NearGuardDashboard() {
                           {card.zone.zone_id} - {card.live?.active_prime_movers ?? 0} PMs
                         </p>
                       </div>
-                      <span className={`badge ${card.className}`}>{card.level}</span>
+                      <div className="zone-badge-stack">
+                        {isReportEnrichedZone ? (
+                          <span className="badge report">
+                            <Sparkles size={13} /> Report enriched
+                          </span>
+                        ) : null}
+                        <span className={`badge ${card.className}`}>{card.level}</span>
+                      </div>
                     </div>
                     <div className="risk-meter" aria-hidden="true">
                       <span style={{ width: riskPercent(card.operationalRisk) }} />
@@ -561,17 +700,22 @@ export function NearGuardDashboard() {
                       {(card.live?.prime_movers ?? []).map((mover) => {
                         const prediction =
                           liveSample && !isScenarioMode
-                            ? livePredictionBySampleVehicle.get(livePredictionKey(liveSample.sample_id, mover.vehicle_id))
+                            ? livePredictionBySampleVehicle.get(livePredictionKey(liveSample.sample_id, mover.vehicle_id)) ??
+                              latestLivePredictionByVehicle.get(mover.vehicle_id)
                             : null;
 
                         return (
                           <li
                             className={`${scoreSeverityClass(prediction?.assessment.safety_incident_risk_score ?? null)} ${
-                              selectedLiveVehicle?.mover.vehicle_id === mover.vehicle_id && signalUsesLiveVehicle ? "selected" : ""
+                              selectedLiveVehicleId === mover.vehicle_id ? "selected" : ""
                             }`}
                             key={mover.vehicle_id}
                           >
-                            <button type="button" onClick={() => setSelectedLiveVehicleId(mover.vehicle_id)}>
+                            <button
+                              aria-pressed={selectedLiveVehicleId === mover.vehicle_id}
+                              type="button"
+                              onClick={() => setSelectedLiveVehicleId(mover.vehicle_id)}
+                            >
                               <span>{mover.vehicle_id}</span>
                               <strong>{mover.speed} km/h</strong>
                               <small>
@@ -583,8 +727,9 @@ export function NearGuardDashboard() {
                         );
                       })}
                     </ul>
-                  </article>
-                ))}
+                    </article>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -593,7 +738,10 @@ export function NearGuardDashboard() {
         <aside className="snapshot-column">
           <section className="panel vehicle-signal-panel">
             <div className="panel-header">
-              <h3>Vehicle Signal</h3>
+              <h3>
+                Vehicle Signal
+                {selectedLiveVehicleId ? <span className="vehicle-signal-selection">{selectedLiveVehicleId}</span> : null}
+              </h3>
               <span className={`badge ${signalRiskClass}`}>
                 {signalRiskLabel}
               </span>
@@ -610,8 +758,8 @@ export function NearGuardDashboard() {
                 </div>
               </div>
 
-              <h3 className="section-title">{signalUsesLiveVehicle ? "Selected Vehicle" : "Current Event"}</h3>
-              <div className="kv-grid compact">
+              <h3 className="section-title">{selectedLiveVehicleId ? "Selected Vehicle" : signalUsesLiveVehicle ? "Selected Vehicle" : "Current Event"}</h3>
+              <div className="kv-grid compact vehicle-identity-grid">
                 <div className="kv signal-card neutral">
                   <span>Vehicle</span>
                   <strong>{signalVehicleId}</strong>
@@ -639,7 +787,7 @@ export function NearGuardDashboard() {
               </div>
 
               <h3 className="section-title">Rolling Features</h3>
-              <div className="kv-grid compact">
+              <div className="kv-grid compact rolling-feature-grid">
                 <div className={`kv signal-card ${speedSeverityClass(signalFeatures?.speed, signalFeatures?.speed_limit)}`}>
                   <span>Over Limit</span>
                   <strong>{signalFeatures ? `${signalFeatures.speed_over_limit} km/h` : "--"}</strong>
@@ -667,7 +815,7 @@ export function NearGuardDashboard() {
               </div>
 
               <h3 className="section-title">Surrounding Motion</h3>
-              <div className="kv-grid compact">
+              <div className="kv-grid compact surrounding-motion-grid">
                 <div
                   className={`kv signal-card ${distanceSeverityClass(
                     signalFeatures?.nearest_vehicle_distance_m,
@@ -703,17 +851,6 @@ export function NearGuardDashboard() {
                   </strong>
                 </div>
               </div>
-
-              <h3 className="section-title">Risk Reasons</h3>
-              {!signalReasons.length ? (
-                <div className="empty compact-empty">Risk reasons appear after live model assessment.</div>
-              ) : (
-                <ul className="reason-list compact-reasons">
-                  {signalReasons.slice(0, 3).map((reason) => (
-                    <li key={reason}>{reason}</li>
-                  ))}
-                </ul>
-              )}
             </div>
           </section>
         </aside>
@@ -721,35 +858,63 @@ export function NearGuardDashboard() {
         <aside className="right-column">
           <section className="panel priority-panel">
             <div className="panel-header">
-              <h3>AI Assessment</h3>
-              <span className={`badge ${actionExplanation.statusClass}`}>
-                <FastForward size={14} />
-                {pendingApproval ? "Approval" : selectedCase?.authority_class ?? "Idle"}
-              </span>
+              <div className="panel-title-switch" role="tablist" aria-label="Right panel view">
+                <button
+                  className={rightPanelView === "assessment" ? "active" : ""}
+                  onClick={() => setRightPanelView("assessment")}
+                  type="button"
+                >
+                  AI Assessment
+                </button>
+                <button className={rightPanelView === "report" ? "active" : ""} onClick={() => setRightPanelView("report")} type="button">
+                  Report Intelligence
+                </button>
+              </div>
             </div>
-            <div className="scenario-context">
-              <span>Scenario</span>
-              <strong>{state?.selectedScenario.name ?? "Live monitoring"}</strong>
-              <p>{state?.selectedScenario.description ?? "Monitoring live telemetry without a selected replay scenario."}</p>
-            </div>
-            <div className="tab-bar" role="tablist" aria-label="AI assessment details">
-              <button className={rightTab === "action" ? "active" : ""} onClick={() => setRightTab("action")} type="button">
-                Action
-              </button>
-              <button className={rightTab === "timeline" ? "active" : ""} onClick={() => setRightTab("timeline")} type="button">
-                Timeline
-              </button>
-            </div>
+            {rightPanelView === "assessment" ? (
+              <>
+                <div className="scenario-context">
+                  <span>Scenario</span>
+                  <strong>{state?.selectedScenario.name ?? "Live monitoring"}</strong>
+                </div>
+                <div className="tab-bar" role="tablist" aria-label="AI assessment details">
+                  <button className={assessmentTab === "action" ? "active" : ""} onClick={() => setAssessmentTab("action")} type="button">
+                    Action
+                  </button>
+                  <button className={assessmentTab === "timeline" ? "active" : ""} onClick={() => setAssessmentTab("timeline")} type="button">
+                    Timeline
+                  </button>
+                </div>
+              </>
+            ) : null}
             <div className="panel-body">
-              {rightTab === "action" ? (
+              {rightPanelView === "assessment" && assessmentTab === "action" ? (
                 <>
                   <div className="priority-action">
+                    <div className="tool-row">
+                      <div className="ai-card-kicker">
+                        <Sparkles size={13} />
+                        <span>Recommendation</span>
+                      </div>
+                      <span className={`badge ${actionExplanation.statusClass}`}>
+                        <FastForward size={14} />
+                        {assessmentStatusCopy}
+                      </span>
+                    </div>
                     <strong>{actionExplanation.title}</strong>
-                    <p className="small muted">{actionExplanation.summary}</p>
+                    <div className="confidence-strip" aria-hidden="true">
+                      <i className={actionExplanation.statusClass} />
+                      <i className={signalRiskClass} />
+                      <i className={workerReportBadgeClass} />
+                    </div>
                   </div>
 
                   {pendingApproval ? (
                     <div className="approval priority-approval">
+                      <div className="approval-step">
+                        <span>1 / 1</span>
+                        <strong>Human approval</strong>
+                      </div>
                       <strong>{pendingApproval.requested_action}</strong>
                       <p className="small muted">{pendingApproval.rationale}</p>
                       <div className="approval-actions">
@@ -768,19 +933,25 @@ export function NearGuardDashboard() {
                   <h3 className="section-title">Action Rationale</h3>
                   <ul className="rationale-list">
                     {actionExplanation.rationale.map((item) => (
-                      <li key={item}>{item}</li>
+                      <li key={item}>
+                        <span className="rationale-dot" aria-hidden="true" />
+                        {item}
+                      </li>
                     ))}
                   </ul>
 
-                  <h3 className="section-title">Tool Rationale</h3>
+                  <h3 className="section-title">Tool Log</h3>
                   {!state?.toolCalls.length ? (
                     <div className="empty compact-empty">No tools called yet.</div>
                   ) : (
                     <ul className="tool-list rationale-tools">
                       {state.toolCalls.slice(-3).map((tool) => (
-                        <li key={tool.tool_call_id}>
+                        <li className="task-row" key={tool.tool_call_id}>
                           <div className="tool-row">
-                            <strong>{tool.tool_name}</strong>
+                            <strong>
+                              <span className={`task-status-dot ${tool.status === "failed" ? "failed" : "complete"}`} />
+                              {toolLabel(tool.tool_name)}
+                            </strong>
                             <span className={`badge ${tool.status === "failed" ? "critical" : "low"}`}>
                               {tool.status === "failed" ? <AlertTriangle size={13} /> : <CheckCircle2 size={13} />}
                               {tool.status}
@@ -794,7 +965,111 @@ export function NearGuardDashboard() {
                 </>
               ) : null}
 
-              {rightTab === "timeline" ? (
+              {rightPanelView === "report" ? (
+                <>
+                  <div className="worker-report-box">
+                    <div className="ai-card-kicker">
+                      <FileText size={13} />
+                      <span>Context extraction</span>
+                    </div>
+                    <label htmlFor="worker-report-description">Daily safety report</label>
+                    <textarea
+                      id="worker-report-description"
+                      value={reportDescription}
+                      onChange={(event) => setReportDescription(event.target.value)}
+                      rows={4}
+                    />
+                    <button
+                      className="primary-button"
+                      type="button"
+                      onClick={extractWorkerReport}
+                      disabled={isExtractingReport || !reportDescription.trim()}
+                    >
+                      <Sparkles size={16} /> {isExtractingReport ? "Extracting" : "Extract Context"}
+                    </button>
+                    {reportExtractionError ? (
+                      <div className="report-error">
+                        <AlertTriangle size={15} /> {reportExtractionError}
+                      </div>
+                    ) : null}
+                    {workerReport ? (
+                      <div className="report-result">
+                        <div className="tool-row">
+                          <strong>
+                            <FileText size={14} /> Extracted context
+                          </strong>
+                          <span className={`badge ${workerReportBadgeClass}`}>{workerReportStateCopy}</span>
+                        </div>
+                        <div className="context-card-source">
+                          <span>Daily safety report</span>
+                          <strong>{workerReport.extracted_context.operational_note.length} chars</strong>
+                        </div>
+                        <div className="report-flow">
+                          <span>
+                            Report <strong>{workerReport.extraction_confidence} confidence</strong>
+                          </span>
+                          <span>
+                            Inputs <strong>{workerReportInfluencedFeatures.length} changed</strong>
+                          </span>
+                          <span>
+                            Zone Risk{" "}
+                            <strong>
+                              {workerReportZoneRisk ? `${workerReportZoneRisk.before.toFixed(2)} -> ${workerReportZoneRisk.after.toFixed(2)}` : "--"}
+                            </strong>
+                          </span>
+                        </div>
+                        <div className="report-context-grid">
+                          <span>
+                            Hazard <strong>{workerReport.extracted_context.hazard_type.replaceAll("_", " ")}</strong>
+                          </span>
+                          <span>
+                            Zone <strong>{workerReport.extracted_context.zone_id ?? "--"}</strong>
+                          </span>
+                          <span>
+                            Vehicle <strong>{workerReport.extracted_context.vehicle_id ?? "--"}</strong>
+                          </span>
+                          <span>
+                            Severity <strong>{workerReport.extracted_context.reported_severity}</strong>
+                          </span>
+                        </div>
+                        <p className="small">{workerReport.extracted_context.operational_note}</p>
+                        <div className="report-actions">
+                          <button
+                            className={isWorkerReportResolved ? "primary-button" : "icon-button"}
+                            type="button"
+                            onClick={() => setIsWorkerReportResolved((resolved) => !resolved)}
+                          >
+                            {isWorkerReportResolved ? "Reopen report" : "Resolve report"}
+                          </button>
+                        </div>
+                        {workerReportInfluencedFeatures.length ? (
+                          <div className="report-input-list">
+                            {workerReportInfluencedFeatures.map((feature) => (
+                              <div key={feature.field}>
+                                <span>{feature.label}</span>
+                                <strong>
+                                  {feature.before} {"->"} {feature.after}
+                                </strong>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="empty compact-empty">No zone inputs changed.</div>
+                        )}
+                        <div className="zone-flag-row">
+                          {workerReport.extracted_context.model_feature_impacts.map((impact) => (
+                            <em key={impact}>{impact.replaceAll("_", " ")}</em>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="empty compact-empty">No report extracted yet.</div>
+                    )}
+                  </div>
+                </>
+              ) : null}
+
+              {rightPanelView === "assessment" && assessmentTab === "timeline" ? (
                 <>
                   <div className="tool-row">
                     <strong>Timeline</strong>
@@ -805,7 +1080,7 @@ export function NearGuardDashboard() {
                   </div>
                   <ul className="intervention-timeline">
                     {normalTelemetryWindowCount > 0 ? (
-                      <li className="normal">
+                      <li className="normal timeline-row">
                         <span className="trace-time">window</span>
                         <div>
                           <span className="event-code neutral">normal telemetry</span>
@@ -814,7 +1089,7 @@ export function NearGuardDashboard() {
                       </li>
                     ) : null}
                     {decisionPointEvents.map((event) => (
-                      <li className={eventSeverityClass(event)} key={event.event_id}>
+                      <li className={`${eventSeverityClass(event)} timeline-row`} key={event.event_id}>
                         <span className="trace-time">{timeLabel(event.timestamp)}</span>
                         <div>
                           <span className={`event-code ${eventSeverityClass(event)}`}>{formatEventLabel(event.event_type)}</span>
@@ -826,7 +1101,7 @@ export function NearGuardDashboard() {
                       </li>
                     ))}
                     {decisionTimeline.map((trace) => (
-                      <li key={trace.trace_id}>
+                      <li className="timeline-row" key={trace.trace_id}>
                         <span className="trace-time">{timeLabel(trace.timestamp)}</span>
                         <div>
                           <span className="event-code neutral">{trace.event_type.replaceAll("_", " ")}</span>

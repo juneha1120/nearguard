@@ -100,7 +100,7 @@ describe("agent replay", () => {
   it("handles telemetry uncertainty with low confidence and human review", () => {
     const state = runScenario("telemetry-uncertainty");
     expect(state.traceEvents.some((trace) => trace.event_type === "context_missing")).toBe(true);
-    expect(state.traceEvents.some((trace) => trace.message.includes("human review"))).toBe(true);
+    expect(state.traceEvents.some((trace) => trace.message.includes("Supervisor review request sent"))).toBe(true);
     expect(state.toolCalls.some((tool) => tool.tool_name === "notify_supervisor")).toBe(true);
   });
 

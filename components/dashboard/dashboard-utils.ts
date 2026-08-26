@@ -334,17 +334,13 @@ export function explainAction(
   if (!selectedCase || !assessment) {
     return {
       title: "Awaiting telemetry",
-      summary: "No risk action is active. Continuous scoring is below the intervention threshold.",
       rationale: ["Vehicle risk has not crossed a policy threshold."],
       statusClass: "neutral"
     };
   }
 
-  const leadReason = assessment.top_risk_reasons[0] ?? "Vehicle risk crossed the policy threshold.";
-  const actionPrefix = pendingApproval ? "Approval required" : selectedCase.authority_class;
   return {
-    title: selectedCase.recommended_action,
-    summary: `${actionPrefix}: ${leadReason}`,
+    title: pendingApproval ? "Zone advisory approval requested." : selectedCase.recommended_action,
     rationale: [
       `${assessment.risk_band} risk at ${assessment.safety_incident_risk_score.toFixed(2)} with ${assessment.confidence} confidence.`,
       ...assessment.top_risk_reasons.slice(0, 3)
@@ -354,13 +350,22 @@ export function explainAction(
 }
 
 export function toolRationale(tool: ToolCall, assessment: RiskAssessment | null) {
-  const reason = assessment?.top_risk_reasons[0] ?? "Current policy response required operational follow-up.";
-  if (tool.tool_name === "notify_driver") return `Driver advisory was triggered by ${assessment?.risk_band ?? "elevated"} risk: ${reason}`;
-  if (tool.tool_name === "notify_supervisor") return `Supervisor notification was triggered because policy requires awareness for ${assessment?.risk_band ?? "high"} risk.`;
+  const riskLabel = assessment ? `${assessment.risk_band} risk (${assessment.safety_incident_risk_score.toFixed(2)})` : "current risk state";
+  if (tool.tool_name === "notify_driver") return `Driver advisory delivered for ${riskLabel}.`;
+  if (tool.tool_name === "notify_supervisor") return `Supervisor notification delivered for ${riskLabel}.`;
   if (tool.tool_name === "fallback_notify_supervisor") return "Fallback notification was sent because the primary supervisor notification timed out.";
   if (tool.tool_name === "request_human_approval") return "Human approval was requested because the policy does not allow stronger zone intervention automatically.";
   if (tool.tool_name === "recommend_zone_advisory") return "Zone advisory was recorded after human approval.";
   return `Tool was called as part of the ${assessment?.risk_band ?? "current"} policy response.`;
+}
+
+export function toolLabel(toolName: string) {
+  if (toolName === "notify_driver") return "Driver advisory";
+  if (toolName === "notify_supervisor") return "Supervisor notification";
+  if (toolName === "fallback_notify_supervisor") return "Fallback supervisor notification";
+  if (toolName === "request_human_approval") return "Approval request";
+  if (toolName === "recommend_zone_advisory") return "Zone advisory";
+  return toolName.replaceAll("_", " ");
 }
 
 export function buildDecisionTimeline(

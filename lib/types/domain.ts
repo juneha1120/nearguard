@@ -13,6 +13,16 @@ export type Weather = "clear" | "rain" | "heavy_rain";
 export type RestrictionLevel = "normal" | "caution" | "restricted" | "wharf";
 export type PedestrianExposure = "low" | "medium" | "high";
 export type Confidence = "high" | "medium" | "low";
+export type ReportHazardType =
+  | "visibility_issue"
+  | "pedestrian_exposure"
+  | "speeding_pattern"
+  | "weather_condition"
+  | "traffic_congestion"
+  | "gps_quality"
+  | "route_obstruction"
+  | "unsafe_manoeuvre"
+  | "other";
 export type RiskBand = "Low" | "Medium" | "High" | "Persistent High" | "Critical / Low Confidence";
 export type CaseStatus = "open" | "monitoring" | "pending_approval" | "escalated" | "stabilized" | "closed";
 export type ToolStatus = "pending" | "delivered" | "failed" | "approved" | "rejected" | "created" | "recommended";
@@ -255,6 +265,32 @@ export interface TraceEvent {
   event_type: TraceEventType;
   message: string;
   metadata: Record<string, unknown>;
+}
+
+export interface WorkerReportExtractedContext {
+  hazard_type: ReportHazardType;
+  zone_id: string | null;
+  vehicle_id: string | null;
+  pedestrian_exposure: PedestrianExposure | null;
+  traffic_level: TrafficLevel | null;
+  weather: Weather | null;
+  restriction_level: RestrictionLevel | null;
+  reported_severity: Confidence;
+  operational_note: string;
+  model_feature_impacts: string[];
+}
+
+export interface WorkerRiskReport {
+  report_id: string;
+  timestamp: string;
+  reporter_role: string;
+  zone_id: string | null;
+  vehicle_id: string | null;
+  description: string;
+  extracted_context: WorkerReportExtractedContext;
+  extraction_confidence: Confidence;
+  extraction_source: "gemini_generate_content";
+  model: string;
 }
 
 export interface Scenario {
