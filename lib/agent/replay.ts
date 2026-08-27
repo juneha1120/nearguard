@@ -1,7 +1,8 @@
 import { getLatestScenarioZoneTelemetrySample, getScenario, getScenarioPrediction, getZone } from "@/lib/data/repository";
 import { deriveFeatures, recentVehicleEvents } from "@/lib/model/features";
+import { calculateZoneOperationalRisk } from "@/lib/model/live-risk";
 import { riskBandFor } from "@/lib/model/risk";
-import { decidePolicy } from "@/lib/policy/policy";
+import { decidePolicy, type ZoneAdvisoryPolicyContext } from "@/lib/policy/policy";
 import { createApprovalRequest, createSafetyCase, resetToolCounter, simulateTool } from "@/lib/tools/simulated-tools";
 import type {
   ApprovalRequest,
@@ -161,6 +162,43 @@ function buildAssessment(state: ReplayState, event: VehicleEvent, vehicleCase: V
   };
 }
 
+function zoneAdvisoryPolicyContext(
+  state: ReplayState,
+  event: VehicleEvent,
+  assessment: RiskAssessment,
+  zoneForFeatures: ZoneContext
+): ZoneAdvisoryPolicyContext {
+  const dynamicZone = getLatestScenarioZoneTelemetrySample(state.selectedScenario.scenario_id, event.zone_id, event.timestamp);
+  const zoneOperationalRisk = dynamicZone
+    ? calculateZoneOperationalRisk({
+        ...dynamicZone,
+        updated_at: dynamicZone.timestamp,
+        prime_movers: []
+      })
+    : null;
+
+  const processedEvents = state.selectedScenario.events.slice(0, state.currentEventIndex + 1);
+  const elevatedVehicleIds = new Set(
+    state.activeCases.filter((vehicleCase) => vehicleCase.current_risk >= 0.65).map((vehicleCase) => vehicleCase.vehicle_id)
+  );
+  if (assessment.safety_incident_risk_score >= 0.65) elevatedVehicleIds.add(event.vehicle_id);
+
+  const elevatedVehicleCountInZone = [...elevatedVehicleIds].filter((vehicleId) => {
+    const latestVehicleEvent = processedEvents
+      .filter((candidate) => candidate.vehicle_id === vehicleId)
+      .at(-1);
+    return latestVehicleEvent?.zone_id === event.zone_id;
+  }).length;
+
+  const sharedHazardContext =
+    zoneForFeatures.traffic_level === "high" ||
+    zoneForFeatures.weather !== "clear" ||
+    zoneForFeatures.restriction_level !== "normal" ||
+    zoneForFeatures.pedestrian_exposure !== "low";
+
+  return { zoneOperationalRisk, elevatedVehicleCountInZone, sharedHazardContext };
+}
+
 function updateCase(vehicleCase: VehicleCase, assessment: RiskAssessment, event: VehicleEvent, decision = decidePolicy(assessment)): VehicleCase {
   return {
     ...vehicleCase,
@@ -247,7 +285,8 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
     )
   );
 
-  const decision = decidePolicy(assessment);
+  const policyContext = zoneAdvisoryPolicyContext(state, event, assessment, zoneForFeatures);
+  const decision = decidePolicy(assessment, policyContext);
   traceEvents.push(trace(vehicleCase.case_id, event.timestamp, "policy_decision", `Policy decision: ${decision.recommendedAction}`, { decision }));
 
   let toolCalls: ToolCall[] = [...state.toolCalls];
@@ -271,7 +310,7 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
   }
 
   if (decision.shouldRequestApproval && !approvals.some((approval) => approval.case_id === updatedCase.case_id && approval.status === "pending")) {
-    const approval = createApprovalRequest(updatedCase, assessment);
+    const approval = createApprovalRequest(updatedCase, assessment, decision.zoneAdvisoryEvidence?.reasons);
     approvals = [...approvals, approval];
     traceEvents.push(trace(updatedCase.case_id, event.timestamp, "approval_requested", "Approval requested for zone advisory.", { approval }));
   }

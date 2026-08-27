@@ -34,6 +34,7 @@ describe("agent replay", () => {
 
     const approval = state.pendingApprovals.find((item) => item.status === "pending");
     expect(approval).toBeDefined();
+    expect(approval?.rationale).toMatch(/Zone operational risk/);
     state = decideApproval(state, approval!.approval_id, true);
 
     expect(state.safetyCases).toHaveLength(1);

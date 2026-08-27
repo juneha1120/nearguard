@@ -78,12 +78,12 @@ export function simulateTool(
   ];
 }
 
-export function createApprovalRequest(vehicleCase: VehicleCase, assessment: RiskAssessment): ApprovalRequest {
+export function createApprovalRequest(vehicleCase: VehicleCase, assessment: RiskAssessment, gateEvidence: string[] = []): ApprovalRequest {
   return {
     approval_id: `approval-${vehicleCase.case_id}`,
     case_id: vehicleCase.case_id,
     requested_action: "Recommend zone advisory for nearby Prime Movers.",
-    rationale: assessment.top_risk_reasons.join(" "),
+    rationale: [...assessment.top_risk_reasons, ...gateEvidence].join(" "),
     status: "pending",
     approver: null,
     decision_time: null
