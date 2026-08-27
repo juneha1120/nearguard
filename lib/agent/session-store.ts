@@ -1,5 +1,5 @@
-import { advanceReplay, createInitialReplayState, decideApproval, rewindReplay } from "@/lib/agent/replay";
-import type { ReplayState } from "@/lib/types/domain";
+import { advanceReplay, createInitialReplayState, decideApproval, decideReview, rewindReplay } from "@/lib/agent/replay";
+import type { ReplayState, ReviewOutcome } from "@/lib/types/domain";
 
 const DEFAULT_REPLAY_SESSION_ID = "default";
 const replayStates = new Map<string, ReplayState>();
@@ -35,6 +35,13 @@ export function stepReplay(sessionId?: string) {
 export function previousReplay(sessionId?: string) {
   const key = sessionKey(sessionId);
   const replayState = rewindReplay(getReplayState(key));
+  replayStates.set(key, replayState);
+  return replayState;
+}
+
+export function reviewReplay(reviewId: string, outcome: ReviewOutcome, sessionId?: string) {
+  const key = sessionKey(sessionId);
+  const replayState = decideReview(getReplayState(key), reviewId, outcome);
   replayStates.set(key, replayState);
   return replayState;
 }

@@ -1,4 +1,4 @@
-import type { ApprovalRequest, RiskAssessment, SafetyCase, ToolCall, VehicleCase, VehicleEvent } from "@/lib/types/domain";
+import type { ApprovalRequest, ReviewRequest, RiskAssessment, SafetyCase, ToolCall, VehicleCase, VehicleEvent } from "@/lib/types/domain";
 
 let toolCounter = 0;
 
@@ -76,6 +76,23 @@ export function simulateTool(
       error: null
     }
   ];
+}
+
+
+export function createReviewRequest(vehicleCase: VehicleCase, assessment: RiskAssessment): ReviewRequest {
+  return {
+    review_id: `review-${assessment.assessment_id}`,
+    case_id: vehicleCase.case_id,
+    reason: assessment.uncertainty_reason ?? "Risk evidence requires human review.",
+    evidence: [
+      `Risk ${assessment.safety_incident_risk_score.toFixed(2)} (${assessment.risk_band}) with ${assessment.confidence} confidence.`,
+      ...assessment.top_risk_reasons
+    ],
+    status: "pending",
+    reviewer: null,
+    outcome: null,
+    decision_time: null
+  };
 }
 
 export function createApprovalRequest(vehicleCase: VehicleCase, assessment: RiskAssessment): ApprovalRequest {

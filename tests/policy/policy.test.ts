@@ -18,8 +18,9 @@ function assessment(risk_band: RiskAssessment["risk_band"]): RiskAssessment {
 }
 
 describe("policy engine", () => {
-  it("keeps disruptive actions behind approval", () => {
+  it("keeps disruptive actions behind authorization", () => {
     const decision = decidePolicy(assessment("Persistent High"));
+    expect(decision.shouldRequestReview).toBe(false);
     expect(decision.shouldRequestApproval).toBe(true);
     expect(decision.authorityClass).toBe("Human approval required");
     expect(decision.toolNames).toContain("request_human_approval");
@@ -28,12 +29,16 @@ describe("policy engine", () => {
   it("notifies driver and supervisor for high risk", () => {
     const decision = decidePolicy(assessment("High"));
     expect(decision.toolNames).toEqual(["notify_driver", "notify_supervisor"]);
+    expect(decision.shouldRequestReview).toBe(false);
     expect(decision.shouldRequestApproval).toBe(false);
   });
 
-  it("escalates critical or low-confidence high risk to human review", () => {
+  it("routes low-confidence high risk to human evidence review, not action authorization", () => {
     const decision = decidePolicy(assessment("Critical / Low Confidence"));
-    expect(decision.authorityClass).toBe("Urgent escalation required");
+    expect(decision.authorityClass).toBe("Human review required");
+    expect(decision.shouldRequestReview).toBe(true);
+    expect(decision.shouldRequestApproval).toBe(false);
     expect(decision.toolNames).toEqual(["notify_supervisor"]);
+    expect(decision.nextStatus).toBe("pending_review");
   });
 });

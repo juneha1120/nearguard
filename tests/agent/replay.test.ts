@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { advanceReplay, createInitialReplayState, decideApproval, isDecisionPointEvent, rewindReplay, validateEvent } from "@/lib/agent/replay";
+import { advanceReplay, createInitialReplayState, decideApproval, decideReview, isDecisionPointEvent, rewindReplay, validateEvent } from "@/lib/agent/replay";
 import type { ReplayState } from "@/lib/types/domain";
 
 function runScenario(scenarioId: string): ReplayState {
@@ -97,11 +97,22 @@ describe("agent replay", () => {
     expect(state.latestRiskAssessment?.top_risk_reasons.join(" ")).toMatch(/Speed normalized/);
   });
 
-  it("handles telemetry uncertainty with low confidence and human review", () => {
-    const state = runScenario("telemetry-uncertainty");
+  it("handles telemetry uncertainty with a review workflow separate from authorization", () => {
+    let state = runScenario("telemetry-uncertainty");
     expect(state.traceEvents.some((trace) => trace.event_type === "context_missing")).toBe(true);
-    expect(state.traceEvents.some((trace) => trace.message.includes("Supervisor review request sent"))).toBe(true);
+    expect(state.traceEvents.some((trace) => trace.event_type === "review_requested")).toBe(true);
     expect(state.toolCalls.some((tool) => tool.tool_name === "notify_supervisor")).toBe(true);
+    expect(state.pendingApprovals).toHaveLength(0);
+
+    const review = state.pendingReviews.find((item) => item.status === "pending");
+    expect(review).toBeDefined();
+    state = decideReview(state, review!.review_id, "insufficient_evidence", "Safety Supervisor");
+
+    expect(state.pendingReviews.find((item) => item.review_id === review!.review_id)?.outcome).toBe("insufficient_evidence");
+    expect(state.selectedCase?.status).toBe("monitoring");
+    expect(state.toolCalls.some((tool) => tool.tool_name === "recommend_zone_advisory")).toBe(false);
+    expect(state.safetyCases).toHaveLength(0);
+    expect(state.traceEvents.some((trace) => trace.event_type === "review_decision")).toBe(true);
   });
 
   it("keeps trace events chronological", () => {

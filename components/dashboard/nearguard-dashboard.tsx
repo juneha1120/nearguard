@@ -65,6 +65,7 @@ import type {
   LivePrediction,
   LiveTelemetrySample,
   ReplayState,
+  ReviewOutcome,
   ScenarioTelemetrySample,
   ScenarioZoneTelemetrySample,
   WorkerRiskReport,
@@ -164,6 +165,15 @@ export function NearGuardDashboard() {
     } else {
       setScenarioClockMs(nextState.selectedScenario.events[0] ? new Date(nextState.selectedScenario.events[0].timestamp).getTime() : null);
     }
+  }
+
+  async function reviewEvidence(reviewId: string, outcome: ReviewOutcome) {
+    const response = await fetch("/api/replay/review", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ review_id: reviewId, outcome })
+    });
+    setState(await response.json());
   }
 
   async function approve(approvalId: string, approved: boolean) {
@@ -467,9 +477,11 @@ export function NearGuardDashboard() {
     if (!liveVehiclePrediction) return null;
     return liveModelAssessment(liveVehiclePrediction);
   }, [liveVehiclePrediction, reportAdjustedLiveAssessment]);
+  const pendingReview = state?.pendingReviews.find((review) => review.status === "pending") ?? null;
   const pendingApproval = state?.pendingApprovals.find((approval) => approval.status === "pending") ?? null;
   const hasIntervention = Boolean(
-    pendingApproval ||
+    pendingReview ||
+      pendingApproval ||
       state?.toolCalls.length ||
       (latestAssessment && ["High", "Persistent High", "Critical / Low Confidence"].includes(latestAssessment.risk_band))
   );
@@ -482,7 +494,7 @@ export function NearGuardDashboard() {
       .slice()
       .reverse()
       .find((tool) => tool.tool_name === "notify_driver" && tool.status === "delivered") ?? null;
-  const assessmentStatusCopy = pendingApproval ? "Approval" : latestDriverAdvisory ? "Advisory sent" : selectedCase?.authority_class ?? "Idle";
+  const assessmentStatusCopy = pendingReview ? "Review" : pendingApproval ? "Authorization" : latestDriverAdvisory ? "Advisory sent" : selectedCase?.authority_class ?? "Idle";
   const safetyCase = state?.safetyCases.at(-1) ?? null;
   const decisionTimeline = useMemo(
     () => buildDecisionTimeline(state?.traceEvents ?? [], latestAssessment, currentEvent),
@@ -894,17 +906,43 @@ export function NearGuardDashboard() {
                     </div>
                   </div>
 
+                  <h3 className="section-title">Human Review - Evidence Quality</h3>
+                  {pendingReview ? (
+                    <div className="approval priority-approval">
+                      <div className="approval-step">
+                        <span>REVIEW</span>
+                        <strong>Evidence review required</strong>
+                      </div>
+                      <strong>{pendingReview.reason}</strong>
+                      <p className="small muted">Review changes case handling only. It does not authorize a zone advisory.</p>
+                      <div className="approval-actions">
+                        <button className="primary-button" onClick={() => reviewEvidence(pendingReview.review_id, "continue_monitoring")}>
+                          <ClipboardCheck size={16} /> Continue Monitoring
+                        </button>
+                        <button className="icon-button" onClick={() => reviewEvidence(pendingReview.review_id, "escalate")}>
+                          Escalate
+                        </button>
+                        <button className="icon-button" onClick={() => reviewEvidence(pendingReview.review_id, "insufficient_evidence")}>
+                          Evidence Insufficient
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="empty compact-empty">No evidence review pending.</div>
+                  )}
+
+                  <h3 className="section-title">Human Authorization - Disruptive Action</h3>
                   {pendingApproval ? (
                     <div className="approval priority-approval">
                       <div className="approval-step">
-                        <span>1 / 1</span>
-                        <strong>Human approval</strong>
+                        <span>AUTHORIZE</span>
+                        <strong>Zone action authorization</strong>
                       </div>
                       <strong>{pendingApproval.requested_action}</strong>
                       <p className="small muted">{pendingApproval.rationale}</p>
                       <div className="approval-actions">
                         <button className="primary-button" onClick={() => approve(pendingApproval.approval_id, true)}>
-                          <ClipboardCheck size={16} /> Approve
+                          <ClipboardCheck size={16} /> Authorize
                         </button>
                         <button className="icon-button" onClick={() => approve(pendingApproval.approval_id, false)}>
                           Reject
@@ -912,7 +950,7 @@ export function NearGuardDashboard() {
                       </div>
                     </div>
                   ) : (
-                    <div className="empty compact-empty">No pending approval.</div>
+                    <div className="empty compact-empty">No disruptive action authorization pending.</div>
                   )}
 
                   <h3 className="section-title">Policy Rationale</h3>

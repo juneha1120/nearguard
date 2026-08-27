@@ -407,10 +407,14 @@ export function traceLabel(eventType: TraceEvent["event_type"]) {
       return "Tool Call";
     case "tool_failure":
       return "Tool Failure";
+    case "review_requested":
+      return "Human Evidence Review";
+    case "review_decision":
+      return "Human Review Decision";
     case "approval_requested":
-      return "Human Approval Request";
+      return "Human Authorization Request";
     case "approval_decision":
-      return "Human Approval Decision";
+      return "Human Authorization Decision";
     case "safety_case_created":
       return "Safety Case Record";
     case "case_stabilized":
@@ -431,6 +435,8 @@ export function traceCategoryClass(eventType: TraceEvent["event_type"]) {
     case "risk_assessed":
       return "medium";
     case "policy_decision":
+    case "review_requested":
+    case "review_decision":
     case "approval_requested":
     case "approval_decision":
       return "high";
@@ -462,6 +468,8 @@ export function buildDecisionTimeline(
     "policy_decision",
     "tool_call",
     "tool_failure",
+    "review_requested",
+    "review_decision",
     "approval_requested",
     "approval_decision",
     "safety_case_created",

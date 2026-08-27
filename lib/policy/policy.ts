@@ -6,9 +6,11 @@ export interface PolicyDecision {
     | "Automatic monitoring"
     | "Automatic advisory"
     | "Supervisor report required"
+    | "Human review required"
     | "Human approval required"
     | "Urgent escalation required";
   toolNames: string[];
+  shouldRequestReview: boolean;
   shouldRequestApproval: boolean;
   shouldCreateSafetyCase: boolean;
   nextStatus: VehicleCase["status"];
@@ -21,6 +23,7 @@ export function decidePolicy(assessment: RiskAssessment): PolicyDecision {
         recommendedAction: "Continue monitoring.",
         authorityClass: "Automatic monitoring",
         toolNames: [],
+        shouldRequestReview: false,
         shouldRequestApproval: false,
         shouldCreateSafetyCase: false,
         nextStatus: "stabilized"
@@ -30,6 +33,7 @@ export function decidePolicy(assessment: RiskAssessment): PolicyDecision {
         recommendedAction: "Driver advisory sent. Monitoring active.",
         authorityClass: "Automatic advisory",
         toolNames: ["notify_driver"],
+        shouldRequestReview: false,
         shouldRequestApproval: false,
         shouldCreateSafetyCase: false,
         nextStatus: "monitoring"
@@ -39,6 +43,7 @@ export function decidePolicy(assessment: RiskAssessment): PolicyDecision {
         recommendedAction: "Driver advisory and supervisor notification sent.",
         authorityClass: "Supervisor report required",
         toolNames: ["notify_driver", "notify_supervisor"],
+        shouldRequestReview: false,
         shouldRequestApproval: false,
         shouldCreateSafetyCase: false,
         nextStatus: "monitoring"
@@ -48,18 +53,20 @@ export function decidePolicy(assessment: RiskAssessment): PolicyDecision {
         recommendedAction: "Zone advisory approval requested.",
         authorityClass: "Human approval required",
         toolNames: ["request_human_approval"],
+        shouldRequestReview: false,
         shouldRequestApproval: true,
         shouldCreateSafetyCase: false,
         nextStatus: "pending_approval"
       };
     case "Critical / Low Confidence":
       return {
-        recommendedAction: "Supervisor review request sent.",
-        authorityClass: "Urgent escalation required",
+        recommendedAction: "Evidence quality requires human review before any stronger action.",
+        authorityClass: "Human review required",
         toolNames: ["notify_supervisor"],
+        shouldRequestReview: true,
         shouldRequestApproval: false,
         shouldCreateSafetyCase: false,
-        nextStatus: "escalated"
+        nextStatus: "pending_review"
       };
   }
 }

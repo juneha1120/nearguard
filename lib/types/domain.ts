@@ -24,9 +24,11 @@ export type ReportHazardType =
   | "unsafe_manoeuvre"
   | "other";
 export type RiskBand = "Low" | "Medium" | "High" | "Persistent High" | "Critical / Low Confidence";
-export type CaseStatus = "open" | "monitoring" | "pending_approval" | "escalated" | "stabilized" | "closed";
+export type CaseStatus = "open" | "monitoring" | "pending_review" | "pending_approval" | "escalated" | "stabilized" | "closed";
 export type ToolStatus = "pending" | "delivered" | "failed" | "approved" | "rejected" | "created" | "recommended";
 export type ApprovalStatus = "pending" | "approved" | "rejected";
+export type ReviewStatus = "pending" | "resolved";
+export type ReviewOutcome = "continue_monitoring" | "escalate" | "insufficient_evidence";
 export type LivePrimeMoverState = "normal" | "watching" | "speeding" | "stale GPS" | "harsh brake" | "sharp turn" | "recovering";
 export type TraceEventType =
   | "event_received"
@@ -38,6 +40,8 @@ export type TraceEventType =
   | "policy_decision"
   | "tool_call"
   | "tool_failure"
+  | "review_requested"
+  | "review_decision"
   | "approval_requested"
   | "approval_decision"
   | "safety_case_created"
@@ -239,6 +243,18 @@ export interface ToolCall {
   timestamp: string;
 }
 
+
+export interface ReviewRequest {
+  review_id: string;
+  case_id: string;
+  reason: string;
+  evidence: string[];
+  status: ReviewStatus;
+  reviewer: string | null;
+  outcome: ReviewOutcome | null;
+  decision_time: string | null;
+}
+
 export interface ApprovalRequest {
   approval_id: string;
   case_id: string;
@@ -332,6 +348,7 @@ export interface ReplayState {
   latestFeatures: DerivedFeatures | null;
   latestRiskAssessment: RiskAssessment | null;
   toolCalls: ToolCall[];
+  pendingReviews: ReviewRequest[];
   pendingApprovals: ApprovalRequest[];
   safetyCases: SafetyCase[];
   traceEvents: TraceEvent[];
