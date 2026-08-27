@@ -10,5 +10,10 @@ export async function POST(request: Request) {
     return Response.json({ error: "review_id and a valid review outcome are required" }, { status: 400 });
   }
 
-  return Response.json(reviewReplay(body.review_id, body.outcome as ReviewOutcome, getReplaySessionId()));
+  const replayState = reviewReplay(body.review_id, body.outcome as ReviewOutcome, getReplaySessionId());
+  if (!replayState) {
+    return Response.json({ error: "review_id does not match a pending review" }, { status: 400 });
+  }
+
+  return Response.json(replayState);
 }

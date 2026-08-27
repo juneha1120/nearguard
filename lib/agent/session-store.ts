@@ -2,7 +2,10 @@ import { advanceReplay, createInitialReplayState, decideApproval, decideReview, 
 import type { ReplayState, ReviewOutcome } from "@/lib/types/domain";
 
 const DEFAULT_REPLAY_SESSION_ID = "default";
-const replayStates = new Map<string, ReplayState>();
+// Next dev bundles each route handler separately, so a module-level Map is not shared
+// between /api/replay/* routes. Pin the store on globalThis so every route sees one session store.
+const globalStore = globalThis as typeof globalThis & { __nearguardReplayStates?: Map<string, ReplayState> };
+const replayStates = (globalStore.__nearguardReplayStates ??= new Map<string, ReplayState>());
 
 function sessionKey(sessionId?: string) {
   return sessionId || DEFAULT_REPLAY_SESSION_ID;
@@ -41,7 +44,10 @@ export function previousReplay(sessionId?: string) {
 
 export function reviewReplay(reviewId: string, outcome: ReviewOutcome, sessionId?: string) {
   const key = sessionKey(sessionId);
-  const replayState = decideReview(getReplayState(key), reviewId, outcome);
+  const current = getReplayState(key);
+  if (!current.pendingReviews.some((review) => review.review_id === reviewId && review.status === "pending")) return null;
+
+  const replayState = decideReview(current, reviewId, outcome);
   replayStates.set(key, replayState);
   return replayState;
 }

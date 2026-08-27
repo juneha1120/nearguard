@@ -173,6 +173,7 @@ export function NearGuardDashboard() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ review_id: reviewId, outcome })
     });
+    if (!response.ok) return;
     setState(await response.json());
   }
 
@@ -914,6 +915,14 @@ export function NearGuardDashboard() {
                         <strong>Evidence review required</strong>
                       </div>
                       <strong>{pendingReview.reason}</strong>
+                      <ul className="rationale-list">
+                        {pendingReview.evidence.map((item) => (
+                          <li key={item}>
+                            <span className="rationale-dot" aria-hidden="true" />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
                       <p className="small muted">Review changes case handling only. It does not authorize a zone advisory.</p>
                       <div className="approval-actions">
                         <button className="primary-button" onClick={() => reviewEvidence(pendingReview.review_id, "continue_monitoring")}>

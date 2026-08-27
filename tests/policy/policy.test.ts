@@ -22,7 +22,7 @@ describe("policy engine", () => {
     const decision = decidePolicy(assessment("Persistent High"));
     expect(decision.shouldRequestReview).toBe(false);
     expect(decision.shouldRequestApproval).toBe(true);
-    expect(decision.authorityClass).toBe("Human approval required");
+    expect(decision.authorityClass).toBe("Human authorization required");
     expect(decision.toolNames).toContain("request_human_approval");
   });
 

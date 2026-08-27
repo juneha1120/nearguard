@@ -98,6 +98,26 @@ describe("derived features", () => {
     expect(features.post_intervention_noncompliance).toBe(true);
   });
 
+  it("keeps intervention timing while a case waits in pending_review", () => {
+    const event: VehicleEvent = {
+      event_id: "uncertain-002",
+      timestamp: "2026-08-19T09:14:48+08:00",
+      vehicle_id: "PM-27",
+      zone_id: "YARD-C4",
+      event_type: "speeding",
+      speed: 31,
+      speed_limit: 25,
+      gps_freshness: "stale"
+    };
+
+    const features = deriveFeatures(event, zone, [], { ...vehicleCase, status: "pending_review" });
+
+    expect(features.time_since_last_intervention).not.toBe(999);
+    expect(features.time_since_last_intervention).toBeCloseTo(0.1);
+    expect(features.reaction_window_active).toBe(true);
+    expect(features.post_intervention_noncompliance).toBe(false);
+  });
+
   it("preserves no-intervention feature behavior", () => {
     const event: VehicleEvent = {
       event_id: "pm27-001",

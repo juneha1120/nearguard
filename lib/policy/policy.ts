@@ -7,7 +7,7 @@ export interface PolicyDecision {
     | "Automatic advisory"
     | "Supervisor report required"
     | "Human review required"
-    | "Human approval required"
+    | "Human authorization required"
     | "Urgent escalation required";
   toolNames: string[];
   shouldRequestReview: boolean;
@@ -51,7 +51,7 @@ export function decidePolicy(assessment: RiskAssessment): PolicyDecision {
     case "Persistent High":
       return {
         recommendedAction: "Zone advisory approval requested.",
-        authorityClass: "Human approval required",
+        authorityClass: "Human authorization required",
         toolNames: ["request_human_approval"],
         shouldRequestReview: false,
         shouldRequestApproval: true,

@@ -31,6 +31,13 @@ function nextAssessmentId() {
   return `risk-${assessmentCounter.toString().padStart(4, "0")}`;
 }
 
+// Marks the supervisor notification a human review escalation creates, so rewind can retain it.
+const REVIEW_ESCALATION_TOOL_PREFIX = "tool-review-escalation-";
+
+function dedupeTraces(events: TraceEvent[]) {
+  return [...new Map(events.map((event) => [event.trace_id, event])).values()];
+}
+
 function trace(caseId: string, timestamp: string, event_type: TraceEvent["event_type"], message: string, metadata = {}) {
   return {
     trace_id: nextTraceId(),
@@ -258,6 +265,27 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
   let approvals: ApprovalRequest[] = [...state.pendingApprovals];
   let updatedCase = updateCase(vehicleCase, assessment, event, decision);
 
+  // SAFETY.md: unsafe residual risk must not be marked stabilized or closed. A human review that
+  // questioned the evidence keeps the case open until a later review clears it.
+  const lastResolvedReview = reviews.filter((review) => review.case_id === updatedCase.case_id && review.status === "resolved").at(-1);
+  const humanEscalated = lastResolvedReview?.outcome === "escalate";
+  const humanKeptCaseOpen = humanEscalated || lastResolvedReview?.outcome === "insufficient_evidence";
+  // A stronger policy status (pending_approval / pending_review) still wins; only the automatic
+  // downgrade back to monitoring or stabilized is blocked.
+  if (humanEscalated && (updatedCase.status === "monitoring" || updatedCase.status === "stabilized")) {
+    updatedCase = {
+      ...updatedCase,
+      status: "escalated",
+      recommended_action: "Human review escalation stands; supervisor follow-up is pending."
+    };
+  } else if (humanKeptCaseOpen && updatedCase.status === "stabilized") {
+    updatedCase = {
+      ...updatedCase,
+      status: "monitoring",
+      recommended_action: `Human review outcome "${lastResolvedReview!.outcome!.replaceAll("_", " ")}" keeps this case under monitoring.`
+    };
+  }
+
   for (const toolName of decision.toolNames) {
     const results = simulateTool(toolName, state.selectedScenario.scenario_id, updatedCase, event, assessment, toolCalls);
     toolCalls = [...toolCalls, ...results];
@@ -278,7 +306,7 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
     const review = createReviewRequest(updatedCase, assessment);
     reviews = [...reviews, review];
     traceEvents.push(
-      trace(updatedCase.case_id, event.timestamp, "review_requested", "Human evidence review requested; no disruptive action is authorized by this review.", { review })
+      trace(updatedCase.case_id, event.timestamp, "review_requested", "Human evidence review requested; no disruptive action is authorized by this review.", { review, review_id: review.review_id })
     );
   }
 
@@ -289,8 +317,17 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
   }
 
   if (assessment.risk_band === "Low" && event.event_type === "speed_normalized") {
-    updatedCase = { ...updatedCase, status: "stabilized" };
-    traceEvents.push(trace(updatedCase.case_id, event.timestamp, "case_stabilized", "Risk reduced; case stabilized for continued monitoring.", {}));
+    if (humanKeptCaseOpen) {
+      traceEvents.push(
+        trace(updatedCase.case_id, event.timestamp, "policy_decision", `Case not stabilized; human review outcome "${lastResolvedReview!.outcome!.replaceAll("_", " ")}" keeps the case open.`, {
+          review_id: lastResolvedReview!.review_id,
+          outcome: lastResolvedReview!.outcome
+        })
+      );
+    } else {
+      updatedCase = { ...updatedCase, status: "stabilized" };
+      traceEvents.push(trace(updatedCase.case_id, event.timestamp, "case_stabilized", "Risk reduced; case stabilized for continued monitoring.", {}));
+    }
   }
 
   const activeCases = [...state.activeCases.filter((item) => item.case_id !== updatedCase.case_id), updatedCase];
@@ -322,7 +359,9 @@ export function rewindReplay(inputState: ReplayState): ReplayState {
   const retainedReviewIds = new Set(retainedReviews.map((review) => review.review_id));
   const retainedApprovals = inputState.pendingApprovals.filter((approval) => approval.status !== "pending");
   const retainedApprovalIds = new Set(retainedApprovals.map((approval) => approval.approval_id));
-  const retainedToolCalls = inputState.toolCalls.filter((tool) => tool.tool_name === "recommend_zone_advisory");
+  const retainedToolCalls = inputState.toolCalls.filter(
+    (tool) => tool.tool_name === "recommend_zone_advisory" || tool.tool_call_id.startsWith(REVIEW_ESCALATION_TOOL_PREFIX)
+  );
   const retainedToolCallIds = new Set(retainedToolCalls.map((tool) => tool.tool_call_id));
   const retainedSafetyCaseIds = new Set(inputState.safetyCases.map((safetyCase) => safetyCase.safety_case_id));
   const retainedTraceEvents = inputState.traceEvents.filter((event) => {
@@ -387,7 +426,7 @@ export function rewindReplay(inputState: ReplayState): ReplayState {
       ...retainedToolCalls
     ],
     safetyCases: inputState.safetyCases,
-    traceEvents: [...state.traceEvents, ...retainedTraceEvents].sort(
+    traceEvents: dedupeTraces([...state.traceEvents, ...retainedTraceEvents]).sort(
       (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     )
   };
@@ -427,20 +466,42 @@ export function decideReview(
     updated_at: decisionTime
   };
   const activeCases = state.activeCases.map((item) => (item.case_id === updatedCase.case_id ? updatedCase : item));
-  const traceEvent = trace(
-    updatedCase.case_id,
-    decisionTime,
-    "review_decision",
-    `${reviewer} completed evidence review: ${outcome.replaceAll("_", " ")}.`,
-    { review_id: reviewId, outcome }
-  );
+  const traceEvents = [
+    trace(
+      updatedCase.case_id,
+      decisionTime,
+      "review_decision",
+      `${reviewer} completed evidence review: ${outcome.replaceAll("_", " ")}.`,
+      { review_id: reviewId, outcome }
+    )
+  ];
+
+  // Escalation is a supervisor follow-up signal only: no zone advisory, approval or safety case.
+  let toolCalls = state.toolCalls;
+  if (outcome === "escalate") {
+    const supervisorCall: ToolCall = {
+      tool_call_id: `${REVIEW_ESCALATION_TOOL_PREFIX}${reviewId}`,
+      case_id: updatedCase.case_id,
+      tool_name: "notify_supervisor",
+      arguments: { review_id: reviewId, outcome, reviewer },
+      status: "delivered",
+      result: "Supervisor notified to follow up on the escalated evidence review.",
+      error: null,
+      timestamp: decisionTime
+    };
+    toolCalls = [...toolCalls, supervisorCall];
+    traceEvents.push(
+      trace(updatedCase.case_id, decisionTime, "tool_call", "notify_supervisor delivered for human review escalation.", { toolCall: supervisorCall })
+    );
+  }
 
   return {
     ...state,
     selectedCase: state.selectedCase?.case_id === updatedCase.case_id ? updatedCase : state.selectedCase,
     activeCases,
     pendingReviews: updatedReviews,
-    traceEvents: [...state.traceEvents, traceEvent]
+    toolCalls,
+    traceEvents: [...state.traceEvents, ...traceEvents]
   };
 }
 
