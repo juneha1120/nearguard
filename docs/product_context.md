@@ -42,7 +42,7 @@ These sources support the design focus on driver safety, speed-limit awareness, 
 - A tabular ML model predicts synthetic near-miss risk within the next 15 minutes from Prime Mover telemetry windows and structured context.
 - Explainability outputs identify top risk reasons, such as speeding ratio, repeated harsh braking, speed volatility, high traffic, wharf exposure or stale GPS.
 - A deterministic safety policy maps risk, confidence, uncertainty and operational impact to allowed actions.
-- A large language model may be used only for optional support tasks, such as summarising safety cases or parsing future worker-written risk reports into structured context.
+- A large language model may be used only for optional support tasks, such as summarising safety cases or parsing worker-written risk reports into structured context.
 - The LLM does not make final safety policy decisions or approve disruptive actions.
 
 ## Primary Users

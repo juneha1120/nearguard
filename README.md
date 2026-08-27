@@ -19,10 +19,34 @@ npm.cmd install
 py -m pip install -r requirements.txt
 ```
 
+## Environment
+
+The core dashboard, replay flow and exported prediction fallback run without external credentials.
+
+Optional worker-report extraction uses Gemini. `GEMINI_API_KEY` is preferred, with `GOOGLE_API_KEY` as a fallback:
+
+```text
+GEMINI_API_KEY=
+GOOGLE_API_KEY=
+GEMINI_REPORT_MODEL=gemini-3.1-flash-lite
+LLM_MODEL=
+LLM_REQUEST_TIMEOUT_MS=30000
+```
+
+`LLM_MODEL` is a fallback for `GEMINI_REPORT_MODEL`; the implementation default is `gemini-2.5-flash`.
+
+Optional live model inference uses:
+
+```text
+NEARGUARD_INFERENCE_URL=http://127.0.0.1:8001
+```
+
+If `NEARGUARD_INFERENCE_URL` is unset, the app calls `http://127.0.0.1:8001`. If that service is unavailable, live monitoring stays deterministic by falling back to checked-in exported predictions.
+
 ## Generate AI Model Artifacts
 
 ```powershell
-py scripts\train_model.py
+npm.cmd run model:train
 ```
 
 This writes:
@@ -62,6 +86,10 @@ Open:
 ```text
 http://127.0.0.1:3000
 ```
+
+## Optional Worker Report Extraction
+
+`POST /api/worker-reports/extract` parses a plain-language worker safety observation into structured context using Gemini when an API key is configured. This is optional enrichment only: it does not set the final risk score, approve actions or replace deterministic policy and human review.
 
 ## Verify
 

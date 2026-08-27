@@ -14,7 +14,20 @@ MVP+ adds a narrow V2V/V2X interaction-aware risk layer: surrounding Prime Mover
 - AI pipeline: Python, pandas, scikit-learn and joblib.
 - Model runtime: pretrained local artifact served by an optional Python inference service for live monitoring, plus exported scenario and routine live predictions for deterministic fallback/demo playback.
 - Storage: checked-in JSON/CSV fixtures and generated artifacts; no database for MVP.
-- External integrations: none. Notifications, approvals and safety cases are simulated.
+- External integrations: optional Gemini worker-report extraction only. Notifications, approvals and safety cases are simulated.
+
+## Environment Contract
+
+The deterministic replay and exported prediction fallback require no external credentials. Optional integrations use:
+
+| Variable | Purpose |
+| --- | --- |
+| `NEARGUARD_INFERENCE_URL` | Optional Python inference service base URL. Defaults to `http://127.0.0.1:8001`. |
+| `GEMINI_API_KEY` | API key for Gemini worker-report extraction. |
+| `GOOGLE_API_KEY` | Fallback API key when `GEMINI_API_KEY` is not set. |
+| `GEMINI_REPORT_MODEL` | Gemini model for worker-report extraction. |
+| `LLM_MODEL` | Fallback model when `GEMINI_REPORT_MODEL` is not set; implementation default is `gemini-2.5-flash`. |
+| `LLM_REQUEST_TIMEOUT_MS` | Worker-report extraction timeout. Defaults to 30000ms. |
 
 ## Data And Artifact Contracts
 
@@ -110,6 +123,43 @@ Both prediction artifacts must include `target`, `prediction_horizon` and `asses
 - The dashboard should separate live zone monitoring, vehicle risk signal and AI assessment timeline: dense PM/zone samples drive visuals, while sparse scenario decision points show when continuous scoring crosses policy thresholds or stabilizes.
 - The dashboard `Reset` control should return to unselected Live Monitoring mode, clearing replay state and scenario telemetry overlays.
 - Scenario zone risk should be calculated from live zone telemetry fields. Do not blend it with vehicle model risk; show Zone Operational Risk separately from continuous Vehicle Near-Miss Risk.
+- Worker report extraction should remain optional enrichment. The Gemini parser may produce `WorkerRiskReport` context fields, but it must not set risk scores, bypass policy or authorize disruptive actions.
+
+## API Surface
+
+| Endpoint | Method | Purpose |
+| --- | --- | --- |
+| `/api/scenarios` | `GET` | List scenario metadata for the dashboard selector. |
+| `/api/zones` | `GET` | Return static zone registry entries. |
+| `/api/live-zone-telemetry` | `GET` | Return loopable routine live zone/Prime Mover telemetry samples. |
+| `/api/live-risk-predictions?sample_id=...` | `GET` | Call the runtime inference service for a live sample, or return exported fallback predictions. |
+| `/api/scenario-telemetry?scenario_id=...` | `GET` | Return dense scenario Prime Mover telemetry for visual playback. |
+| `/api/scenario-zone-telemetry?scenario_id=...` | `GET` | Return dense scenario zone telemetry aligned to playback. |
+| `/api/replay/start` | `POST` | Start or reset a replay session for a selected scenario. |
+| `/api/replay/step` | `POST` | Advance to the next decision-point event. |
+| `/api/replay/previous` | `POST` | Rewind to the previous decision-point event while preserving completed approvals and safety cases. |
+| `/api/replay/approve` | `POST` | Record approval or rejection of a pending intervention. |
+| `/api/worker-reports/extract` | `POST` | Parse optional worker report text into structured context using Gemini. |
+
+`GET /api/live-risk-predictions?sample_id=...` requires `sample_id`. It calls `${NEARGUARD_INFERENCE_URL}/predict/live-sample/{sample_id}` with a short timeout. If the Python service is not running or does not return a successful response, the route returns `source = exported_prediction_fallback` from `models/routine_live_predictions.json`.
+
+`POST /api/worker-reports/extract` accepts:
+
+```json
+{
+  "description": "Workers are crossing near WHARF-C4 during rain.",
+  "reporter_role": "worker"
+}
+```
+
+`description` is required. `reporter_role` defaults to `worker`. Success returns `{ "report": WorkerRiskReport }`; malformed input returns `400`, and missing credentials, timeout or provider failures return `502` with an error message.
+
+## Public Types To Keep Stable
+
+- `RiskAssessment`: model evidence for a case and timestamp, including `safety_incident_risk_score`, `prediction_horizon = 15m`, `evidence_authority = SYNTHETIC_DATA`, `risk_band`, confidence, uncertainty and reasons.
+- `DerivedFeatures`: current, rolling, context, operational-history and V2V features. V2V fields include `nearby_vehicle_count_50m`, `nearest_vehicle_distance_m`, `nearest_vehicle_relative_speed_kmh`, `closing_rate_mps` and `interaction_features_available`.
+- `WorkerRiskReport`: optional LLM-derived report record with source/model metadata, extracted context and confidence.
+- `WorkerReportExtractedContext`: structured hazard/context fields extracted from worker text; usable only as reviewed enrichment, not action authority.
 
 ## AI Training Pipeline
 
@@ -173,3 +223,4 @@ Required test coverage:
 - low-confidence inputs trigger human review
 - disruptive intervention still requires approval
 - tool failure is logged and followed by fallback/escalation
+- worker report extraction sends constrained Gemini prompts, normalizes unknown values, supports provider/model fallbacks and fails visibly when credentials are absent

@@ -52,6 +52,7 @@ The MVP is synthetic, but each field still has a defined role. This avoids mixin
 | Scenario live zone telemetry | Scenario-specific live zone operating state aligned to replay. | `data/scenario_live_zone_telemetry/{scenario}.json` | Weather, yard traffic, access control, telemetry aggregation, approved pedestrian-density source. | Seconds to minutes. |
 | Scenario Prime Mover telemetry | Scenario-specific Prime Mover movement and data quality. | `data/scenario_prime_mover_telemetry/{scenario}.json` | Telematics, GPS/RTLS, vehicle system events. | Seconds. |
 | Derived features | Rolling windows and engineered context. | `scripts/train_model.py`, `lib/model/features.ts` | Feature service using approved window definitions. | Per evaluation snapshot. |
+| Worker report extraction | Optional LLM-derived context from worker-written observations. | `POST /api/worker-reports/extract` using Gemini when configured. | Reviewed worker reports or approved reporting systems. | On report submission. |
 | Labels | Future outcome used for training. | Synthetic latent process in generated CSV. | Safety-reviewed incident or near-miss labels plus matched normal windows. | Batch dataset rebuild. |
 | Model output | Per-PM risk evidence. | `models/scenario_predictions.json`, `models/routine_live_predictions.json` and `.joblib` artifact. | Versioned approved model service or artifact. | Per event/snapshot. |
 
@@ -76,6 +77,15 @@ The MVP is synthetic, but each field still has a defined role. This avoids mixin
 | Field | Notes |
 | --- | --- |
 | `traffic_level`, `weather`, `restriction_level`, `slow_down_zone_active`, `pedestrian_exposure` | Dynamic operating-context fields. During scenario replay, the feature path overlays these fields from `data/scenario_live_zone_telemetry/{scenario}.json` before feature derivation. In production, the feature service should consume the latest approved operating-context stream. |
+
+`WorkerRiskReport` is optional LLM-derived context, not telemetry and not a label:
+
+| Field | Notes |
+| --- | --- |
+| `description`, `reporter_role` | Plain-language report input and source role. |
+| `extracted_context` | Gemini-parsed `WorkerReportExtractedContext` containing hazard type, optional zone/vehicle IDs, pedestrian exposure, traffic, weather, restriction level, severity, operational note and feature-impact hints. |
+| `extraction_confidence` | `high`, `medium` or `low`; low-confidence extraction must be reviewed or ignored by the MVP model path. |
+| `extraction_source`, `model` | Audit fields showing the provider path and model used. |
 
 Current `zone_historical_risk` values are hand-authored assumptions: `YARD-C4 = 0.72`, `PPT-LINK-25 = 0.60`, `WHARF-C4 = 0.78`, `YARD-U2 = 0.66`. They represent a synthetic prior for demo differentiation. In production, this value should be calculated offline from reviewed historical evidence, for example:
 
@@ -114,6 +124,8 @@ Runtime risk terms are intentionally separate:
 | `risk_band` | Deterministic banding from model score, confidence and prior action state; policy thresholds use this band to decide intervention class. |
 
 Live Monitoring calculates Zone Operational Risk from zone telemetry, then requests runtime trained-model inference for Vehicle Near-Miss Risk on each live telemetry tick. During scenario replay, dense scenario PM/zone telemetry keeps the display continuous while replay decision points use exported trained-model predictions for policy thresholds. The dashboard does not blend zone telemetry risk with vehicle model risk.
+
+Worker-report extraction is a separate optional enrichment path. The Gemini prompt requires exactly one delimited response line, asks the model to choose `zone_id` from known zones, uses the literal `unknown` for unavailable fields, limits operational notes and feature-impact hints, and normalizes unknown values to `null`. Descriptions shorter than 12 characters are downgraded to low confidence. Extracted context may support reviewed operating context later, but it cannot directly set `safety_incident_risk_score`, override confidence rules or authorize an intervention.
 
 ## Rolling Features
 
@@ -222,6 +234,8 @@ NearGuard deliberately separates three responsibilities:
 | Safety policy and human approval | Decide permitted intervention class and gate disruptive actions. |
 
 The model score informs the policy, but it does not approve actions, execute interventions or become the safety authority.
+
+LLM-derived worker-report context follows the same rule: it can provide structured evidence for review, but it is not a direct model score, label, policy decision or approval.
 
 ## Confidence And Explanations
 

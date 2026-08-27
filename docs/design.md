@@ -52,7 +52,7 @@ flowchart LR
     Safety[Safety<br/>Supervisor]
     NearGuard[NearGuard]
     EventSource[Prime Mover<br/>Telematics Simulator]
-    WorkerReports[Optional Future<br/>Worker Risk Reports]
+    WorkerReports[Optional<br/>Worker Risk Reports]
     ToolSystems[Simulated External<br/>Workflow Tools]
 
     EventSource -->|synthetic telemetry<br/>events| NearGuard
@@ -87,7 +87,7 @@ flowchart LR
     end
 
     Simulator[Telematics Event<br/>Simulator]
-    Reports[Future Worker<br/>Report Parser]
+    Reports[Worker Report<br/>Parser]
     ExternalTools[Simulated Tools<br/>Notifications<br/>Approvals<br/>Safety Cases]
 
     Simulator --> API
@@ -113,7 +113,7 @@ flowchart LR
 | Tool Layer | Provides simulated external actions and intentional failure paths. |
 | Trace Logger | Persists chronological trace events for audit and demo display. |
 | Dashboard | Shows zone monitoring, vehicle risk signal, AI assessment timeline, pending approvals and tool status. |
-| Worker Report Parser | Optional future LLM component that extracts structured context from plain-language reports. |
+| Worker Report Parser | Optional Gemini-backed component that extracts structured context from plain-language worker reports. It is enrichment only and never action authority. |
 
 ## 4. Agentic Safety Loop
 
@@ -198,7 +198,7 @@ erDiagram
 | `ToolCall` | Simulated operational tool execution record. | No. |
 | `ApprovalRequest` | Human approval state. | No. |
 | `SafetyCase` | Escalated case summary and evidence. | No for MVP; future labelled feedback only if approved. |
-| `WorkerRiskReport` | Optional future plain-language hazard report. | Not directly; LLM-extracted context may enrich reviewed runtime context. |
+| `WorkerRiskReport` | Optional plain-language hazard report parsed into structured context by Gemini. | Not directly; LLM-extracted context may enrich reviewed runtime context only. |
 
 ### 5.3 Core Schemas
 
@@ -284,6 +284,22 @@ vehicle_id
 description
 extracted_context
 extraction_confidence
+extraction_source
+model
+```
+
+```text
+WorkerReportExtractedContext
+hazard_type
+zone_id
+vehicle_id
+pedestrian_exposure
+traffic_level
+weather
+restriction_level
+reported_severity
+operational_note
+model_feature_impacts
 ```
 
 ### 5.4 Prediction Feature Set
@@ -346,12 +362,12 @@ Model outputs:
 The LLM is optional and bounded:
 
 - It may summarize safety cases and trace events for supervisors.
-- It may parse future `WorkerRiskReport.description` text into structured context fields.
+- It may parse `WorkerRiskReport.description` text into structured context fields through the optional Gemini extraction endpoint.
 - It must not directly set the final risk score.
 - It must not approve or execute disruptive safety actions.
 - Low-confidence extraction must be flagged for human review or ignored by the MVP model.
 
-Example future extraction:
+Example extraction:
 
 ```json
 {
@@ -361,7 +377,8 @@ Example future extraction:
     "pedestrian_exposure": "high",
     "reported_severity": "medium"
   },
-  "extraction_confidence": "medium"
+  "extraction_confidence": "medium",
+  "extraction_source": "gemini_generate_content"
 }
 ```
 
@@ -415,6 +432,8 @@ NearGuard should not stop silently when a tool call fails. The demo must include
 ### 8.3 Safety
 
 NearGuard avoids over-autonomy. Driver advisories and supervisor notifications can be automated in the prototype. Disruptive actions such as zone advisory, rerouting or operational changes require approval. ML output is evidence only; deterministic safety policy and human authorization control interventions.
+
+Worker-report extraction follows the same boundary. Gemini may convert report text into fields such as hazard type, zone, pedestrian exposure, traffic, weather and operational notes, but missing extraction, low confidence or provider failure must remain visible and must not be treated as resolved safety risk.
 
 ### 8.4 Claim Discipline
 
@@ -481,4 +500,4 @@ sequenceDiagram
 - Prefer deterministic policy rules for intervention decisions.
 - Make the dashboard trace visually prominent.
 - Build one intentional failure path early so agentic behaviour is visible.
-- Keep worker reports behind an optional/future boundary unless the MVP scope changes.
+- Keep worker reports behind the optional enrichment boundary unless the MVP scope changes.

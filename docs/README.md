@@ -24,10 +24,13 @@ NearGuard is designed to satisfy the Code Sprint expectation that an agentic AI 
 
 ## Docs Map
 
+- `product_context.md` is the stable product framing: problem, users, non-goals and public-context boundaries.
 - Use `implementation_plan.md` for implementation contracts and repo workflow.
 - Use `ai_and_data.md` for synthetic scenarios, data provenance, risk features and model methodology.
 - Use `design.md` for architecture and safety-policy boundaries.
 - Use `SAFETY.md` for prototype safety boundaries and production validation requirements.
 - Use `demo_plan.md` for presentation and judging flow.
+
+Current-state handoff details live primarily in `implementation_plan.md` and `ai_and_data.md`. Presentation language lives in `demo_plan.md`; it should stay consistent with the safety boundaries rather than introduce new production claims.
 
 The prototype uses synthetic data and public PSA materials as context only. It does not claim PSA production accuracy, use real PSA incident labels, connect to live PSA systems or implement internal PSA safety processes.
