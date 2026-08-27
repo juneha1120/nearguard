@@ -356,12 +356,12 @@ def reasons(features: dict[str, object], confidence: str, uncertainty: str | Non
     near_limit_speed = float(features["mean_speed_5m"]) >= float(features["speed_limit"]) * 0.9
     elevated_zone_prior = float(features["zone_historical_risk"]) >= 0.7
     if loaded_context and near_limit_speed and elevated_zone_prior:
-        output.append("Near-limit speed is persisting in rainy high-traffic context with elevated zone baseline risk.")
+        output.append("Speed is staying close to the limit while rain and heavy traffic reduce stopping margin.")
     if loaded_context:
         if instability_count > 0:
-            output.append("Manoeuvre instability is adding risk to an already loaded traffic/weather context.")
+            output.append("Recent sharp turn or harsh braking suggests the driver may need more space.")
         else:
-            output.append("Traffic and weather compound the telemetry risk.")
+            output.append("Rain and traffic are increasing zone operating pressure.")
     if float(features["alert_density_30m"]) >= 4:
         output.append("Alert density is rising across the recent rolling telemetry window.")
     if features["pedestrian_exposure"] == "high":

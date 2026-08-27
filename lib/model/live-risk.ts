@@ -191,14 +191,14 @@ function liveAssessmentReasons(features: DerivedFeatures) {
   }
   if (features.speed_over_limit > 0) reasons.push(`${features.speed_over_limit} km/h over the zone speed limit.`);
   if (features.speed / Math.max(features.speed_limit, 1) >= 0.9 && features.speed_over_limit <= 0) {
-    reasons.push("Near-limit speed leaves reduced margin in current operating context.");
+    reasons.push("Speed is staying close to the limit while rain and heavy traffic reduce stopping margin.");
   }
   if (features.recent_harsh_brake_count_10m > 0 || features.recent_sharp_turn_count_10m > 0) {
-    reasons.push("Rolling window contains manoeuvre instability signals.");
+    reasons.push("Recent movement includes sharp turns or harsh braking.");
   }
-  if (features.traffic_weather_compound_index >= 0.65) reasons.push("Traffic and weather combine into elevated operating pressure.");
+  if (features.traffic_weather_compound_index >= 0.65) reasons.push("Rain and traffic are increasing zone operating pressure.");
   if (features.zone_transition_risk >= 0.7 || features.pedestrian_exposure !== "low") {
-    reasons.push("Zone context increases exposure risk.");
+    reasons.push("This zone has added exposure from restrictions or pedestrian movement.");
   }
   if (features.gps_freshness !== "fresh") reasons.push("Telemetry quality reduces location confidence.");
   if (features.risk_trend === "increasing") reasons.push("Rolling risk trend is increasing.");

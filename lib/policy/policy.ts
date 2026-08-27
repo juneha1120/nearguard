@@ -27,7 +27,7 @@ export function decidePolicy(assessment: RiskAssessment): PolicyDecision {
       };
     case "Medium":
       return {
-        recommendedAction: "Driver advisory sent; continue monitoring.",
+        recommendedAction: "Driver advisory sent. Monitoring active.",
         authorityClass: "Automatic advisory",
         toolNames: ["notify_driver"],
         shouldRequestApproval: false,

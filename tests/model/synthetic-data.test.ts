@@ -105,8 +105,12 @@ describe("synthetic horizon dataset", () => {
     const pm27 = payload.predictions.find((item: any) => item.event_id === "pm27-003");
 
     expect(pm27.features.speeding_ratio_10m).toBeLessThan(0.35);
-    expect(pm27.assessment.top_risk_reasons[0]).toMatch(/Near-limit speed/);
-    expect(pm27.assessment.top_risk_reasons[1]).toMatch(/loaded traffic\/weather context/);
+    expect(pm27.assessment.top_risk_reasons[0]).toBe(
+      "Speed is staying close to the limit while rain and heavy traffic reduce stopping margin."
+    );
+    expect(pm27.assessment.top_risk_reasons[1]).toBe(
+      "Recent sharp turn or harsh braking suggests the driver may need more space."
+    );
     expect(pm27.assessment.top_risk_reasons.join(" ")).not.toMatch(/Speeding occurred/);
   });
 

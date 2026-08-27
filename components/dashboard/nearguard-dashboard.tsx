@@ -2,11 +2,14 @@
 
 import {
   AlertTriangle,
+  Bot,
+  BrainCircuit,
   CheckCircle2,
   ClipboardCheck,
   Clock3,
+  Cpu,
   FastForward,
-  FileText,
+  FileSearch,
   Layers,
   Pause,
   Play,
@@ -26,10 +29,8 @@ import {
   confidenceSeverityClass,
   countSeverityClass,
   distanceSeverityClass,
-  eventSeverityClass,
   eventSignalClass,
   explainAction,
-  formatEventLabel,
   gpsSeverityClass,
   isDecisionPointEvent,
   liveModelAssessment,
@@ -49,6 +50,8 @@ import {
   weatherSeverityClass,
   zoneFlags,
   zoneRiskClass,
+  traceCategoryClass,
+  traceLabel,
   type ScenarioMetadata,
   type ZoneRiskCard
 } from "@/components/dashboard/dashboard-utils";
@@ -401,25 +404,6 @@ export function NearGuardDashboard() {
       activeWorkerReport
     );
   }, [activeWorkerReport, enrichedLiveSample, isScenarioMode, livePredictionSampleId, liveSamples]);
-  const decisionPointEvents = useMemo(() => {
-    if (!state?.currentEvent) return [];
-    const currentTime = new Date(state.currentEvent.timestamp).getTime();
-    const tenMinutes = 10 * 60 * 1000;
-    return state.selectedScenario.events
-      .slice(0, state.currentEventIndex)
-      .filter((event) => {
-        if (event.vehicle_id !== state.currentEvent?.vehicle_id) return false;
-        if (!isDecisionPointEvent(event)) return false;
-        const eventTime = new Date(event.timestamp).getTime();
-        return eventTime <= currentTime && currentTime - eventTime <= tenMinutes;
-      });
-  }, [state]);
-  const normalTelemetryWindowCount = useMemo(() => {
-    if (!state?.currentEvent) return 0;
-    return state.selectedScenario.events
-      .slice(0, state.currentEventIndex)
-      .filter((event) => event.vehicle_id === state.currentEvent?.vehicle_id && !isDecisionPointEvent(event)).length;
-  }, [state]);
   const zoneRiskCards = useMemo<ZoneRiskCard[]>(
     () =>
       zones.map((zone) => {
@@ -539,7 +523,7 @@ export function NearGuardDashboard() {
           <div className="brand-mark">NG</div>
           <div>
             <h1>NearGuard</h1>
-            <p>Prime Mover telemetry forecast safety agent</p>
+            <p>Human-in-the-loop Prime Mover Safety Risk</p>
           </div>
         </div>
         <div className="controls">
@@ -586,6 +570,7 @@ export function NearGuardDashboard() {
           <section className="scenario-modal" role="dialog" aria-modal="true" aria-labelledby="scenario-modal-title">
             <span className="scenario-modal-kicker">Scenario selected</span>
             <h2 id="scenario-modal-title">{introScenario.name}</h2>
+            <p>{introScenario.description}</p>
             <ul>
               {introScenario.highlights.map((highlight) => (
                 <li key={highlight}>{highlight}</li>
@@ -607,7 +592,7 @@ export function NearGuardDashboard() {
         <section className="panel live-dashboard-panel">
           <div className="panel-header">
             <div>
-              <h2>{isScenarioMode ? "Scenario Zone Replay" : "Zone Monitor"}</h2>
+              <h2>{isScenarioMode ? "Scenario Replay Monitor" : "Zone Monitor"}</h2>
             </div>
             <span className={`badge ${bandClass(latestAssessment?.risk_band)}`}>
               <ShieldAlert size={14} />
@@ -749,7 +734,7 @@ export function NearGuardDashboard() {
             <div className="panel-body">
               <div className="signal-metrics">
                 <div className={`metric signal-card ${scoreSeverityClass(signalRisk)}`}>
-                  <p className="metric-label">Vehicle Near-Miss Risk</p>
+                  <p className="metric-label">Next 15m Synthetic Risk</p>
                   <p className="metric-value">{signalRisk === null ? "--" : signalRisk.toFixed(2)}</p>
                 </div>
                 <div className={`metric signal-card ${confidenceSeverityClass(signalConfidence)}`}>
@@ -864,7 +849,7 @@ export function NearGuardDashboard() {
                   onClick={() => setRightPanelView("assessment")}
                   type="button"
                 >
-                  AI Assessment
+                  Risk Assessment
                 </button>
                 <button className={rightPanelView === "report" ? "active" : ""} onClick={() => setRightPanelView("report")} type="button">
                   Report Intelligence
@@ -874,10 +859,10 @@ export function NearGuardDashboard() {
             {rightPanelView === "assessment" ? (
               <>
                 <div className="scenario-context">
-                  <span>Scenario</span>
+                  <span>{isScenarioMode ? "Scenario" : "Mode"}</span>
                   <strong>{state?.selectedScenario.name ?? "Live monitoring"}</strong>
                 </div>
-                <div className="tab-bar" role="tablist" aria-label="AI assessment details">
+                <div className="tab-bar" role="tablist" aria-label="Risk assessment details">
                   <button className={assessmentTab === "action" ? "active" : ""} onClick={() => setAssessmentTab("action")} type="button">
                     Action
                   </button>
@@ -893,8 +878,8 @@ export function NearGuardDashboard() {
                   <div className="priority-action">
                     <div className="tool-row">
                       <div className="ai-card-kicker">
-                        <Sparkles size={13} />
-                        <span>Recommendation</span>
+                        <Cpu size={14} />
+                        <span>Model Risk Evaluation</span>
                       </div>
                       <span className={`badge ${actionExplanation.statusClass}`}>
                         <FastForward size={14} />
@@ -930,7 +915,7 @@ export function NearGuardDashboard() {
                     <div className="empty compact-empty">No pending approval.</div>
                   )}
 
-                  <h3 className="section-title">Action Rationale</h3>
+                  <h3 className="section-title">Policy Rationale</h3>
                   <ul className="rationale-list">
                     {actionExplanation.rationale.map((item) => (
                       <li key={item}>
@@ -940,7 +925,7 @@ export function NearGuardDashboard() {
                     ))}
                   </ul>
 
-                  <h3 className="section-title">Tool Log</h3>
+                  <h3 className="section-title">Agent-Coordinated Actions</h3>
                   {!state?.toolCalls.length ? (
                     <div className="empty compact-empty">No tools called yet.</div>
                   ) : (
@@ -969,14 +954,15 @@ export function NearGuardDashboard() {
                 <>
                   <div className="worker-report-box">
                     <div className="ai-card-kicker">
-                      <FileText size={13} />
-                      <span>Context extraction</span>
+                      <BrainCircuit size={14} />
+                      <span>Context Extraction</span>
                     </div>
-                    <label htmlFor="worker-report-description">Daily safety report</label>
+                    <label htmlFor="worker-report-description">Field Worker Safety Note / Shift Log</label>
                     <textarea
                       id="worker-report-description"
                       value={reportDescription}
                       onChange={(event) => setReportDescription(event.target.value)}
+                      placeholder="e.g. Near wharf 3, visibility around container stack is poor and workers are crossing often."
                       rows={4}
                     />
                     <button
@@ -985,7 +971,7 @@ export function NearGuardDashboard() {
                       onClick={extractWorkerReport}
                       disabled={isExtractingReport || !reportDescription.trim()}
                     >
-                      <Sparkles size={16} /> {isExtractingReport ? "Extracting" : "Extract Context"}
+                      <FileSearch size={16} /> {isExtractingReport ? "Extracting Context..." : "Extract Context"}
                     </button>
                     {reportExtractionError ? (
                       <div className="report-error">
@@ -996,12 +982,12 @@ export function NearGuardDashboard() {
                       <div className="report-result">
                         <div className="tool-row">
                           <strong>
-                            <FileText size={14} /> Extracted context
+                            <Bot size={14} /> Parsed Operational Context
                           </strong>
                           <span className={`badge ${workerReportBadgeClass}`}>{workerReportStateCopy}</span>
                         </div>
                         <div className="context-card-source">
-                          <span>Daily safety report</span>
+                          <span>Field Worker Safety Note</span>
                           <strong>{workerReport.extracted_context.operational_note.length} chars</strong>
                         </div>
                         <div className="report-flow">
@@ -1063,7 +1049,7 @@ export function NearGuardDashboard() {
                         </div>
                       </div>
                     ) : (
-                      <div className="empty compact-empty">No report extracted yet.</div>
+                      <div className="empty compact-empty">No worker report ingested yet.</div>
                     )}
                   </div>
                 </>
@@ -1072,43 +1058,39 @@ export function NearGuardDashboard() {
               {rightPanelView === "assessment" && assessmentTab === "timeline" ? (
                 <>
                   <div className="tool-row">
-                    <strong>Timeline</strong>
+                    <strong>Decision & Action Timeline</strong>
                     <span className="badge neutral">
                       <Layers size={13} />
-                      {hasIntervention ? `${decisionPointEvents.length + decisionTimeline.length} entries` : "monitoring"}
+                      {decisionTimeline.length > 0 ? `${decisionTimeline.length} entries` : "monitoring"}
                     </span>
                   </div>
                   <ul className="intervention-timeline">
-                    {normalTelemetryWindowCount > 0 ? (
-                      <li className="normal timeline-row">
-                        <span className="trace-time">window</span>
-                        <div>
-                          <span className="event-code neutral">normal telemetry</span>
-                          <p>{normalTelemetryWindowCount} normal telemetry sample(s) scored before this decision point.</p>
-                        </div>
-                      </li>
-                    ) : null}
-                    {decisionPointEvents.map((event) => (
-                      <li className={`${eventSeverityClass(event)} timeline-row`} key={event.event_id}>
-                        <span className="trace-time">{timeLabel(event.timestamp)}</span>
-                        <div>
-                          <span className={`event-code ${eventSeverityClass(event)}`}>{formatEventLabel(event.event_type)}</span>
-                          <p>
-                            {event.vehicle_id} in {event.zone_id}: {event.speed}/{event.speed_limit} km/h, GPS{" "}
-                            {event.gps_freshness}.
-                          </p>
-                        </div>
-                      </li>
-                    ))}
-                    {decisionTimeline.map((trace) => (
-                      <li className="timeline-row" key={trace.trace_id}>
-                        <span className="trace-time">{timeLabel(trace.timestamp)}</span>
-                        <div>
-                          <span className="event-code neutral">{trace.event_type.replaceAll("_", " ")}</span>
-                          <p>{trace.message}</p>
-                        </div>
-                      </li>
-                    ))}
+                    {decisionTimeline.map((trace) => {
+                      const categoryClass = traceCategoryClass(trace.event_type);
+                      const label = traceLabel(trace.event_type);
+                      const metadataToolCall = (trace.metadata as { toolCall?: { tool_name: string; status: string } })?.toolCall;
+                      const toolName = metadataToolCall?.tool_name;
+
+                      return (
+                        <li className={`timeline-row ${categoryClass}`} key={trace.trace_id}>
+                          <span className="trace-time">{timeLabel(trace.timestamp)}</span>
+                          <div>
+                            <div className="tool-row" style={{ marginBottom: "2px" }}>
+                              <span className={`event-code ${categoryClass}`}>
+                                {toolName ? `${label}: ${toolLabel(toolName)}` : label}
+                              </span>
+                              {trace.event_type === "tool_call" && metadataToolCall?.status === "failed" ? (
+                                <span className="badge critical">
+                                  <AlertTriangle size={11} />
+                                  Failed
+                                </span>
+                              ) : null}
+                            </div>
+                            <p>{trace.message}</p>
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                   <h3 className="section-title">Safety Case</h3>
                   {safetyCase ? (

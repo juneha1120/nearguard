@@ -64,7 +64,7 @@
         "confidence": "medium",
         "uncertainty_reason": "sparse recent vehicle history",
         "top_risk_reasons": [
-          "Traffic and weather compound the telemetry risk."
+          "Rain and traffic are increasing zone operating pressure."
         ]
       }
     },
@@ -121,8 +121,8 @@
         "confidence": "high",
         "uncertainty_reason": null,
         "top_risk_reasons": [
-          "Near-limit speed is persisting in rainy high-traffic context with elevated zone baseline risk.",
-          "Manoeuvre instability is adding risk to an already loaded traffic/weather context.",
+          "Speed is staying close to the limit while rain and heavy traffic reduce stopping margin.",
+          "Recent sharp turn or harsh braking suggests the driver may need more space.",
           "1 sharp-turn event(s) occurred within 10 minutes."
         ]
       }
@@ -180,8 +180,8 @@
         "confidence": "high",
         "uncertainty_reason": null,
         "top_risk_reasons": [
-          "Near-limit speed is persisting in rainy high-traffic context with elevated zone baseline risk.",
-          "Manoeuvre instability is adding risk to an already loaded traffic/weather context.",
+          "Speed is staying close to the limit while rain and heavy traffic reduce stopping margin.",
+          "Recent sharp turn or harsh braking suggests the driver may need more space.",
           "Alert density is rising across the recent rolling telemetry window.",
           "Risk remained elevated after a prior intervention signal."
         ]
@@ -240,8 +240,8 @@
         "confidence": "high",
         "uncertainty_reason": null,
         "top_risk_reasons": [
-          "Near-limit speed is persisting in rainy high-traffic context with elevated zone baseline risk.",
-          "Manoeuvre instability is adding risk to an already loaded traffic/weather context.",
+          "Speed is staying close to the limit while rain and heavy traffic reduce stopping margin.",
+          "Recent sharp turn or harsh braking suggests the driver may need more space.",
           "Alert density is rising across the recent rolling telemetry window.",
           "Risk remained elevated after a prior intervention signal."
         ]
@@ -300,8 +300,8 @@
         "confidence": "high",
         "uncertainty_reason": null,
         "top_risk_reasons": [
-          "Near-limit speed is persisting in rainy high-traffic context with elevated zone baseline risk.",
-          "Manoeuvre instability is adding risk to an already loaded traffic/weather context.",
+          "Speed is staying close to the limit while rain and heavy traffic reduce stopping margin.",
+          "Recent sharp turn or harsh braking suggests the driver may need more space.",
           "Alert density is rising across the recent rolling telemetry window.",
           "Risk remained elevated after a prior intervention signal."
         ]
@@ -705,7 +705,7 @@
         "confidence": "low",
         "uncertainty_reason": "missing zone context",
         "top_risk_reasons": [
-          "Traffic and weather compound the telemetry risk.",
+          "Rain and traffic are increasing zone operating pressure.",
           "Speed exposure appeared in 100% of the recent 10-minute window.",
           "Confidence is reduced because of missing zone context."
         ]
@@ -764,7 +764,7 @@
         "confidence": "low",
         "uncertainty_reason": "missing zone context",
         "top_risk_reasons": [
-          "Traffic and weather compound the telemetry risk.",
+          "Rain and traffic are increasing zone operating pressure.",
           "Speed exposure appeared in 100% of the recent 10-minute window.",
           "Confidence is reduced because of missing zone context."
         ]
@@ -823,7 +823,7 @@
         "confidence": "high",
         "uncertainty_reason": null,
         "top_risk_reasons": [
-          "Traffic and weather compound the telemetry risk.",
+          "Rain and traffic are increasing zone operating pressure.",
           "Speed exposure appeared in 67% of the recent 10-minute window."
         ]
       }

@@ -300,7 +300,7 @@ export function zoneRiskClass(level: ZoneRiskCard["level"]): ZoneRiskCard["class
 export function zoneFlags(live: LiveZoneSnapshot | null) {
   const flags: string[] = [];
   if (!live) return flags;
-  if (live.slow_down_zone_active) flags.push("Slow-down advisory");
+  if (live.slow_down_zone_active) flags.push("Slow-down zone active");
   return flags;
 }
 
@@ -326,6 +326,25 @@ export function liveModelAssessment(prediction: LivePrediction): LiveModelAssess
   };
 }
 
+export function operationsRiskReason(reason: string) {
+  if (reason.startsWith("Near-limit speed is persisting")) {
+    return "Speed is staying close to the limit while rain and heavy traffic reduce stopping margin.";
+  }
+  if (reason.startsWith("Manoeuvre instability is adding risk")) {
+    return "Recent sharp turn or harsh braking suggests the driver may need more space.";
+  }
+  if (reason.startsWith("Traffic and weather compound") || reason.startsWith("Traffic and weather combine")) {
+    return "Rain and traffic are increasing zone operating pressure.";
+  }
+  if (reason === "Zone context increases exposure risk.") {
+    return "This zone has added exposure from restrictions or pedestrian movement.";
+  }
+  if (reason === "Rolling window contains manoeuvre instability signals.") {
+    return "Recent movement includes sharp turns or harsh braking.";
+  }
+  return reason;
+}
+
 export function explainAction(
   selectedCase: VehicleCase | null,
   assessment: RiskAssessment | null,
@@ -343,7 +362,7 @@ export function explainAction(
     title: pendingApproval ? "Zone advisory approval requested." : selectedCase.recommended_action,
     rationale: [
       `${assessment.risk_band} risk at ${assessment.safety_incident_risk_score.toFixed(2)} with ${assessment.confidence} confidence.`,
-      ...assessment.top_risk_reasons.slice(0, 3)
+      ...assessment.top_risk_reasons.slice(0, 3).map(operationsRiskReason)
     ],
     statusClass: bandClass(assessment.risk_band)
   };
@@ -368,6 +387,65 @@ export function toolLabel(toolName: string) {
   return toolName.replaceAll("_", " ");
 }
 
+export function traceLabel(eventType: TraceEvent["event_type"]) {
+  switch (eventType) {
+    case "event_received":
+      return "Telemetry Signal";
+    case "validation_error":
+      return "Validation Error";
+    case "context_enriched":
+      return "Zone Context";
+    case "context_missing":
+      return "Context Warning";
+    case "features_derived":
+      return "Derived Features";
+    case "risk_assessed":
+      return "Risk Assessment";
+    case "policy_decision":
+      return "Policy Decision";
+    case "tool_call":
+      return "Tool Call";
+    case "tool_failure":
+      return "Tool Failure";
+    case "approval_requested":
+      return "Human Approval Request";
+    case "approval_decision":
+      return "Human Approval Decision";
+    case "safety_case_created":
+      return "Safety Case Record";
+    case "case_stabilized":
+      return "Case Stabilized";
+    default:
+      return (eventType as string).replaceAll("_", " ");
+  }
+}
+
+export function traceCategoryClass(eventType: TraceEvent["event_type"]) {
+  switch (eventType) {
+    case "event_received":
+    case "features_derived":
+      return "neutral";
+    case "context_enriched":
+    case "case_stabilized":
+      return "low";
+    case "risk_assessed":
+      return "medium";
+    case "policy_decision":
+    case "approval_requested":
+    case "approval_decision":
+      return "high";
+    case "tool_call":
+      return "low";
+    case "context_missing":
+    case "validation_error":
+    case "tool_failure":
+    case "safety_case_created":
+      return "critical";
+    default:
+      return "neutral";
+  }
+}
+
 export function buildDecisionTimeline(
   traceEvents: TraceEvent[],
   assessment: RiskAssessment | null,
@@ -376,6 +454,7 @@ export function buildDecisionTimeline(
   if (!assessment || !currentEvent) return [];
   const relevantTypes = new Set([
     "event_received",
+    "validation_error",
     "context_enriched",
     "context_missing",
     "features_derived",
@@ -383,7 +462,10 @@ export function buildDecisionTimeline(
     "policy_decision",
     "tool_call",
     "tool_failure",
-    "approval_requested"
+    "approval_requested",
+    "approval_decision",
+    "safety_case_created",
+    "case_stabilized"
   ]);
-  return traceEvents.filter((trace) => relevantTypes.has(trace.event_type)).slice(-8);
+  return traceEvents.filter((trace) => relevantTypes.has(trace.event_type));
 }
