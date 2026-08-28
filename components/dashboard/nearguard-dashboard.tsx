@@ -19,7 +19,7 @@ import {
   StepBack,
   StepForward
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   bandClass,
   baselineZoneRiskLevel,
@@ -75,6 +75,28 @@ import type {
   ZoneRegistryEntry
 } from "@/lib/types/domain";
 
+const DEFAULT_SCENARIO_ID = "pm27-persistent-high-risk";
+
+type StatusNotice = {
+  tone: "warning" | "error";
+  message: string;
+};
+
+async function fetchJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
+  const response = await fetch(input, init);
+  const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+
+  if (!response.ok) {
+    throw new Error(payload?.error ?? `Request failed with status ${response.status}.`);
+  }
+
+  return payload as T;
+}
+
+function errorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
 export function NearGuardDashboard() {
   const [scenarios, setScenarios] = useState<ScenarioMetadata[]>([]);
   const [zones, setZones] = useState<ZoneRegistryEntry[]>([]);
@@ -85,7 +107,7 @@ export function NearGuardDashboard() {
   const [scenarioZoneTelemetrySamples, setScenarioZoneTelemetrySamples] = useState<ScenarioZoneTelemetrySample[]>([]);
   const [liveSampleIndex, setLiveSampleIndex] = useState(0);
   const [scenarioClockMs, setScenarioClockMs] = useState<number | null>(null);
-  const [scenarioId, setScenarioId] = useState("pm27-persistent-high-risk");
+  const [scenarioId, setScenarioId] = useState(DEFAULT_SCENARIO_ID);
   const [state, setState] = useState<ReplayState | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [introScenario, setIntroScenario] = useState<ReplayState["selectedScenario"] | null>(null);
@@ -97,40 +119,46 @@ export function NearGuardDashboard() {
   const [isWorkerReportResolved, setIsWorkerReportResolved] = useState(false);
   const [isExtractingReport, setIsExtractingReport] = useState(false);
   const [reportExtractionError, setReportExtractionError] = useState<string | null>(null);
+  const [dashboardNotice, setDashboardNotice] = useState<StatusNotice | null>(null);
+  const [liveInferenceNotice, setLiveInferenceNotice] = useState<StatusNotice | null>(null);
   const replaySessionIdRef = useRef(`dashboard-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`);
   const replayRequestRef = useRef(0);
   const timerRef = useRef<number | null>(null);
   const liveTimerRef = useRef<number | null>(null);
 
-  async function start(id = scenarioId) {
+  const start = useCallback(async (id: string) => {
     if (!id) return;
 
     const requestId = ++replayRequestRef.current;
-    const response = await fetch("/api/replay/start", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ scenario_id: id, session_id: replaySessionIdRef.current })
-    });
-    const nextState = (await response.json()) as ReplayState;
-    if (requestId !== replayRequestRef.current) return;
+    setDashboardNotice(null);
+    try {
+      const nextState = await fetchJson<ReplayState>("/api/replay/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scenario_id: id, session_id: replaySessionIdRef.current })
+      });
+      if (requestId !== replayRequestRef.current) return;
 
-    setState(nextState);
-    setIsPlaying(false);
-    setLiveSampleIndex(0);
-    setScenarioClockMs(nextState.selectedScenario.events[0] ? new Date(nextState.selectedScenario.events[0].timestamp).getTime() : null);
-    setIntroScenario(nextState.selectedScenario);
-    setSelectedLiveVehicleId(null);
-    fetch(`/api/scenario-telemetry?scenario_id=${encodeURIComponent(id)}`)
-      .then((telemetryResponse) => telemetryResponse.json())
-      .then((payload) => {
-        if (requestId === replayRequestRef.current) setScenarioTelemetrySamples(payload.samples);
-      });
-    fetch(`/api/scenario-zone-telemetry?scenario_id=${encodeURIComponent(id)}`)
-      .then((telemetryResponse) => telemetryResponse.json())
-      .then((payload) => {
-        if (requestId === replayRequestRef.current) setScenarioZoneTelemetrySamples(payload.samples);
-      });
-  }
+      setState(nextState);
+      setIsPlaying(false);
+      setLiveSampleIndex(0);
+      setScenarioClockMs(nextState.selectedScenario.events[0] ? new Date(nextState.selectedScenario.events[0].timestamp).getTime() : null);
+      setIntroScenario(nextState.selectedScenario);
+      setSelectedLiveVehicleId(null);
+
+      const [scenarioTelemetryPayload, scenarioZoneTelemetryPayload] = await Promise.all([
+        fetchJson<{ samples: ScenarioTelemetrySample[] }>(`/api/scenario-telemetry?scenario_id=${encodeURIComponent(id)}`),
+        fetchJson<{ samples: ScenarioZoneTelemetrySample[] }>(`/api/scenario-zone-telemetry?scenario_id=${encodeURIComponent(id)}`)
+      ]);
+      if (requestId !== replayRequestRef.current) return;
+      setScenarioTelemetrySamples(scenarioTelemetryPayload.samples);
+      setScenarioZoneTelemetrySamples(scenarioZoneTelemetryPayload.samples);
+    } catch (error) {
+      if (requestId !== replayRequestRef.current) return;
+      setIsPlaying(false);
+      setDashboardNotice({ tone: "error", message: errorMessage(error, "Unable to start scenario replay.") });
+    }
+  }, []);
 
   function resetToLiveMonitoring() {
     replayRequestRef.current += 1;
@@ -144,72 +172,86 @@ export function NearGuardDashboard() {
     setScenarioZoneTelemetrySamples([]);
   }
 
-  async function step() {
+  const step = useCallback(async () => {
     setIsPlaying(false);
-    const response = await fetch("/api/replay/step", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ session_id: replaySessionIdRef.current })
-    });
-    const nextState = (await response.json()) as ReplayState;
-    setState(nextState);
-    const latestTrace = nextState.traceEvents.at(-1);
-    const latestScenarioTime = latestTrace?.timestamp ?? nextState.currentEvent?.timestamp ?? null;
-    if (latestScenarioTime) setScenarioClockMs(new Date(latestScenarioTime).getTime());
-    if (nextState.isComplete) {
+    setDashboardNotice(null);
+    try {
+      const nextState = await fetchJson<ReplayState>("/api/replay/step", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: replaySessionIdRef.current })
+      });
+      setState(nextState);
+      const latestTrace = nextState.traceEvents.at(-1);
+      const latestScenarioTime = latestTrace?.timestamp ?? nextState.currentEvent?.timestamp ?? null;
+      if (latestScenarioTime) setScenarioClockMs(new Date(latestScenarioTime).getTime());
+      if (nextState.isComplete) {
+        setIsPlaying(false);
+      }
+    } catch (error) {
       setIsPlaying(false);
+      setDashboardNotice({ tone: "error", message: errorMessage(error, "Unable to advance scenario replay.") });
     }
-  }
+  }, []);
 
   async function previous() {
     setIsPlaying(false);
-    const response = await fetch("/api/replay/previous", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ session_id: replaySessionIdRef.current })
-    });
-    const nextState = (await response.json()) as ReplayState;
-    setState(nextState);
-    if (nextState.currentEvent) {
-      setScenarioClockMs(new Date(nextState.currentEvent.timestamp).getTime());
-    } else {
-      setScenarioClockMs(nextState.selectedScenario.events[0] ? new Date(nextState.selectedScenario.events[0].timestamp).getTime() : null);
+    setDashboardNotice(null);
+    try {
+      const nextState = await fetchJson<ReplayState>("/api/replay/previous", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: replaySessionIdRef.current })
+      });
+      setState(nextState);
+      if (nextState.currentEvent) {
+        setScenarioClockMs(new Date(nextState.currentEvent.timestamp).getTime());
+      } else {
+        setScenarioClockMs(nextState.selectedScenario.events[0] ? new Date(nextState.selectedScenario.events[0].timestamp).getTime() : null);
+      }
+    } catch (error) {
+      setDashboardNotice({ tone: "error", message: errorMessage(error, "Unable to rewind scenario replay.") });
     }
   }
 
   async function reviewEvidence(reviewId: string, outcome: ReviewOutcome) {
-    const response = await fetch("/api/replay/review", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ review_id: reviewId, outcome, session_id: replaySessionIdRef.current })
-    });
-    if (!response.ok) return;
-
-    const nextState = (await response.json()) as ReplayState;
-    setState(nextState);
-    const latestTrace = nextState.traceEvents.at(-1);
-    const latestScenarioTime = latestTrace?.timestamp ?? nextState.currentEvent?.timestamp ?? null;
-    if (latestScenarioTime) setScenarioClockMs(new Date(latestScenarioTime).getTime());
-    setIsPlaying(false);
+    setDashboardNotice(null);
+    try {
+      const nextState = await fetchJson<ReplayState>("/api/replay/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ review_id: reviewId, outcome, session_id: replaySessionIdRef.current })
+      });
+      setState(nextState);
+      const latestTrace = nextState.traceEvents.at(-1);
+      const latestScenarioTime = latestTrace?.timestamp ?? nextState.currentEvent?.timestamp ?? null;
+      if (latestScenarioTime) setScenarioClockMs(new Date(latestScenarioTime).getTime());
+      setIsPlaying(false);
+    } catch (error) {
+      setIsPlaying(false);
+      setDashboardNotice({ tone: "error", message: errorMessage(error, "Unable to record signal review.") });
+    }
   }
 
   async function approve(approvalId: string, approved: boolean) {
-    const response = await fetch("/api/replay/approve", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ approval_id: approvalId, approved, session_id: replaySessionIdRef.current })
-    });
-    const nextState = (await response.json()) as ReplayState;
-    setState(nextState);
-    const latestTrace = nextState.traceEvents.at(-1);
-    const latestScenarioTime = latestTrace?.timestamp ?? nextState.currentEvent?.timestamp ?? null;
-    if (latestScenarioTime) setScenarioClockMs(new Date(latestScenarioTime).getTime());
-    setIsPlaying(false);
-    if (nextState.isComplete) {
+    setDashboardNotice(null);
+    try {
+      const nextState = await fetchJson<ReplayState>("/api/replay/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ approval_id: approvalId, approved, session_id: replaySessionIdRef.current })
+      });
+      setState(nextState);
+      const latestTrace = nextState.traceEvents.at(-1);
+      const latestScenarioTime = latestTrace?.timestamp ?? nextState.currentEvent?.timestamp ?? null;
+      if (latestScenarioTime) setScenarioClockMs(new Date(latestScenarioTime).getTime());
       setIsPlaying(false);
-    }
-    if (approved) {
-      setAssessmentTab("timeline");
+      if (approved) {
+        setAssessmentTab("timeline");
+      }
+    } catch (error) {
+      setIsPlaying(false);
+      setDashboardNotice({ tone: "error", message: errorMessage(error, "Unable to record approval decision.") });
     }
   }
 
@@ -220,13 +262,12 @@ export function NearGuardDashboard() {
     setIsExtractingReport(true);
     setReportExtractionError(null);
     try {
-      const response = await fetch("/api/worker-reports/extract", {
+      const payload = await fetchJson<{ report?: WorkerRiskReport; error?: string }>("/api/worker-reports/extract", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ description, reporter_role: "daily_safety_report" })
       });
-      const payload = (await response.json()) as { report?: WorkerRiskReport; error?: string };
-      if (!response.ok || !payload.report) {
+      if (!payload.report) {
         throw new Error(payload.error ?? "Worker report extraction failed.");
       }
       setWorkerReport(payload.report);
@@ -239,20 +280,32 @@ export function NearGuardDashboard() {
   }
 
   useEffect(() => {
-    fetch("/api/scenarios")
-      .then((response) => response.json())
-      .then((payload) => setScenarios(payload.scenarios));
-    fetch("/api/zones")
-      .then((response) => response.json())
-      .then((payload) => setZones(payload.zones));
-    fetch("/api/live-zone-telemetry")
-      .then((response) => response.json())
-      .then((payload) => {
-        setLiveSamples(payload.samples);
-      });
-    start(scenarioId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    let isCancelled = false;
+
+    async function loadInitialData() {
+      try {
+        const [scenarioPayload, zonePayload, liveTelemetryPayload] = await Promise.all([
+          fetchJson<{ scenarios: ScenarioMetadata[] }>("/api/scenarios"),
+          fetchJson<{ zones: ZoneRegistryEntry[] }>("/api/zones"),
+          fetchJson<{ samples: LiveTelemetrySample[] }>("/api/live-zone-telemetry")
+        ]);
+        if (isCancelled) return;
+        setScenarios(scenarioPayload.scenarios);
+        setZones(zonePayload.zones);
+        setLiveSamples(liveTelemetryPayload.samples);
+      } catch (error) {
+        if (isCancelled) return;
+        setDashboardNotice({ tone: "error", message: errorMessage(error, "Unable to load dashboard data.") });
+      }
+    }
+
+    void loadInitialData();
+    void start(DEFAULT_SCENARIO_ID);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [start]);
 
   useEffect(() => {
     if (state) {
@@ -306,8 +359,7 @@ export function NearGuardDashboard() {
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPlaying, nextDecisionTargetMs, state]);
+  }, [isPlaying, nextDecisionTargetMs, state, step]);
 
   const selectedCase = state?.selectedCase ?? null;
   const latestAssessment = state?.latestRiskAssessment ?? null;
@@ -325,19 +377,19 @@ export function NearGuardDashboard() {
     if (state || !rawLiveSample) return;
 
     let isCancelled = false;
-    fetch(`/api/live-risk-predictions?sample_id=${encodeURIComponent(rawLiveSample.sample_id)}`)
-      .then((response) => response.json())
+    fetchJson<{ predictions?: LivePrediction[]; error?: string }>(`/api/live-risk-predictions?sample_id=${encodeURIComponent(rawLiveSample.sample_id)}`)
       .then((payload) => {
         if (isCancelled) return;
         const predictions = (payload.predictions ?? []) as LivePrediction[];
         if (predictions.length) setLivePredictionSampleId(rawLiveSample.sample_id);
+        setLiveInferenceNotice(null);
         setLivePredictions((current) => {
           const retained = current.filter((prediction) => prediction.sample_id !== rawLiveSample.sample_id);
           return [...retained, ...predictions].slice(-240);
         });
-      })
-      .catch(() => {
-        // Keep the previous tick if the required live inference service is unavailable.
+      }).catch((error) => {
+        if (isCancelled) return;
+        setLiveInferenceNotice({ tone: "warning", message: errorMessage(error, "Live inference service is unavailable.") });
       });
 
     return () => {
@@ -640,6 +692,13 @@ export function NearGuardDashboard() {
           </button>
         </div>
       </header>
+
+      {dashboardNotice || liveInferenceNotice ? (
+        <div className="status-banner" role={dashboardNotice?.tone === "error" ? "alert" : "status"}>
+          <AlertTriangle size={15} />
+          <span>{dashboardNotice?.message ?? liveInferenceNotice?.message}</span>
+        </div>
+      ) : null}
 
       {introScenario ? (
         <div className="modal-backdrop" role="presentation">

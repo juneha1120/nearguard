@@ -409,15 +409,16 @@ This separation is deliberate: ML output can raise concern, but it cannot author
 
 ## 7. Tool Design
 
-| Tool | Input | Output | Failure To Demonstrate |
+The MVP tool layer simulates the operational actions that make the agentic loop visible. Data collection and safety-case creation are represented in replay state and trace events; production adapters could later expose them as external tools if approved.
+
+| MVP Tool / State Action | Input | Output | Failure To Demonstrate |
 | --- | --- | --- | --- |
-| `get_vehicle_state` | `vehicle_id` | speed, location, telemetry freshness | stale GPS |
-| `get_zone_risk` | `zone_id` | zone risk, traffic level, restriction context | unavailable zone context |
 | `notify_driver` | vehicle and message | delivered or failed | delivery failure, timeout |
 | `notify_supervisor` | supervisor and summary | delivered or failed | delivery failure, timeout |
+| `fallback_notify_supervisor` | supervisor and summary | delivered | fallback after primary notification timeout |
 | `request_human_approval` | action and rationale | approved or rejected | pending approval |
-| `create_safety_case` | case evidence | safety case ID | creation failure |
 | `recommend_zone_advisory` | zone and advisory | advisory recommendation | approval required |
+| Safety case state action | case evidence | safety case ID and trace event | approval evidence captured |
 
 ## 8. Quality Attributes
 
@@ -445,9 +446,9 @@ The prototype uses synthetic vehicle, case, report and user identifiers. It does
 
 ### 8.6 Scalability
 
-The architecture separates event ingestion, context enrichment, feature aggregation, risk prediction, safety policy, tool orchestration and trace logging. This keeps the prototype aligned with larger operational volumes because event processing can be batched or streamed, tabular model inference can remain bounded, and LLM use can be limited to bounded report parsing or summarisation rather than every telemetry event.
+The architecture separates event ingestion, context enrichment, feature aggregation, risk prediction, safety policy, tool orchestration and trace logging. This keeps the prototype aligned with larger operational volumes because event processing can be batched or streamed, tabular model inference can remain bounded, and LLM use can be limited to bounded report parsing or summarisation rather than every telemetry event. This also keeps token usage predictable: telemetry ticks use structured model inference, not LLM calls.
 
-### 8.6 Future Vehicle-Person Interaction Lens
+### 8.7 Future Vehicle-Person Interaction Lens
 
 The MVP does not assume real-time person localization. If approved person-position data becomes available later through CCTV analytics, RTLS or wearables, NearGuard can add a deterministic interaction-risk lens for distance, trajectory conflict, TTC and stopping margin. That future lens should be labelled separately from the telemetry model and must not claim live PSA integration in the current prototype.
 
@@ -470,7 +471,7 @@ sequenceDiagram
     Agent->>Agent: Collect zone context and recent history
     Agent->>Trace: Log context_enriched
     Agent->>Risk: Predict safety incident risk
-    Risk-->>Agent: 0.66, high confidence, top reasons
+    Risk-->>Agent: 0.65, high confidence, top reasons
     Agent->>Trace: Log risk_assessed
     Agent->>Policy: Check allowed actions
     Policy-->>Agent: Driver advisory plus supervisor report
@@ -479,16 +480,15 @@ sequenceDiagram
     Agent->>Tools: notify_supervisor
     Tools-->>Agent: timeout
     Agent->>Trace: Log tool_failure
-    Agent->>Tools: fallback_notify
+    Agent->>Tools: fallback_notify_supervisor
     Tools-->>Agent: delivered
     Agent->>Risk: Reassess after new telemetry
-    Risk-->>Agent: 0.77, persistent high, high confidence
+    Risk-->>Agent: 0.82, persistent high, high confidence
     Agent->>Policy: Check stronger response authority
     Policy-->>Agent: Approval required
     Agent->>Safety: Approve zone advisory?
     Safety-->>Agent: approved
-    Agent->>Tools: create_safety_case
-    Tools-->>Agent: SC-1007
+    Agent->>Trace: Record safety case SC-1007
     Agent->>Trace: Log safety_case_created
 ```
 

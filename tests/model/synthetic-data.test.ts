@@ -1,6 +1,73 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { listLiveTelemetrySamples } from "@/lib/data/repository";
+import type {
+  LivePrediction,
+  LivePrimeMoverSnapshot,
+  LiveTelemetrySample,
+  Scenario,
+  ScenarioPrediction,
+  ScenarioTelemetrySample,
+  ScenarioZoneTelemetrySample,
+  ZoneRegistryEntry
+} from "@/lib/types/domain";
+
+type CsvRow = Record<string, string>;
+
+type ScenarioPredictionsPayload = {
+  target: string;
+  prediction_horizon: string;
+  metrics: {
+    intervention_contaminated_excluded_rows: number;
+    total_rows: number;
+    training_rows: number;
+  };
+  predictions: ScenarioPrediction[];
+};
+
+type LivePredictionsPayload = {
+  target: string;
+  prediction_horizon: string;
+  predictions: LivePrediction[];
+};
+
+type LiveTelemetryPayload = {
+  samples: LiveTelemetrySample[];
+};
+
+type RoutinePrimeMoverSnapshot = LivePrimeMoverSnapshot & { zone_id: string };
+
+type RoutinePrimeMoverSample = {
+  sample_id: string;
+  timestamp: string;
+  prime_movers: RoutinePrimeMoverSnapshot[];
+};
+
+type RoutinePrimeMoverPayload = {
+  samples: RoutinePrimeMoverSample[];
+};
+
+type ScenarioTelemetryPayload = {
+  samples: ScenarioTelemetrySample[];
+};
+
+type ScenarioZoneTelemetryPayload = {
+  samples: ScenarioZoneTelemetrySample[];
+};
+
+type ComparablePrimeMoverSnapshot = Pick<LivePrimeMoverSnapshot, "vehicle_id" | "speed" | "speed_limit" | "gps_freshness" | "state"> & {
+  zone_id: string;
+};
+
+function readJson<T>(path: string): T {
+  return JSON.parse(readFileSync(path, "utf8")) as T;
+}
+
+function findScenarioPrediction(payload: ScenarioPredictionsPayload, eventId: string) {
+  const prediction = payload.predictions.find((item) => item.event_id === eventId);
+  expect(prediction, `expected scenario prediction ${eventId}`).toBeDefined();
+  return prediction!;
+}
 
 function csvRows() {
   const [headerLine, ...lines] = readFileSync("data/synthetic_training_data.csv", "utf8").trim().split(/\r?\n/);
@@ -8,7 +75,7 @@ function csvRows() {
   return lines.map((line) => {
     const values = line.split(",");
     return Object.fromEntries(headers.map((header, index) => [header, values[index]]));
-  });
+  }) as CsvRow[];
 }
 
 function average(values: number[]) {
@@ -54,7 +121,7 @@ describe("synthetic horizon dataset", () => {
   });
 
   it("exports horizon and evidence authority for scenario predictions", () => {
-    const payload = JSON.parse(readFileSync("models/scenario_predictions.json", "utf8"));
+    const payload = readJson<ScenarioPredictionsPayload>("models/scenario_predictions.json");
     const prediction = payload.predictions[0];
 
     expect(payload.target).toBe("near_miss_within_next_15m");
@@ -64,7 +131,7 @@ describe("synthetic horizon dataset", () => {
   });
 
   it("exports trained-model predictions for model artifact inspection", () => {
-    const payload = JSON.parse(readFileSync("models/routine_live_predictions.json", "utf8"));
+    const payload = readJson<LivePredictionsPayload>("models/routine_live_predictions.json");
     const prediction = payload.predictions[0];
 
     expect(payload.target).toBe("near_miss_within_next_15m");
@@ -79,9 +146,9 @@ describe("synthetic horizon dataset", () => {
   });
 
   it("keeps routine live model artifacts at baseline Low risk", () => {
-    const payload = JSON.parse(readFileSync("models/routine_live_predictions.json", "utf8"));
-    const nonLowPredictions = payload.predictions.filter((prediction: any) => prediction.assessment.risk_band !== "Low");
-    const scores = payload.predictions.map((prediction: any) => prediction.assessment.safety_incident_risk_score);
+    const payload = readJson<LivePredictionsPayload>("models/routine_live_predictions.json");
+    const nonLowPredictions = payload.predictions.filter((prediction) => prediction.assessment.risk_band !== "Low");
+    const scores = payload.predictions.map((prediction) => prediction.assessment.safety_incident_risk_score);
 
     expect(nonLowPredictions).toEqual([]);
     expect(percentile(scores, 0.5)).toBeGreaterThanOrEqual(0.02);
@@ -125,7 +192,7 @@ describe("synthetic horizon dataset", () => {
   });
 
   it("exports contaminated-row exclusion counts in model metrics", () => {
-    const payload = JSON.parse(readFileSync("models/scenario_predictions.json", "utf8"));
+    const payload = readJson<ScenarioPredictionsPayload>("models/scenario_predictions.json");
 
     expect(payload.metrics.intervention_contaminated_excluded_rows).toBeGreaterThan(0);
     expect(payload.metrics.total_rows).toBeGreaterThan(payload.metrics.training_rows);
@@ -133,9 +200,9 @@ describe("synthetic horizon dataset", () => {
   });
 
   it("keeps high-risk scenarios above stabilized replay outcomes", () => {
-    const payload = JSON.parse(readFileSync("models/scenario_predictions.json", "utf8"));
+    const payload = readJson<ScenarioPredictionsPayload>("models/scenario_predictions.json");
     const byEvent = new Map<string, number>(
-      payload.predictions.map((item: any) => [item.event_id, item.assessment.safety_incident_risk_score])
+      payload.predictions.map((item) => [item.event_id, item.assessment.safety_incident_risk_score])
     );
     const persistentRisk = byEvent.get("pm27-005");
     const stabilizedRisk = byEvent.get("ppt-003");
@@ -151,10 +218,10 @@ describe("synthetic horizon dataset", () => {
   });
 
   it("learns High risk for compound intervention scenarios without scenario score overrides", () => {
-    const payload = JSON.parse(readFileSync("models/scenario_predictions.json", "utf8"));
-    const pm27Intervention = payload.predictions.find((item: any) => item.event_id === "pm27-003");
-    const wharfExposure = payload.predictions.find((item: any) => item.event_id === "wharf-002");
-    const telemetryUncertainty = payload.predictions.find((item: any) => item.event_id === "uncertain-001");
+    const payload = readJson<ScenarioPredictionsPayload>("models/scenario_predictions.json");
+    const pm27Intervention = findScenarioPrediction(payload, "pm27-003");
+    const wharfExposure = findScenarioPrediction(payload, "wharf-002");
+    const telemetryUncertainty = findScenarioPrediction(payload, "uncertain-001");
     const trainingScript = readFileSync("scripts/train_model.py", "utf8");
     const replayScript = readFileSync("lib/agent/replay.ts", "utf8");
 
@@ -169,9 +236,9 @@ describe("synthetic horizon dataset", () => {
   });
 
   it("keeps the PPT slow-down-zone advisory aligned with the model score", () => {
-    const payload = JSON.parse(readFileSync("models/scenario_predictions.json", "utf8"));
-    const pptAdvisory = payload.predictions.find((item: any) => item.event_id === "ppt-002");
-    const pptStabilized = payload.predictions.find((item: any) => item.event_id === "ppt-003");
+    const payload = readJson<ScenarioPredictionsPayload>("models/scenario_predictions.json");
+    const pptAdvisory = findScenarioPrediction(payload, "ppt-002");
+    const pptStabilized = findScenarioPrediction(payload, "ppt-003");
 
     expect(pptAdvisory.assessment.safety_incident_risk_score).toBeGreaterThanOrEqual(0.4);
     expect(pptAdvisory.assessment.safety_incident_risk_score).toBeLessThan(0.65);
@@ -181,8 +248,8 @@ describe("synthetic horizon dataset", () => {
   });
 
   it("frames the primary demo as compound telemetry risk instead of a speeding-only alert", () => {
-    const payload = JSON.parse(readFileSync("models/scenario_predictions.json", "utf8"));
-    const pm27 = payload.predictions.find((item: any) => item.event_id === "pm27-003");
+    const payload = readJson<ScenarioPredictionsPayload>("models/scenario_predictions.json");
+    const pm27 = findScenarioPrediction(payload, "pm27-003");
 
     expect(pm27.features.speeding_ratio_10m).toBeLessThan(0.35);
     expect(pm27.assessment.top_risk_reasons[0]).toBe(
@@ -195,7 +262,7 @@ describe("synthetic horizon dataset", () => {
   });
 
   it("keeps the zone registry static", () => {
-    const zones = JSON.parse(readFileSync("data/zone_registry.json", "utf8"));
+    const zones = readJson<ZoneRegistryEntry[]>("data/zone_registry.json");
 
     expect(zones[0]).toHaveProperty("zone_id");
     expect(zones[0]).toHaveProperty("zone_name");
@@ -208,34 +275,35 @@ describe("synthetic horizon dataset", () => {
   });
 
   it("keeps scenario decision points separate from dense telemetry", () => {
-    const scenario = JSON.parse(readFileSync("data/scenario_decision_points/pm27-persistent-high-risk.json", "utf8"));
-    const pmTelemetry = JSON.parse(readFileSync("data/scenario_prime_mover_telemetry/pm27-persistent-high-risk.json", "utf8"));
-    const zoneTelemetry = JSON.parse(readFileSync("data/scenario_live_zone_telemetry/pm27-persistent-high-risk.json", "utf8"));
+    const scenario = readJson<Scenario>("data/scenario_decision_points/pm27-persistent-high-risk.json");
+    const pmTelemetry = readJson<ScenarioTelemetryPayload>("data/scenario_prime_mover_telemetry/pm27-persistent-high-risk.json");
+    const zoneTelemetry = readJson<ScenarioZoneTelemetryPayload>("data/scenario_live_zone_telemetry/pm27-persistent-high-risk.json");
 
     expect(scenario.scenario_id).toBe("pm27-persistent-high-risk");
     expect(scenario.events.length).toBeLessThan(pmTelemetry.samples.length);
     expect(scenario.events.length).toBeLessThan(zoneTelemetry.samples.length);
-    expect(scenario.events.map((event: any) => event.event_id)).toEqual(["pm27-001", "pm27-002", "pm27-003", "pm27-004", "pm27-005"]);
+    expect(scenario.events.map((event) => event.event_id)).toEqual(["pm27-001", "pm27-002", "pm27-003", "pm27-004", "pm27-005"]);
   });
 
   it("provides a loopable live zone telemetry stream", () => {
-    const payload = JSON.parse(readFileSync("data/routine_live_zone_telemetry.json", "utf8"));
+    const payload = readJson<LiveTelemetryPayload>("data/routine_live_zone_telemetry.json");
     const first = payload.samples[0];
     const last = payload.samples.at(-1);
 
     expect(payload.samples.length).toBeGreaterThanOrEqual(1200);
+    expect(last).toBeDefined();
     expect(first.zones).toHaveLength(4);
     expect(first.zones[0].prime_movers.length).toBeGreaterThan(0);
     expect(first.zones[0]).not.toHaveProperty("live_risk");
-    expect(last.zones[0]).not.toHaveProperty("live_risk");
+    expect(last!.zones[0]).not.toHaveProperty("live_risk");
     expect(new Date(payload.samples[1].timestamp).getTime() - new Date(first.timestamp).getTime()).toBe(1000);
-    expect(new Set(first.zones.map((zone: any) => zone.zone_id))).toEqual(
+    expect(new Set(first.zones.map((zone) => zone.zone_id))).toEqual(
       new Set(["YARD-C4", "PPT-LINK-25", "YARD-U2", "WHARF-C4"])
     );
   });
 
   it("provides a separate loopable routine Prime Mover telemetry stream", () => {
-    const payload = JSON.parse(readFileSync("data/routine_prime_mover_telemetry.json", "utf8"));
+    const payload = readJson<RoutinePrimeMoverPayload>("data/routine_prime_mover_telemetry.json");
     const first = payload.samples[0];
 
     expect(payload.samples.length).toBeGreaterThanOrEqual(1200);
@@ -248,8 +316,8 @@ describe("synthetic horizon dataset", () => {
   });
 
   it("keeps routine Prime Mover telemetry aligned with routine live zone telemetry", () => {
-    const livePayload = JSON.parse(readFileSync("data/routine_live_zone_telemetry.json", "utf8"));
-    const primeMoverPayload = JSON.parse(readFileSync("data/routine_prime_mover_telemetry.json", "utf8"));
+    const livePayload = readJson<LiveTelemetryPayload>("data/routine_live_zone_telemetry.json");
+    const primeMoverPayload = readJson<RoutinePrimeMoverPayload>("data/routine_prime_mover_telemetry.json");
     const runtimeSamples = listLiveTelemetrySamples();
 
     expect(primeMoverPayload.samples).toHaveLength(livePayload.samples.length);
@@ -263,14 +331,14 @@ describe("synthetic horizon dataset", () => {
       expect(runtimeSample.timestamp).toBe(primeMoverSample.timestamp);
 
       const liveMovers = liveSample.zones
-        .flatMap((zone: any) => zone.prime_movers.map((mover: any) => ({ zone_id: zone.zone_id, ...mover })))
-        .sort((a: any, b: any) => `${a.zone_id}-${a.vehicle_id}`.localeCompare(`${b.zone_id}-${b.vehicle_id}`));
-      const primeMovers = [...primeMoverSample.prime_movers].sort((a: any, b: any) =>
+        .flatMap((zone) => zone.prime_movers.map((mover): RoutinePrimeMoverSnapshot => ({ zone_id: zone.zone_id, ...mover })))
+        .sort((a, b) => `${a.zone_id}-${a.vehicle_id}`.localeCompare(`${b.zone_id}-${b.vehicle_id}`));
+      const primeMovers = [...primeMoverSample.prime_movers].sort((a, b) =>
         `${a.zone_id}-${a.vehicle_id}`.localeCompare(`${b.zone_id}-${b.vehicle_id}`)
       );
       const runtimeMovers = runtimeSample.zones
-        .flatMap((zone: any) =>
-          zone.prime_movers.map((mover: any) => ({
+        .flatMap((zone) =>
+          zone.prime_movers.map((mover): ComparablePrimeMoverSnapshot => ({
             zone_id: zone.zone_id,
             vehicle_id: mover.vehicle_id,
             speed: mover.speed,
@@ -279,7 +347,7 @@ describe("synthetic horizon dataset", () => {
             state: mover.state
           }))
         )
-        .sort((a: any, b: any) => `${a.zone_id}-${a.vehicle_id}`.localeCompare(`${b.zone_id}-${b.vehicle_id}`));
+        .sort((a, b) => `${a.zone_id}-${a.vehicle_id}`.localeCompare(`${b.zone_id}-${b.vehicle_id}`));
 
       expect(liveMovers).toEqual(primeMovers);
       expect(runtimeMovers).toEqual(primeMovers);
@@ -287,10 +355,10 @@ describe("synthetic horizon dataset", () => {
   });
 
   it("provides dense one-second telemetry for scenario primary vehicles", () => {
-    const payload = JSON.parse(readFileSync("data/scenario_prime_mover_telemetry/pm27-persistent-high-risk.json", "utf8"));
+    const payload = readJson<ScenarioTelemetryPayload>("data/scenario_prime_mover_telemetry/pm27-persistent-high-risk.json");
     const pm27 = payload.samples;
     const betweenAnchors = pm27.filter(
-      (sample: any) =>
+      (sample) =>
         new Date(sample.timestamp).getTime() > new Date("2026-08-19T09:14:42+08:00").getTime() &&
         new Date(sample.timestamp).getTime() < new Date("2026-08-19T09:15:26+08:00").getTime()
     );
@@ -299,12 +367,12 @@ describe("synthetic horizon dataset", () => {
     expect(pm27[0]).not.toHaveProperty("rolling_risk_contribution");
     expect(new Date(pm27[1].timestamp).getTime() - new Date(pm27[0].timestamp).getTime()).toBe(1000);
     expect(betweenAnchors.length).toBeGreaterThan(30);
-    expect(new Set(betweenAnchors.map((sample: any) => sample.vehicle_id))).toEqual(new Set(["PM-27"]));
-    expect(betweenAnchors.some((sample: any) => sample.event_anchor_id === null)).toBe(true);
+    expect(new Set(betweenAnchors.map((sample) => sample.vehicle_id))).toEqual(new Set(["PM-27"]));
+    expect(betweenAnchors.some((sample) => sample.event_anchor_id === null)).toBe(true);
   });
 
   it("keeps scenario PM map motion consistent with telemetry speed", () => {
-    const payload = JSON.parse(readFileSync("data/scenario_prime_mover_telemetry/pm27-persistent-high-risk.json", "utf8"));
+    const payload = readJson<ScenarioTelemetryPayload>("data/scenario_prime_mover_telemetry/pm27-persistent-high-risk.json");
     const mapMetersPerUnit = 10;
     const derivedSpeeds: number[] = [];
     const telemetrySpeeds: number[] = [];
@@ -313,8 +381,10 @@ describe("synthetic horizon dataset", () => {
       const previous = payload.samples[index - 1];
       const current = payload.samples[index];
       const elapsedSeconds = (new Date(current.timestamp).getTime() - new Date(previous.timestamp).getTime()) / 1000;
+      expect(previous.position).toBeDefined();
+      expect(current.position).toBeDefined();
       const distanceMeters =
-        Math.hypot(current.position.x - previous.position.x, current.position.y - previous.position.y) * mapMetersPerUnit;
+        Math.hypot(current.position!.x - previous.position!.x, current.position!.y - previous.position!.y) * mapMetersPerUnit;
       derivedSpeeds.push((distanceMeters / elapsedSeconds) * 3.6);
       telemetrySpeeds.push(current.speed);
     }
@@ -326,13 +396,13 @@ describe("synthetic horizon dataset", () => {
   });
 
   it("provides matching dense dynamic zone telemetry for scenarios", () => {
-    const vehiclePayload = JSON.parse(readFileSync("data/scenario_prime_mover_telemetry/pm27-persistent-high-risk.json", "utf8"));
-    const zonePayload = JSON.parse(readFileSync("data/scenario_live_zone_telemetry/pm27-persistent-high-risk.json", "utf8"));
+    const vehiclePayload = readJson<ScenarioTelemetryPayload>("data/scenario_prime_mover_telemetry/pm27-persistent-high-risk.json");
+    const zonePayload = readJson<ScenarioZoneTelemetryPayload>("data/scenario_live_zone_telemetry/pm27-persistent-high-risk.json");
 
     expect(zonePayload.samples).toHaveLength(vehiclePayload.samples.length);
     expect(zonePayload.samples[0].timestamp).toBe(vehiclePayload.samples[0].timestamp);
     expect(zonePayload.samples[1].timestamp).toBe(vehiclePayload.samples[1].timestamp);
-    expect(zonePayload.samples.some((sample: any) => sample.harsh_brake_count_5m > 0)).toBe(true);
-    expect(zonePayload.samples.every((sample: any) => sample.zone_id === "YARD-C4")).toBe(true);
+    expect(zonePayload.samples.some((sample) => sample.harsh_brake_count_5m > 0)).toBe(true);
+    expect(zonePayload.samples.every((sample) => sample.zone_id === "YARD-C4")).toBe(true);
   });
 });

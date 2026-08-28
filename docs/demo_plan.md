@@ -55,25 +55,25 @@ Use 30-60 seconds in the Responsible AI or Human Oversight segment to say: `LLM 
 - Execution trace timeline.
 - Created safety case summary.
 
-## Scripted Trace
+## Scripted Trace Narration
 
 ```text
-09:14:02  PM-27 rolling telemetry event received
-09:14:03  Event normalized to VehicleEvent schema
-09:14:04  Event window updated: sharp-turn and harsh-brake signals are present
-09:14:05  Zone context loaded: high traffic, rain, caution restriction
-09:14:06  Freshness check passed: gps_freshness = fresh
-09:15:26  Telemetry model returned synthetic near-miss risk within next 15m = 0.66
-09:15:27  Top reasons: near-limit speed in rainy high-traffic context, manoeuvre instability, alert density and prior intervention persistence
-09:15:28  Policy decision: High risk, warn driver and notify supervisor
-09:15:28  notify_driver succeeded
-09:15:29  notify_supervisor failed: timeout
-09:15:30  Fallback supervisor notification succeeded
-09:16:05  Reassessment: risk remains persistent high at 0.77
-09:16:08  Agent requested approval for zone advisory
-09:18:30  New telemetry shows risk remains persistent at 0.79
-09:19:10  Supervisor approved advisory
-09:19:11  Safety case SC-1007 created
+09:14:42  event_received: PM-27 sharp_turn event received
+09:14:43  context_enriched: Zone context loaded with latest dynamic telemetry
+09:14:44  features_derived: rolling telemetry and context features updated
+09:14:45  risk_assessed: synthetic near-miss risk within next 15m remains below intervention threshold
+09:15:26  event_received: PM-27 harsh_brake event received
+09:15:29  risk_assessed: synthetic near-miss risk within next 15m = 0.65, High, high confidence
+09:15:30  policy_decision: driver advisory and supervisor notification
+09:15:31  tool_call: notify_driver delivered
+09:15:34  tool_failure: notify_supervisor failed with timeout
+09:15:35  tool_call: fallback_notify_supervisor delivered
+09:16:05  risk_assessed: risk remains High at 0.82 after the earlier response
+09:16:11  approval_requested: approval requested for zone advisory
+09:18:30  risk_assessed: persistent risk remains High at 0.82
+09:18:42  approval_decision: supervisor approved zone advisory
+09:18:44  tool_call: recommend_zone_advisory recommended
+09:18:46  safety_case_created: safety case SC-1007 created
 ```
 
 ## Scripted Scenarios
@@ -116,7 +116,7 @@ Worker daily potential-risk reports are implemented as a Gemini-backed extractio
 
 If asked why the MVP uses tabular `HistGradientBoosting` instead of an LLM, foundation model or temporal transformer, answer:
 
-> The safety signal is structured telemetry, not language. For this MVP we chose tabular gradient boosting because it is lightweight, fast, deterministic to serve locally and easier to explain with feature reasons. The model is decision support; deterministic policy and human approval remain the safety authority.
+> The safety signal is structured telemetry, not language. For this MVP we chose tabular gradient boosting because it is lightweight, fast, deterministic to serve locally and easier to explain with feature reasons. No LLM is called per telemetry tick, which keeps runtime cost and token usage bounded. The model is decision support; deterministic policy and human approval remain the safety authority.
 
 If asked whether NearGuard is really agentic when the policy is deterministic, answer:
 

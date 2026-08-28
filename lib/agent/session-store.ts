@@ -54,16 +54,18 @@ export function approveReplay(approvalId: string, approved: boolean, sessionId?:
   const requestedKey = sessionKey(sessionId);
   const existingState = replayStates.get(requestedKey);
   const matchingSession = Array.from(replayStates.entries()).find(([, state]) =>
-    state.pendingApprovals.some((approval) => approval.approval_id === approvalId)
+    state.pendingApprovals.some((approval) => approval.approval_id === approvalId && approval.status === "pending")
   );
   const approvalSession =
-    existingState?.pendingApprovals.some((approval) => approval.approval_id === approvalId)
+    existingState?.pendingApprovals.some((approval) => approval.approval_id === approvalId && approval.status === "pending")
       ? { key: requestedKey, state: existingState }
       : matchingSession
         ? { key: matchingSession[0], state: matchingSession[1] }
         : null;
-  const key = approvalSession?.key ?? requestedKey;
-  const baseState = approvalSession?.state ?? existingState ?? getReplayState(key);
+  if (!approvalSession) return null;
+
+  const key = approvalSession.key;
+  const baseState = approvalSession.state;
   const replayState = decideApproval(baseState, approvalId, approved);
   replayStates.set(key, replayState);
   return replayState;

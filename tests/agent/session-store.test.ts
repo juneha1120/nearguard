@@ -18,6 +18,8 @@ describe("replay session store", () => {
 
     const approved = approveReplay(approval!.approval_id, true, staleSession);
 
+    expect(approved).not.toBeNull();
+    if (!approved) throw new Error("Expected approval to resolve against the owning session.");
     expect(approved.selectedScenario.scenario_id).toBe("pm27-persistent-high-risk");
     expect(approved.currentEvent?.event_id).toBe("pm27-004");
     expect(approved.safetyCases).toHaveLength(1);

@@ -9,6 +9,7 @@ function resolvedEscalation(caseId: string): ReviewRequest {
     case_id: caseId,
     requested_at: "2026-08-19T09:14:50+08:00",
     reason: "Prior evidence review escalated by a supervisor.",
+    reason_codes: ["ELEVATED_RISK"],
     evidence: ["Prior review evidence."],
     status: "resolved",
     reviewer: "Safety Supervisor",

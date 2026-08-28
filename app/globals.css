@@ -22,8 +22,8 @@
   --ring: rgba(59, 130, 246, 0.3);
   --shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.5);
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: var(--font-plus-jakarta-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), monospace;
 }
 
 * {
@@ -102,6 +102,27 @@ button:disabled {
   backdrop-filter: blur(12px);
   flex: 0 0 auto;
   z-index: 5;
+}
+
+.status-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  width: min(1720px, calc(100% - 16px));
+  margin: 8px auto 0;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.status-banner svg {
+  flex: 0 0 auto;
 }
 
 .brand {
@@ -1754,6 +1775,11 @@ button:disabled {
     align-items: flex-start;
     flex-direction: column;
     min-width: 0;
+  }
+
+  .status-banner {
+    width: calc(100% - 16px);
+    align-items: flex-start;
   }
 
   .controls,

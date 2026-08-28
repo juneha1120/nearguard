@@ -69,8 +69,8 @@ Both prediction artifacts must include `target`, `prediction_horizon` and `asses
       "scenario_id": "pm27-persistent-high-risk",
       "event_id": "pm27-004",
       "assessment": {
-        "synthetic_near_miss_risk_score": 0.77,
-        "safety_incident_risk_score": 0.77,
+        "synthetic_near_miss_risk_score": 0.82,
+        "safety_incident_risk_score": 0.82,
         "prediction_horizon": "15m",
         "evidence_authority": "SYNTHETIC_DATA",
         "risk_band": "High",
@@ -93,11 +93,11 @@ Both prediction artifacts must include `target`, `prediction_horizon` and `asses
       "vehicle_id": "PM-101",
       "zone_id": "YARD-C4",
       "assessment": {
-        "synthetic_near_miss_risk_score": 0.77,
-        "safety_incident_risk_score": 0.77,
+        "synthetic_near_miss_risk_score": 0.12,
+        "safety_incident_risk_score": 0.12,
         "prediction_horizon": "15m",
         "evidence_authority": "SYNTHETIC_DATA",
-        "risk_band": "High",
+        "risk_band": "Low",
         "confidence": "high",
         "uncertainty_reason": null,
         "top_risk_reasons": []
@@ -140,6 +140,18 @@ Both prediction artifacts must include `target`, `prediction_horizon` and `asses
 | `/api/worker-reports/extract` | `POST` | Parse worker report text into structured context using the current Gemini-backed provider. |
 
 `GET /api/live-risk-predictions?sample_id=...` requires `sample_id`. It calls `${NEARGUARD_INFERENCE_URL}/predict/live-sample/{sample_id}` with a short timeout. If the runtime service is unavailable or returns a non-success response, the API returns `502`; it does not fall back to checked-in predictions.
+
+`POST /api/replay/approve` accepts:
+
+```json
+{
+  "approval_id": "approval-case-PM-27",
+  "approved": true,
+  "session_id": "dashboard-session"
+}
+```
+
+`approval_id` is required and must match a pending approval. `approved` is required and must be boolean. Malformed input or an approval ID that does not match a pending approval returns `400`.
 
 `POST /api/worker-reports/extract` accepts:
 
