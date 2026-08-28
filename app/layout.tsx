@@ -22,7 +22,7 @@ const jetBrainsMono = JetBrains_Mono({
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${plusJakartaSans.variable} ${jetBrainsMono.variable}`}>{children}</body>
+      <body className={`${plusJakartaSans.className} ${plusJakartaSans.variable} ${jetBrainsMono.variable}`}>{children}</body>
     </html>
   );
 }

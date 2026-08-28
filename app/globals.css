@@ -22,8 +22,8 @@
   --ring: rgba(59, 130, 246, 0.3);
   --shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.5);
-  --font-sans: var(--font-plus-jakarta-sans), -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: var(--font-jetbrains-mono), monospace;
+  --font-sans: var(--font-plus-jakarta-sans, "Plus Jakarta Sans"), -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: var(--font-jetbrains-mono, "JetBrains Mono"), monospace;
 }
 
 * {
