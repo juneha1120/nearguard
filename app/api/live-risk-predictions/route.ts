@@ -1,5 +1,3 @@
-import { listLivePredictions } from "@/lib/data/repository";
-
 const DEFAULT_INFERENCE_URL = "http://127.0.0.1:8001";
 
 export async function GET(request: Request) {
@@ -21,12 +19,15 @@ export async function GET(request: Request) {
     if (response.ok) {
       return Response.json(await response.json());
     }
-  } catch {
-    // Demo fallback: keep the dashboard live if the optional Python service is not running.
+    return Response.json(
+      { error: `Live inference service failed (${response.status}). Start npm.cmd run model:serve and retry.` },
+      { status: 502 }
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to reach live inference service.";
+    return Response.json(
+      { error: `Live inference service is unavailable. Start npm.cmd run model:serve and retry. ${message}` },
+      { status: 502 }
+    );
   }
-
-  return Response.json({
-    source: "exported_prediction_fallback",
-    predictions: listLivePredictions().filter((prediction) => prediction.sample_id === sampleId)
-  });
 }

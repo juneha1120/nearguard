@@ -21,27 +21,25 @@ py -m pip install -r requirements.txt
 
 ## Environment
 
-The core dashboard, replay flow and exported prediction fallback run without external credentials.
+The core dashboard and replay flow require generated model artifacts. Run model training before starting the app or model service.
 
-Optional worker-report extraction uses Gemini. `GEMINI_API_KEY` is preferred, with `GOOGLE_API_KEY` as a fallback:
+Worker-report extraction is part of the workflow. The implementation uses Gemini for ease of local setup; configure the same values as `.env.example`:
 
 ```text
 GEMINI_API_KEY=
-GOOGLE_API_KEY=
 GEMINI_REPORT_MODEL=gemini-3.1-flash-lite
-LLM_MODEL=
 LLM_REQUEST_TIMEOUT_MS=30000
 ```
 
-`LLM_MODEL` is a fallback for `GEMINI_REPORT_MODEL`; the implementation default is `gemini-2.5-flash`.
+`GEMINI_REPORT_MODEL` is set to `gemini-3.1-flash-lite`. No alternate Gemini API key or model fallback is required.
 
-Optional live model inference uses:
+Live model inference uses:
 
 ```text
 NEARGUARD_INFERENCE_URL=http://127.0.0.1:8001
 ```
 
-If `NEARGUARD_INFERENCE_URL` is unset, the app calls `http://127.0.0.1:8001`. If that service is unavailable, live monitoring stays deterministic by falling back to checked-in exported predictions.
+If `NEARGUARD_INFERENCE_URL` is unset, the app calls `http://127.0.0.1:8001`. Live monitoring predictions require the Python inference service.
 
 ## Generate AI Model Artifacts
 
@@ -56,15 +54,15 @@ This writes:
 - `models/scenario_predictions.json`
 - `models/routine_live_predictions.json`
 
-The web app uses `models/scenario_predictions.json` and `models/routine_live_predictions.json` for reliable scenario replay and routine live monitoring while keeping the trained `.joblib` artifact as the local AI model output.
+The app scripts run `npm run model:check` before startup and fail if these artifacts are missing or invalid. The web app uses `models/scenario_predictions.json` for scenario replay. Live monitoring uses the Python inference service backed by `models/nearguard-risk-model.joblib`; `models/routine_live_predictions.json` is retained as an exported artifact for inspection and model checks.
 
-For live runtime inference, start the optional Python model service:
+For live runtime inference, start the Python model service:
 
 ```powershell
 npm.cmd run model:serve
 ```
 
-The dashboard calls this service once per live telemetry tick. If the service is not running, it falls back to `models/routine_live_predictions.json` so the demo remains deterministic.
+The dashboard calls this service once per live telemetry tick. If the service is unavailable, the live prediction API returns an error instead of using checked-in predictions.
 
 ## Demo Data Layout
 
@@ -87,9 +85,9 @@ Open:
 http://127.0.0.1:3000
 ```
 
-## Optional Worker Report Extraction
+## Worker Report Extraction
 
-`POST /api/worker-reports/extract` parses a plain-language worker safety observation into structured context using Gemini when an API key is configured. This is optional enrichment only: it does not set the final risk score, approve actions or replace deterministic policy and human review.
+`POST /api/worker-reports/extract` parses a plain-language worker safety observation into structured context. Gemini is the current provider for ease of use. Report extraction supports context review only: it does not set the final risk score, approve actions or replace deterministic policy and human review.
 
 ## Verify
 

@@ -23,7 +23,7 @@ export type ReportHazardType =
   | "route_obstruction"
   | "unsafe_manoeuvre"
   | "other";
-export type RiskBand = "Low" | "Medium" | "High" | "Persistent High" | "Critical / Low Confidence";
+export type RiskBand = "Low" | "Medium" | "High" | "Critical";
 export type CaseStatus = "open" | "monitoring" | "pending_approval" | "escalated" | "stabilized" | "closed";
 export type ToolStatus = "pending" | "delivered" | "failed" | "approved" | "rejected" | "created" | "recommended";
 export type ApprovalStatus = "pending" | "approved" | "rejected";
@@ -239,6 +239,22 @@ export interface ToolCall {
   timestamp: string;
 }
 
+export interface ScenarioToolOutcome {
+  event_id: string;
+  tool_name: string;
+  status: ToolStatus;
+  result: string | null;
+  error: string | null;
+  offset_seconds?: number;
+  fallback?: {
+    tool_name: string;
+    status: ToolStatus;
+    result: string | null;
+    error: string | null;
+    offset_seconds?: number;
+  };
+}
+
 export interface ApprovalRequest {
   approval_id: string;
   case_id: string;
@@ -300,6 +316,7 @@ export interface Scenario {
   primary_vehicle_id: string;
   highlights: string[];
   events: VehicleEvent[];
+  tool_outcomes?: ScenarioToolOutcome[];
 }
 
 export interface ScenarioPrediction {

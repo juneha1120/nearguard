@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { assessLiveVehicleNearMissRisk, calculateVehicleInteractionFeatures, calculateZoneOperationalRisk } from "@/lib/model/live-risk";
-import type { LivePrimeMoverSnapshot, LiveTelemetrySample, LiveZoneSnapshot } from "@/lib/types/domain";
+import * as liveRisk from "@/lib/model/live-risk";
+import { calculateVehicleInteractionFeatures, calculateZoneOperationalRisk } from "@/lib/model/live-risk";
+import type { LivePrimeMoverSnapshot, LiveZoneSnapshot } from "@/lib/types/domain";
 
 const zone: LiveZoneSnapshot = {
   zone_id: "YARD-C4",
@@ -81,18 +82,13 @@ describe("live telemetry risk scoring", () => {
       heading_degrees: 90,
       accuracy_m: 5
     };
-    const sample: LiveTelemetrySample = {
-      sample_id: "solo",
-      timestamp: zone.updated_at,
-      zones: [{ ...zone, prime_movers: [target] }]
-    };
 
-    const result = assessLiveVehicleNearMissRisk([sample], sample, sample.zones[0], target);
+    const features = calculateVehicleInteractionFeatures(target, { ...zone, prime_movers: [target] });
 
-    expect(result.features.interaction_features_available).toBe(true);
-    expect(result.features.nearby_vehicle_count_50m).toBe(0);
-    expect(result.assessment.confidence).toBe("high");
-    expect(result.assessment.uncertainty_reason).toBeNull();
+    expect(features.interaction_features_available).toBe(true);
+    expect(features.nearby_vehicle_count_50m).toBe(0);
+    expect(features.nearest_vehicle_distance_m).toBe(999);
+    expect(features.closing_rate_mps).toBe(0);
   });
 
   it("calculates zone operational risk from live telemetry fields", () => {
@@ -112,49 +108,7 @@ describe("live telemetry risk scoring", () => {
     expect(busyRisk).toBeGreaterThan(calmRisk);
   });
 
-  it("continuously assesses vehicle near-miss risk through the live model path", () => {
-    const calmSample: LiveTelemetrySample = {
-      sample_id: "sample-1",
-      timestamp: zone.updated_at,
-      zones: [{ ...zone, prime_movers: [mover] }]
-    };
-    const elevatedZone: LiveZoneSnapshot = {
-      ...zone,
-      updated_at: "2026-08-19T09:14:05+08:00",
-      traffic_pressure: 0.88,
-      weather: "rain",
-      restriction_level: "caution",
-      pedestrian_exposure: "medium",
-      prime_movers: [
-        {
-          ...mover,
-          speed: 34,
-          gps_freshness: "delayed" as const,
-          state: "speeding" as const
-        }
-      ]
-    };
-    const elevatedSample: LiveTelemetrySample = {
-      sample_id: "sample-2",
-      timestamp: elevatedZone.updated_at,
-      zones: [elevatedZone]
-    };
-
-    const normalRisk = assessLiveVehicleNearMissRisk([calmSample], calmSample, zone, mover).assessment.safety_incident_risk_score;
-    const elevatedAssessment = assessLiveVehicleNearMissRisk(
-      [calmSample, elevatedSample],
-      elevatedSample,
-      elevatedZone,
-      elevatedZone.prime_movers[0]
-    );
-
-    expect(normalRisk).toBeGreaterThan(0);
-    expect(elevatedAssessment.assessment.safety_incident_risk_score).toBeGreaterThan(normalRisk);
-    expect(elevatedAssessment.features.speeding_ratio_10m).toBeGreaterThan(0);
-    expect(elevatedAssessment.assessment.prediction_horizon).toBe("15m");
-  });
-
-  it("raises live risk when a nearby Prime Mover is closing on the target", () => {
+  it("calculates closing interaction features when a nearby Prime Mover is closing on the target", () => {
     const target: LivePrimeMoverSnapshot = {
       ...mover,
       speed: 18,
@@ -170,27 +124,16 @@ describe("live telemetry risk scoring", () => {
       heading_degrees: 270,
       accuracy_m: 5
     };
-    const baseSample: LiveTelemetrySample = {
-      sample_id: "base",
-      timestamp: "2026-08-19T09:14:01+08:00",
-      zones: [{ ...zone, prime_movers: [target] }]
-    };
-    const interactionSample: LiveTelemetrySample = {
-      sample_id: "interaction",
-      timestamp: "2026-08-19T09:14:02+08:00",
-      zones: [{ ...zone, prime_movers: [target, closingMover] }]
-    };
 
-    const normalRisk = assessLiveVehicleNearMissRisk([baseSample], baseSample, baseSample.zones[0], target).assessment.safety_incident_risk_score;
-    const interactionAssessment = assessLiveVehicleNearMissRisk(
-      [baseSample, interactionSample],
-      interactionSample,
-      interactionSample.zones[0],
-      target
-    );
+    const features = calculateVehicleInteractionFeatures(target, { ...zone, prime_movers: [target, closingMover] });
 
-    expect(interactionAssessment.features.interaction_features_available).toBe(true);
-    expect(interactionAssessment.assessment.safety_incident_risk_score).toBeGreaterThan(normalRisk);
-    expect(interactionAssessment.assessment.top_risk_reasons.join(" ")).toMatch(/Nearest PM|closing/);
+    expect(features.interaction_features_available).toBe(true);
+    expect(features.nearest_vehicle_distance_m).toBe(16);
+    expect(features.closing_rate_mps).toBeGreaterThan(0);
+  });
+
+  it("does not export a TypeScript live vehicle risk scorer", () => {
+    expect(liveRisk).not.toHaveProperty("assessLiveVehicleNearMissRisk");
+    expect(liveRisk).not.toHaveProperty("predictLiveVehicleNearMissRisk");
   });
 });

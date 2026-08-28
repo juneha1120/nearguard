@@ -1,5 +1,4 @@
 import scenarioPredictionData from "@/models/scenario_predictions.json";
-import livePredictionData from "@/models/routine_live_predictions.json";
 import pm27ScenarioDecisionPoints from "@/data/scenario_decision_points/pm27-persistent-high-risk.json";
 import pptScenarioDecisionPoints from "@/data/scenario_decision_points/ppt-link-slow-down-zone.json";
 import uncertaintyScenarioDecisionPoints from "@/data/scenario_decision_points/telemetry-uncertainty.json";
@@ -19,7 +18,6 @@ import { MAP_METERS_PER_UNIT } from "@/lib/model/live-risk";
 import type {
   LiveTelemetrySample,
   LivePrimeMoverSnapshot,
-  LivePrediction,
   LiveZoneSnapshot,
   Scenario,
   ScenarioPrediction,
@@ -36,7 +34,6 @@ export const scenarios = [
 ] as Scenario[];
 export const zones = zoneData as ZoneRegistryEntry[];
 export const scenarioPredictions = scenarioPredictionData.predictions as ScenarioPrediction[];
-export const livePredictions = livePredictionData.predictions as LivePrediction[];
 
 type RoutinePrimeMoverSnapshot = LivePrimeMoverSnapshot & { zone_id: string };
 
@@ -164,10 +161,6 @@ export function listZones(): ZoneRegistryEntry[] {
 
 export function listLiveTelemetrySamples(): LiveTelemetrySample[] {
   return liveTelemetrySamples;
-}
-
-export function listLivePredictions(): LivePrediction[] {
-  return livePredictions;
 }
 
 export function listScenarioTelemetrySamples(scenarioId: string): ScenarioTelemetrySample[] {

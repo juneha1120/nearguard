@@ -313,12 +313,10 @@ def speed_band(speed_over_limit: float) -> str:
 
 
 def risk_band(score: float, confidence: str, previous_action_taken: bool) -> str:
-    if confidence == "low" and score >= 0.65:
-        return "Critical / Low Confidence"
-    if previous_action_taken and 0.65 <= score <= 0.84:
-        return "Persistent High"
+    _ = confidence
+    _ = previous_action_taken
     if score >= 0.85:
-        return "Critical / Low Confidence"
+        return "Critical"
     if score >= 0.65:
         return "High"
     if score >= 0.4:
@@ -355,42 +353,51 @@ def reasons(features: dict[str, object], confidence: str, uncertainty: str | Non
     loaded_context = float(features["traffic_weather_compound_index"]) >= 0.5
     near_limit_speed = float(features["mean_speed_5m"]) >= float(features["speed_limit"]) * 0.9
     elevated_zone_prior = float(features["zone_historical_risk"]) >= 0.7
+    if features["event_type"] == "speed_normalized" and speed_over <= 0:
+        output.append("Speed normalized below the zone limit.")
+        if features["risk_trend"] == "decreasing":
+            output.append("Risk trend is decreasing.")
+        if features["pedestrian_exposure"] == "high":
+            output.append("Pedestrian-exposure feature is high for this operating area.")
+        elif loaded_context:
+            output.append("Traffic-weather compound risk signal remains in the operating context.")
+        return output[:4]
     if loaded_context and near_limit_speed and elevated_zone_prior:
-        output.append("Speed is staying close to the limit while rain and heavy traffic reduce stopping margin.")
+        output.append("Near-limit speed signal sustained with rain/heavy traffic context.")
     if loaded_context:
         if instability_count > 0:
-            output.append("Recent sharp turn or harsh braking suggests the driver may need more space.")
+            output.append("Sharp-turn/harsh-brake signal detected in the 10-minute driving pattern.")
         else:
-            output.append("Rain and traffic are increasing zone operating pressure.")
+            output.append("Traffic-weather compound risk signal elevated.")
     if float(features["alert_density_30m"]) >= 4:
-        output.append("Alert density is rising across the recent rolling telemetry window.")
+        output.append("Alert-density signal elevated across the 30-minute telemetry window.")
     if features["pedestrian_exposure"] == "high":
-        output.append("Pedestrian exposure is high in this operating area.")
+        output.append("Pedestrian-exposure feature is high for this operating area.")
     if bool(features["post_intervention_noncompliance"]):
-        output.append("Risk remained elevated after a prior intervention signal.")
+        output.append("Post-intervention noncompliance signal remains elevated.")
     if bool(features["interaction_features_available"]):
         if float(features["nearest_vehicle_distance_m"]) <= 50:
-            output.append(f"Nearest PM is {round(float(features['nearest_vehicle_distance_m']))}m away.")
+            output.append(f"Nearest-PM distance feature is {round(float(features['nearest_vehicle_distance_m']))} m.")
         if float(features["closing_rate_mps"]) >= 0.5:
-            output.append(f"Nearby PM is closing at {float(features['closing_rate_mps']):.1f} m/s.")
+            output.append(f"Closing-rate feature is {float(features['closing_rate_mps']):.1f} m/s.")
         if int(features["nearby_vehicle_count_50m"]) >= 2:
-            output.append(f"{features['nearby_vehicle_count_50m']} PMs detected within 50m.")
+            output.append(f"Within-50 m PM count feature is {features['nearby_vehicle_count_50m']}.")
     if instability_count >= 2:
         output.append(
-            f"Recent 10-minute window combines {features['harsh_brake_count_10m']} harsh-brake and {features['sharp_turn_count_10m']} sharp-turn signal(s)."
+            f"10-minute driving pattern combines {features['harsh_brake_count_10m']} harsh-brake and {features['sharp_turn_count_10m']} sharp-turn signal(s)."
         )
     elif int(features["harsh_brake_count_10m"]) > 0:
-        output.append(f"{features['harsh_brake_count_10m']} harsh-braking event(s) occurred within 10 minutes.")
+        output.append(f"10-minute harsh-brake count is {features['harsh_brake_count_10m']}.")
     elif int(features["sharp_turn_count_10m"]) > 0:
-        output.append(f"{features['sharp_turn_count_10m']} sharp-turn event(s) occurred within 10 minutes.")
+        output.append(f"10-minute sharp-turn count is {features['sharp_turn_count_10m']}.")
     if float(features["speeding_ratio_10m"]) >= 0.35:
-        output.append(f"Speed exposure appeared in {round(float(features['speeding_ratio_10m']) * 100)}% of the recent 10-minute window.")
+        output.append(f"Over-limit 10-minute exposure feature is {round(float(features['speeding_ratio_10m']) * 100)}%.")
     elif speed_over > 0:
-        output.append(f"Current speed is {speed_over} km/h above the zone limit.")
+        output.append(f"Speed-over-limit feature is {speed_over} km/h.")
     if confidence == "low" and uncertainty:
-        output.append(f"Confidence is reduced because of {uncertainty}.")
+        output.append(f"Confidence qualifier: {uncertainty}.")
     if not output:
-        output.append("Rolling telemetry remains within expected operating range.")
+        output.append("Current driving-pattern signals remain within expected range.")
     return output[:4]
 
 
@@ -490,10 +497,15 @@ def scenario_features() -> list[dict[str, object]]:
                 "_previous_action_taken": previous_action_taken,
             }
             outputs.append(feature)
-            if event["event_type"] in {"harsh_brake", "speeding", "sharp_turn"}:
+            if event["event_type"] in {"harsh_brake", "speeding"} or (event["event_type"] == "sharp_turn" and speed_over > 0):
                 previous_action_taken = True
                 intervention_time = event_time
-            previous_risk = max(previous_risk, 0.58 if event["event_type"] != "speed_normalized" else 0.22)
+            if event["event_type"] == "speed_normalized":
+                previous_risk = 0.22
+            elif event["event_type"] in {"harsh_brake", "speeding"} or (event["event_type"] == "sharp_turn" and speed_over > 0):
+                previous_risk = max(previous_risk, 0.58)
+            else:
+                previous_risk = max(previous_risk, current_hint)
     return outputs
 
 
@@ -668,7 +680,16 @@ def main() -> None:
     model = Pipeline(
         steps=[
             ("preprocessor", preprocessor),
-            ("classifier", HistGradientBoostingClassifier(random_state=42, max_iter=180)),
+            (
+                "classifier",
+                HistGradientBoostingClassifier(
+                    random_state=42,
+                    max_iter=180,
+                    learning_rate=0.04,
+                    l2_regularization=1.0,
+                    max_leaf_nodes=15,
+                ),
+            ),
         ]
     )
     model.fit(x_train, y_train)
@@ -691,27 +712,8 @@ def main() -> None:
     for feature in scenario_features():
         model_input = pd.DataFrame([{key: feature[key] for key in NUMERIC_FEATURES + CATEGORICAL_FEATURES}])
         score = float(model.predict_proba(model_input)[:, 1].clip(0, 1)[0])
-        if feature["_scenario_id"] == "pm27-persistent-high-risk":
-            scripted_scores = {
-                "pm27-001": 0.34,
-                "pm27-002": 0.52,
-                "pm27-003": 0.66,
-                "pm27-004": 0.77,
-                "pm27-005": 0.79,
-            }
-            score = scripted_scores.get(str(feature["_event_id"]), score)
-        if feature["_scenario_id"] == "ppt-link-slow-down-zone" and feature["_event_id"] == "ppt-003":
-            score = min(score, 0.28)
-        if feature["_scenario_id"] == "wharf-pedestrian-exposure" and feature["_event_id"] == "wharf-002":
-            score = max(score, 0.7)
-        if feature["_scenario_id"] == "wharf-pedestrian-exposure" and feature["_event_id"] == "wharf-003":
-            score = min(score, 0.36)
         confidence, uncertainty = confidence_and_reason(feature, bool(feature["_missing_context"]))
         band = risk_band(score, confidence, bool(feature["_previous_action_taken"]))
-        if feature["_scenario_id"] == "pm27-persistent-high-risk" and feature["_event_id"] == "pm27-003":
-            band = "High"
-        if feature["_scenario_id"] == "pm27-persistent-high-risk" and feature["_event_id"] in {"pm27-004", "pm27-005"}:
-            band = "Persistent High"
         scenario_outputs.append(
             {
                 "scenario_id": feature["_scenario_id"],

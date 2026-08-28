@@ -263,7 +263,7 @@ button:disabled {
   background: transparent;
   color: var(--muted);
   padding: 0 9px;
-  font-size: 12px;
+  font-size: 14.5px;
   font-weight: 700;
   line-height: 1.15;
   transition: all 160ms ease;
@@ -540,8 +540,9 @@ button:disabled {
 
 .zone-live-card:hover {
   border-color: var(--line-strong);
-  box-shadow: var(--shadow);
-  transform: translateY(-1px);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 0 2px rgba(59, 130, 246, 0.12);
 }
 
 .zone-live-card.current {
@@ -552,8 +553,9 @@ button:disabled {
 .zone-live-card.selected-vehicle-zone {
   border-color: #3b82f6;
   background: var(--surface-selected);
-  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.3);
-  transform: translateY(-1px);
+  box-shadow:
+    inset 0 0 0 1px rgba(59, 130, 246, 0.3),
+    0 0 0 2px rgba(59, 130, 246, 0.14);
 }
 
 .zone-live-card.selected-vehicle-zone .zone-live-top strong {
@@ -596,6 +598,22 @@ button:disabled {
   flex: 0 0 auto;
 }
 
+.zone-limit-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.12);
+  color: #bfdbfe;
+  padding: 2px 8px;
+  font-size: 10.5px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
 .risk-meter {
   height: 5px;
   margin: 6px 0;
@@ -624,22 +642,23 @@ button:disabled {
 .zone-live-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: repeat(2, 42px);
+  grid-template-rows: repeat(2, 70px);
   gap: 3px;
 }
 
 .zone-live-grid span {
   display: grid;
   grid-template-rows: auto 1fr;
+  gap: 9px;
   min-height: 0;
   min-width: 0;
   border: 1px solid var(--line);
   border-radius: 6px;
   background: var(--surface-muted);
   overflow: hidden;
-  padding: 4px 5px;
+  padding: 7px 6px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.15;
 }
 
@@ -752,6 +771,8 @@ button:disabled {
 }
 
 .prime-mover-list small {
+  display: flex;
+  justify-content: flex-end;
   color: var(--muted);
   font-size: 10.5px;
   line-height: 1.2;
@@ -797,7 +818,6 @@ button:disabled {
 .state-tag {
   display: inline-flex;
   width: fit-content;
-  margin-left: 6px;
   border-radius: 999px;
   padding: 1px 5px;
   font-size: 9px;
@@ -1056,15 +1076,28 @@ button:disabled {
 .vehicle-signal-panel .panel-header h3 {
   display: inline-flex;
   align-items: center;
+  flex: 1 1 auto;
   gap: 8px;
   min-width: 0;
   line-height: 1.2;
+  white-space: nowrap;
+}
+
+.vehicle-signal-panel .panel-header > .badge {
+  flex: 0 1 auto;
+  max-width: 170px;
+  min-width: 0;
+  padding-inline: 10px;
+  line-height: 1.1;
+  text-align: center;
+  white-space: normal;
 }
 
 .vehicle-signal-selection {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 auto;
   max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1077,6 +1110,7 @@ button:disabled {
   font-weight: 800;
   font-family: var(--font-mono);
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .vehicle-signal-panel .signal-card {
@@ -1147,7 +1181,7 @@ button:disabled {
 .metric-label {
   margin: 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -1164,7 +1198,7 @@ button:disabled {
 
 .section-title {
   margin: 8px 0 2px;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--muted);
   text-transform: uppercase;
@@ -1191,7 +1225,7 @@ button:disabled {
 .kv span {
   display: block;
   color: var(--muted);
-  font-size: 10.5px;
+  font-size: 12px;
 }
 
 .kv strong {
@@ -1240,6 +1274,10 @@ button:disabled {
   overflow-wrap: anywhere;
 }
 
+.panel-body > .tool-row > strong {
+  font-size: 14px;
+}
+
 .task-status-dot {
   width: 8px;
   height: 8px;
@@ -1263,6 +1301,15 @@ button:disabled {
 
 .priority-panel .panel-body {
   padding-top: 12px;
+}
+
+.assessment-action-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.assessment-action-stack .section-title {
+  margin: 4px 0 -6px;
 }
 
 .priority-action {
@@ -1289,7 +1336,7 @@ button:disabled {
   align-items: center;
   gap: 6px;
   color: #60a5fa;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0;
   text-transform: uppercase;

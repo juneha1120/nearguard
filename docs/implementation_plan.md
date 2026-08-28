@@ -12,21 +12,19 @@ MVP+ adds a narrow V2V/V2X interaction-aware risk layer: surrounding Prime Mover
 
 - Web app: Next.js, TypeScript, React and local in-memory state.
 - AI pipeline: Python, pandas, scikit-learn and joblib.
-- Model runtime: pretrained local artifact served by an optional Python inference service for live monitoring, plus exported scenario and routine live predictions for deterministic fallback/demo playback.
-- Storage: checked-in JSON/CSV fixtures and generated artifacts; no database for MVP.
-- External integrations: optional Gemini worker-report extraction only. Notifications, approvals and safety cases are simulated.
+- Model runtime: pretrained local artifact served by the Python inference service for live monitoring, plus exported scenario predictions for deterministic replay.
+- Storage: checked-in JSON fixtures plus generated CSV/model/prediction artifacts; no database for MVP.
+- External integrations: worker-report extraction uses Gemini for ease of local setup. Notifications, approvals and safety cases are simulated.
 
 ## Environment Contract
 
-The deterministic replay and exported prediction fallback require no external credentials. Optional integrations use:
+Use the `.env.example` structure for local configuration:
 
 | Variable | Purpose |
 | --- | --- |
-| `NEARGUARD_INFERENCE_URL` | Optional Python inference service base URL. Defaults to `http://127.0.0.1:8001`. |
-| `GEMINI_API_KEY` | API key for Gemini worker-report extraction. |
-| `GOOGLE_API_KEY` | Fallback API key when `GEMINI_API_KEY` is not set. |
-| `GEMINI_REPORT_MODEL` | Gemini model for worker-report extraction. |
-| `LLM_MODEL` | Fallback model when `GEMINI_REPORT_MODEL` is not set; implementation default is `gemini-2.5-flash`. |
+| `NEARGUARD_INFERENCE_URL` | Python inference service base URL. Defaults to `http://127.0.0.1:8001` when unset. |
+| `GEMINI_API_KEY` | API key for the current Gemini-backed worker-report extraction provider. |
+| `GEMINI_REPORT_MODEL` | Gemini model for worker-report extraction. Current value: `gemini-3.1-flash-lite`. |
 | `LLM_REQUEST_TIMEOUT_MS` | Worker-report extraction timeout. Defaults to 30000ms. |
 
 ## Data And Artifact Contracts
@@ -60,7 +58,7 @@ near_miss_within_next_15m
 
 The target label is a synthetic future outcome, not a direct current-event score.
 
-Both prediction artifacts must include `target`, `prediction_horizon` and `assessment` metadata. Scenario predictions identify replay events; routine live predictions identify telemetry samples and vehicles:
+Both prediction artifacts must include `target`, `prediction_horizon` and `assessment` metadata. Scenario predictions identify replay events; routine live predictions identify telemetry samples and vehicles for artifact inspection only:
 
 ```json
 {
@@ -116,14 +114,14 @@ Both prediction artifacts must include `target`, `prediction_horizon` and `asses
 - The feature aggregator should apply a 10-second reaction window after an intervention signal; unsafe telemetry inside that window is not `post_intervention_noncompliance`.
 - The live feature aggregator should compute same-zone nearby PM count within 50m, nearest PM distance, nearest PM relative speed and closing rate when position data is usable.
 - The risk service should consume exported scenario predictions for replay reliability.
-- Routine Live Monitoring should call the Python runtime inference service for per-tick trained-model scoring and fall back to exported routine live predictions if the optional service is unavailable.
+- Routine Live Monitoring should call the Python runtime inference service for per-tick trained-model scoring. It must not silently use checked-in prediction files as live output.
 - The policy engine should map continuous ML risk scores to intervention thresholds and remain responsible for action class.
 - The tool layer should keep simulated notifications, fallback notification, approval request, zone advisory recommendation and safety case creation.
 - The dashboard should label the score as synthetic near-miss risk within the next 15 minutes and show that deterministic policy/human approval control interventions.
 - The dashboard should separate live zone monitoring, vehicle risk signal and AI assessment timeline: dense PM/zone samples drive visuals, while sparse scenario decision points show when continuous scoring crosses policy thresholds or stabilizes.
 - The dashboard `Reset` control should return to unselected Live Monitoring mode, clearing replay state and scenario telemetry overlays.
 - Scenario zone risk should be calculated from live zone telemetry fields. Do not blend it with vehicle model risk; show Zone Operational Risk separately from continuous Vehicle Near-Miss Risk.
-- Worker report extraction should remain optional enrichment. The Gemini parser may produce `WorkerRiskReport` context fields, but it must not set risk scores, bypass policy or authorize disruptive actions.
+- Worker report extraction is a context-enrichment workflow feature. The current parser uses Gemini for ease of setup and may produce `WorkerRiskReport` context fields, but it must not set risk scores, bypass policy or authorize disruptive actions.
 
 ## API Surface
 
@@ -132,16 +130,16 @@ Both prediction artifacts must include `target`, `prediction_horizon` and `asses
 | `/api/scenarios` | `GET` | List scenario metadata for the dashboard selector. |
 | `/api/zones` | `GET` | Return static zone registry entries. |
 | `/api/live-zone-telemetry` | `GET` | Return loopable routine live zone/Prime Mover telemetry samples. |
-| `/api/live-risk-predictions?sample_id=...` | `GET` | Call the runtime inference service for a live sample, or return exported fallback predictions. |
+| `/api/live-risk-predictions?sample_id=...` | `GET` | Call the runtime inference service for a live sample. |
 | `/api/scenario-telemetry?scenario_id=...` | `GET` | Return dense scenario Prime Mover telemetry for visual playback. |
 | `/api/scenario-zone-telemetry?scenario_id=...` | `GET` | Return dense scenario zone telemetry aligned to playback. |
 | `/api/replay/start` | `POST` | Start or reset a replay session for a selected scenario. |
 | `/api/replay/step` | `POST` | Advance to the next decision-point event. |
 | `/api/replay/previous` | `POST` | Rewind to the previous decision-point event while preserving completed approvals and safety cases. |
 | `/api/replay/approve` | `POST` | Record approval or rejection of a pending intervention. |
-| `/api/worker-reports/extract` | `POST` | Parse optional worker report text into structured context using Gemini. |
+| `/api/worker-reports/extract` | `POST` | Parse worker report text into structured context using the current Gemini-backed provider. |
 
-`GET /api/live-risk-predictions?sample_id=...` requires `sample_id`. It calls `${NEARGUARD_INFERENCE_URL}/predict/live-sample/{sample_id}` with a short timeout. If the Python service is not running or does not return a successful response, the route returns `source = exported_prediction_fallback` from `models/routine_live_predictions.json`.
+`GET /api/live-risk-predictions?sample_id=...` requires `sample_id`. It calls `${NEARGUARD_INFERENCE_URL}/predict/live-sample/{sample_id}` with a short timeout. If the runtime service is unavailable or returns a non-success response, the API returns `502`; it does not fall back to checked-in predictions.
 
 `POST /api/worker-reports/extract` accepts:
 
@@ -158,7 +156,7 @@ Both prediction artifacts must include `target`, `prediction_horizon` and `asses
 
 - `RiskAssessment`: model evidence for a case and timestamp, including `safety_incident_risk_score`, `prediction_horizon = 15m`, `evidence_authority = SYNTHETIC_DATA`, `risk_band`, confidence, uncertainty and reasons.
 - `DerivedFeatures`: current, rolling, context, operational-history and V2V features. V2V fields include `nearby_vehicle_count_50m`, `nearest_vehicle_distance_m`, `nearest_vehicle_relative_speed_kmh`, `closing_rate_mps` and `interaction_features_available`.
-- `WorkerRiskReport`: optional LLM-derived report record with source/model metadata, extracted context and confidence.
+- `WorkerRiskReport`: LLM-derived report record with source/model metadata, extracted context and confidence.
 - `WorkerReportExtractedContext`: structured hazard/context fields extracted from worker text; usable only as reviewed enrichment, not action authority.
 
 ## AI Training Pipeline
@@ -171,7 +169,8 @@ Both prediction artifacts must include `target`, `prediction_horizon` and `asses
 6. Exclude `intervention_contaminated_window=true` rows from default MVP training and record the excluded row count in metrics.
 7. Train a scikit-learn `HistGradientBoostingClassifier`.
 8. Export the model artifact, basic holdout metrics, deterministic scenario predictions and deterministic routine live predictions.
-9. Preserve clear language: the output is synthetic risk evidence, not PSA production probability.
+9. Run `npm run model:check` before app or service startup so missing or invalid generated artifacts fail fast.
+10. Preserve clear language: the output is synthetic risk evidence, not PSA production probability.
 
 ## Future Retraining Loop
 
@@ -207,6 +206,7 @@ Production roadmap items should remain explicit: richer topology-aware multi-veh
 Run:
 
 - `npm run model:train`
+- `npm run model:check`
 - `npm run model:serve`
 - `npm run lint`
 - `npm test`
@@ -223,4 +223,4 @@ Required test coverage:
 - low-confidence inputs trigger human review
 - disruptive intervention still requires approval
 - tool failure is logged and followed by fallback/escalation
-- worker report extraction sends constrained Gemini prompts, normalizes unknown values, supports provider/model fallbacks and fails visibly when credentials are absent
+- worker report extraction sends constrained prompts through the current Gemini provider, normalizes unknown values and fails visibly when credentials are absent

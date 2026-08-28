@@ -1,7 +1,7 @@
 {
   "scenario_id": "ppt-link-slow-down-zone",
   "name": "PPT Link Slow Down Zone",
-  "description": "Continuous scoring detects PM-14 crossing the advisory threshold in a 25 km/h slow-down zone, then lowers the vehicle risk after speed normalizes.",
+  "description": "Continuous scoring detects PM-14 building a repeated over-limit pattern through a high-traffic slow-down link, then lowers the vehicle risk after speed normalizes.",
   "primary_vehicle_id": "PM-14",
   "highlights": [
     "slow-down zone",
@@ -15,7 +15,7 @@
       "vehicle_id": "PM-14",
       "zone_id": "PPT-LINK-25",
       "event_type": "normal_update",
-      "speed": 22,
+      "speed": 23,
       "speed_limit": 25,
       "gps_freshness": "fresh",
       "position": {
@@ -26,12 +26,28 @@
       "accuracy_m": 5
     },
     {
+      "event_id": "ppt-001b",
+      "timestamp": "2026-08-19T10:02:35+08:00",
+      "vehicle_id": "PM-14",
+      "zone_id": "PPT-LINK-25",
+      "event_type": "normal_update",
+      "speed": 28,
+      "speed_limit": 25,
+      "gps_freshness": "fresh",
+      "position": {
+        "x": 85,
+        "y": 33.99
+      },
+      "heading_degrees": 180,
+      "accuracy_m": 5
+    },
+    {
       "event_id": "ppt-002",
       "timestamp": "2026-08-19T10:03:15+08:00",
       "vehicle_id": "PM-14",
       "zone_id": "PPT-LINK-25",
       "event_type": "speeding",
-      "speed": 34,
+      "speed": 32,
       "speed_limit": 25,
       "gps_freshness": "fresh",
       "position": {

@@ -1,4 +1,4 @@
-import type { ApprovalRequest, RiskAssessment, SafetyCase, ToolCall, VehicleCase, VehicleEvent } from "@/lib/types/domain";
+import type { ApprovalRequest, RiskAssessment, SafetyCase, ScenarioToolOutcome, ToolCall, VehicleCase, VehicleEvent } from "@/lib/types/domain";
 
 let toolCounter = 0;
 
@@ -7,19 +7,24 @@ function nextToolId() {
   return `tool-${toolCounter.toString().padStart(4, "0")}`;
 }
 
+function addSeconds(timestamp: string, seconds: number) {
+  return new Date(new Date(timestamp).getTime() + seconds * 1000).toISOString();
+}
+
 export function resetToolCounter() {
   toolCounter = 0;
 }
 
 export function simulateTool(
   toolName: string,
-  scenarioId: string,
+  scenarioToolOutcomes: ScenarioToolOutcome[] | undefined,
   vehicleCase: VehicleCase,
   event: VehicleEvent,
   assessment: RiskAssessment,
   existingToolCalls: ToolCall[]
 ): ToolCall[] {
-  const timestamp = event.timestamp;
+  const defaultOffset = toolName === "notify_driver" ? 5 : toolName === "request_human_approval" ? 6 : 6;
+  const timestamp = addSeconds(event.timestamp, defaultOffset);
   const base = {
     tool_call_id: nextToolId(),
     case_id: vehicleCase.case_id,
@@ -32,27 +37,35 @@ export function simulateTool(
     timestamp
   };
 
-  if (
-    scenarioId === "pm27-persistent-high-risk" &&
-    toolName === "notify_supervisor" &&
-    !existingToolCalls.some((call) => call.tool_name === "notify_supervisor" && call.status === "failed")
-  ) {
+  const scriptedOutcome = scenarioToolOutcomes?.find(
+    (outcome) =>
+      outcome.event_id === event.event_id &&
+      outcome.tool_name === toolName &&
+      !existingToolCalls.some((call) => call.tool_name === outcome.tool_name && call.timestamp === addSeconds(event.timestamp, outcome.offset_seconds ?? defaultOffset))
+  );
+
+  if (scriptedOutcome) {
+    const scriptedCall: ToolCall = {
+      ...base,
+      status: scriptedOutcome.status,
+      result: scriptedOutcome.result,
+      error: scriptedOutcome.error,
+      timestamp: addSeconds(event.timestamp, scriptedOutcome.offset_seconds ?? defaultOffset)
+    };
+
+    if (!scriptedOutcome.fallback) return [scriptedCall];
+
     return [
+      scriptedCall,
       {
         ...base,
-        status: "failed",
-        result: null,
-        error: "timeout"
-      },
-      {
         tool_call_id: nextToolId(),
-        case_id: vehicleCase.case_id,
-        tool_name: "fallback_notify_supervisor",
+        tool_name: scriptedOutcome.fallback.tool_name,
         arguments: base.arguments,
-        status: "delivered",
-        result: "Fallback supervisor notification delivered.",
-        error: null,
-        timestamp
+        status: scriptedOutcome.fallback.status,
+        result: scriptedOutcome.fallback.result,
+        error: scriptedOutcome.fallback.error,
+        timestamp: addSeconds(event.timestamp, scriptedOutcome.fallback.offset_seconds ?? defaultOffset + 1)
       }
     ];
   }
@@ -90,7 +103,7 @@ export function createApprovalRequest(vehicleCase: VehicleCase, assessment: Risk
   };
 }
 
-export function createSafetyCase(vehicleCase: VehicleCase, assessment: RiskAssessment, evidence: string[]): SafetyCase {
+export function createSafetyCase(vehicleCase: VehicleCase, assessment: RiskAssessment, evidence: string[], createdAt = new Date().toISOString()): SafetyCase {
   return {
     safety_case_id: "SC-1007",
     case_id: vehicleCase.case_id,
@@ -99,7 +112,7 @@ export function createSafetyCase(vehicleCase: VehicleCase, assessment: RiskAsses
       `Latest risk score ${assessment.safety_incident_risk_score.toFixed(2)} (${assessment.risk_band}).`,
       ...evidence
     ],
-    created_at: new Date().toISOString(),
+    created_at: createdAt,
     status: "created"
   };
 }

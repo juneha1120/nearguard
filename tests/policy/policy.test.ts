@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { decidePolicy } from "@/lib/policy/policy";
 import type { RiskAssessment } from "@/lib/types/domain";
 
-function assessment(risk_band: RiskAssessment["risk_band"]): RiskAssessment {
+function assessment(risk_band: RiskAssessment["risk_band"], overrides: Partial<RiskAssessment> = {}): RiskAssessment {
   return {
     assessment_id: "risk-1",
     case_id: "case-PM-27",
@@ -13,13 +13,27 @@ function assessment(risk_band: RiskAssessment["risk_band"]): RiskAssessment {
     confidence: "high",
     uncertainty_reason: null,
     top_risk_reasons: ["reason"],
-    created_at: "2026-08-19T09:14:02+08:00"
+    created_at: "2026-08-19T09:14:02+08:00",
+    ...overrides
   };
 }
 
 describe("policy engine", () => {
   it("keeps disruptive actions behind approval", () => {
-    const decision = decidePolicy(assessment("Persistent High"));
+    const decision = decidePolicy(assessment("High"), {
+      case_id: "case-PM-27",
+      vehicle_id: "PM-27",
+      status: "monitoring",
+      current_risk: 0.7,
+      previous_risk: 0.66,
+      confidence: "high",
+      risk_reasons: ["reason"],
+      recommended_action: "Driver advisory and supervisor notification sent.",
+      authority_class: "Supervisor report required",
+      pending_approval: false,
+      created_at: "2026-08-19T09:14:02+08:00",
+      updated_at: "2026-08-19T09:15:26+08:00"
+    });
     expect(decision.shouldRequestApproval).toBe(true);
     expect(decision.authorityClass).toBe("Human approval required");
     expect(decision.toolNames).toContain("request_human_approval");
@@ -32,7 +46,7 @@ describe("policy engine", () => {
   });
 
   it("escalates critical or low-confidence high risk to human review", () => {
-    const decision = decidePolicy(assessment("Critical / Low Confidence"));
+    const decision = decidePolicy(assessment("High", { confidence: "low" }));
     expect(decision.authorityClass).toBe("Urgent escalation required");
     expect(decision.toolNames).toEqual(["notify_supervisor"]);
   });

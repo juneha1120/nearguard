@@ -45,8 +45,7 @@ export function bandClass(band?: RiskBand) {
   if (!band) return "neutral";
   if (band === "Low") return "low";
   if (band === "Medium") return "medium";
-  if (band === "Persistent High") return "persistent";
-  if (band === "Critical / Low Confidence") return "critical";
+  if (band === "Critical") return "critical";
   return "high";
 }
 
@@ -328,19 +327,77 @@ export function liveModelAssessment(prediction: LivePrediction): LiveModelAssess
 
 export function operationsRiskReason(reason: string) {
   if (reason.startsWith("Near-limit speed is persisting")) {
-    return "Speed is staying close to the limit while rain and heavy traffic reduce stopping margin.";
+    return "Near-limit speed signal sustained with rain/heavy traffic context.";
   }
   if (reason.startsWith("Manoeuvre instability is adding risk")) {
-    return "Recent sharp turn or harsh braking suggests the driver may need more space.";
+    return "Sharp-turn/harsh-brake signal detected in the 10-minute driving pattern.";
+  }
+  if (reason === "Speed is staying close to the limit while rain and heavy traffic reduce stopping margin.") {
+    return "Near-limit speed signal sustained with rain/heavy traffic context.";
+  }
+  if (reason === "Recent sharp turn or harsh braking suggests the driver may need more space.") {
+    return "Sharp-turn/harsh-brake signal detected in the 10-minute driving pattern.";
+  }
+  const harshBrakeMatch = reason.match(/^(\d+) harsh-braking event\(s\) occurred within 10 minutes\.$/);
+  if (harshBrakeMatch) {
+    return `10-minute harsh-brake count is ${harshBrakeMatch[1]}.`;
+  }
+  const sharpTurnMatch = reason.match(/^(\d+) sharp-turn event\(s\) occurred within 10 minutes\.$/);
+  if (sharpTurnMatch) {
+    return `10-minute sharp-turn count is ${sharpTurnMatch[1]}.`;
+  }
+  const nearestPmMatch = reason.match(/^Nearest PM is (\d+)m away\.$/);
+  if (nearestPmMatch) {
+    return `Nearest-PM distance feature is ${nearestPmMatch[1]} m.`;
+  }
+  const closingRateMatch = reason.match(/^Nearby PM is closing at ([\d.]+) m\/s\.$/);
+  if (closingRateMatch) {
+    return `Closing-rate feature is ${closingRateMatch[1]} m/s.`;
+  }
+  const pmCountMatch = reason.match(/^(\d+) PMs detected within 50m\.$/);
+  if (pmCountMatch) {
+    return `Within-50 m PM count feature is ${pmCountMatch[1]}.`;
+  }
+  const speedExposureMatch = reason.match(/^Speed exposure appeared in (\d+)% of the recent 10-minute window\.$/);
+  if (speedExposureMatch) {
+    return `Over-limit 10-minute exposure feature is ${speedExposureMatch[1]}%.`;
+  }
+  const speedOverMatch = reason.match(/^Current speed is (\d+) km\/h above the zone limit\.$/);
+  if (speedOverMatch) {
+    return `Speed-over-limit feature is ${speedOverMatch[1]} km/h.`;
   }
   if (reason.startsWith("Traffic and weather compound") || reason.startsWith("Traffic and weather combine")) {
-    return "Rain and traffic are increasing zone operating pressure.";
+    return "Traffic-weather compound risk signal elevated.";
+  }
+  if (reason === "Rain and traffic are increasing zone operating pressure.") {
+    return "Traffic-weather compound risk signal elevated.";
   }
   if (reason === "Zone context increases exposure risk.") {
-    return "This zone has added exposure from restrictions or pedestrian movement.";
+    return "Zone-rule/pedestrian-exposure feature is elevated.";
+  }
+  if (reason === "This zone has added exposure from restrictions or pedestrian movement.") {
+    return "Zone-rule/pedestrian-exposure feature is elevated.";
+  }
+  if (reason === "Pedestrian exposure is high in this operating area.") {
+    return "Pedestrian-exposure feature is high for this operating area.";
+  }
+  if (reason === "Alert density is rising across the recent rolling telemetry window.") {
+    return "Alert-density signal elevated across the 30-minute telemetry window.";
   }
   if (reason === "Rolling window contains manoeuvre instability signals.") {
-    return "Recent movement includes sharp turns or harsh braking.";
+    return "Recent driving pattern contains sharp-turn/harsh-brake signals.";
+  }
+  if (reason === "Recent movement includes sharp turns or harsh braking.") {
+    return "Recent driving pattern contains sharp-turn/harsh-brake signals.";
+  }
+  if (reason === "Telemetry quality reduces location confidence.") {
+    return "GPS freshness feature is degraded.";
+  }
+  if (reason === "Rolling risk trend is increasing.") {
+    return "Risk-trend feature is increasing.";
+  }
+  if (reason === "Rolling telemetry remains within expected operating range." || reason === "Current rolling telemetry remains within the monitoring envelope.") {
+    return "Current driving-pattern signals remain within expected range.";
   }
   return reason;
 }
@@ -358,10 +415,25 @@ export function explainAction(
     };
   }
 
+  if (assessment.risk_band === "Low") {
+    const recoveryReasons = assessment.top_risk_reasons
+      .filter((reason) => reason.startsWith("Speed normalized") || reason.startsWith("Risk trend is decreasing"))
+      .map(operationsRiskReason);
+
+    return {
+      title: selectedCase.recommended_action,
+      rationale: [
+        `Risk remains Low; score ${assessment.safety_incident_risk_score.toFixed(2)}; confidence ${assessment.confidence}.`,
+        ...(recoveryReasons.length ? recoveryReasons : ["Signals are being logged, but remain below the intervention threshold."])
+      ].slice(0, 3),
+      statusClass: bandClass(assessment.risk_band)
+    };
+  }
+
   return {
     title: pendingApproval ? "Zone advisory approval requested." : selectedCase.recommended_action,
     rationale: [
-      `${assessment.risk_band} risk at ${assessment.safety_incident_risk_score.toFixed(2)} with ${assessment.confidence} confidence.`,
+      `Risk band ${assessment.risk_band}; score ${assessment.safety_incident_risk_score.toFixed(2)}; confidence ${assessment.confidence}.`,
       ...assessment.top_risk_reasons.slice(0, 3).map(operationsRiskReason)
     ],
     statusClass: bandClass(assessment.risk_band)
@@ -379,12 +451,14 @@ export function toolRationale(tool: ToolCall, assessment: RiskAssessment | null)
 }
 
 export function toolLabel(toolName: string) {
-  if (toolName === "notify_driver") return "Driver advisory";
-  if (toolName === "notify_supervisor") return "Supervisor notification";
-  if (toolName === "fallback_notify_supervisor") return "Fallback supervisor notification";
-  if (toolName === "request_human_approval") return "Approval request";
-  if (toolName === "recommend_zone_advisory") return "Zone advisory";
-  return toolName.replaceAll("_", " ");
+  if (toolName === "notify_driver") return "Driver Advisory";
+  if (toolName === "notify_supervisor") return "Supervisor Notification";
+  if (toolName === "fallback_notify_supervisor") return "Fallback Supervisor Notification";
+  if (toolName === "request_human_approval") return "Approval Request";
+  if (toolName === "recommend_zone_advisory") return "Zone Advisory";
+  return toolName
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
 export function traceLabel(eventType: TraceEvent["event_type"]) {
@@ -398,9 +472,9 @@ export function traceLabel(eventType: TraceEvent["event_type"]) {
     case "context_missing":
       return "Context Warning";
     case "features_derived":
-      return "Derived Features";
+      return "Derived Risk Signals";
     case "risk_assessed":
-      return "Risk Assessment";
+      return "AI Assessment";
     case "policy_decision":
       return "Policy Decision";
     case "tool_call":

@@ -1,7 +1,7 @@
 import type { WorkerReportExtractedContext, WorkerRiskReport, ZoneRegistryEntry } from "@/lib/types/domain";
 
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models";
-const DEFAULT_GEMINI_REPORT_MODEL = "gemini-2.5-flash";
+const DEFAULT_GEMINI_REPORT_MODEL = "gemini-3.1-flash-lite";
 const DEFAULT_REPORT_TIMEOUT_MS = 30000;
 
 interface ReportExtraction {
@@ -192,12 +192,12 @@ export async function extractWorkerRiskReportWithGemini({
   zones: ZoneRegistryEntry[];
   fetchImpl?: typeof fetch;
 }): Promise<WorkerRiskReport> {
-  const apiKey = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured.");
   }
 
-  const model = process.env.GEMINI_REPORT_MODEL ?? process.env.LLM_MODEL ?? DEFAULT_GEMINI_REPORT_MODEL;
+  const model = process.env.GEMINI_REPORT_MODEL ?? DEFAULT_GEMINI_REPORT_MODEL;
   const timeoutMs = reportTimeoutMs();
   const response = await fetchImpl(`${GEMINI_API_URL}/${encodeURIComponent(model)}:generateContent`, {
     method: "POST",

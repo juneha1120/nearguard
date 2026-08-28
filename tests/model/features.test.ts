@@ -36,7 +36,7 @@ describe("derived features", () => {
     expect(speedOverLimitBand(21)).toBe("severe");
   });
 
-  it("counts recent harsh brakes and sharp turns for the same vehicle", () => {
+  it("counts current-window harsh brakes and sharp turns for the same vehicle", () => {
     const event: VehicleEvent = {
       event_id: "pm27-003",
       timestamp: "2026-08-19T09:15:26+08:00",
@@ -56,7 +56,25 @@ describe("derived features", () => {
 
     expect(features.speed_over_limit).toBe(4);
     expect(features.speed_over_limit_band).toBe("minor");
-    expect(features.recent_harsh_brake_count_10m).toBe(1);
+    expect(features.recent_harsh_brake_count_10m).toBe(2);
+    expect(features.recent_sharp_turn_count_10m).toBe(1);
+  });
+
+  it("includes the current sharp turn in the 10-minute driving pattern", () => {
+    const event: VehicleEvent = {
+      event_id: "pm27-002",
+      timestamp: "2026-08-19T09:14:42+08:00",
+      vehicle_id: "PM-27",
+      zone_id: "YARD-C4",
+      event_type: "sharp_turn",
+      speed: 24,
+      speed_limit: 25,
+      gps_freshness: "fresh"
+    };
+
+    const features = deriveFeatures(event, zone, [], vehicleCase);
+
+    expect(features.sharp_turn_count_10m).toBe(1);
     expect(features.recent_sharp_turn_count_10m).toBe(1);
   });
 

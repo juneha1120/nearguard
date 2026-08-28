@@ -11,6 +11,23 @@
     "approval",
     "safety case"
   ],
+  "tool_outcomes": [
+    {
+      "event_id": "pm27-003",
+      "tool_name": "notify_supervisor",
+      "status": "failed",
+      "result": null,
+      "error": "timeout",
+      "offset_seconds": 8,
+      "fallback": {
+        "tool_name": "fallback_notify_supervisor",
+        "status": "delivered",
+        "result": "Fallback supervisor notification delivered.",
+        "error": null,
+        "offset_seconds": 9
+      }
+    }
+  ],
   "events": [
     {
       "event_id": "pm27-001",

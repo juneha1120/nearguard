@@ -110,7 +110,7 @@ Expected behaviour:
 
 ## Worker Report Mention
 
-Worker daily potential-risk reports are implemented as an optional Gemini-backed extraction endpoint, not the PM-27 core loop. In the pitch, present this as a side demo or extension: worker-written safety observations can be parsed into structured zone or vehicle context, but the MVP remains telematics-first and no report directly triggers disruptive action without policy checks and human approval.
+Worker daily potential-risk reports are implemented as a Gemini-backed extraction endpoint for ease of setup, not as the risk-scoring authority. In the pitch, present this as a context-enrichment workflow: worker-written safety observations can be parsed into structured zone or vehicle context, but the MVP remains telematics-first and no report directly triggers disruptive action without policy checks and human approval.
 
 ## Judge Question Defenses
 

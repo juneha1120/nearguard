@@ -40,8 +40,20 @@ export function previousReplay(sessionId?: string) {
 }
 
 export function approveReplay(approvalId: string, approved: boolean, sessionId?: string) {
-  const key = sessionKey(sessionId);
-  const replayState = decideApproval(getReplayState(key), approvalId, approved);
+  const requestedKey = sessionKey(sessionId);
+  const existingState = replayStates.get(requestedKey);
+  const matchingSession = Array.from(replayStates.entries()).find(([, state]) =>
+    state.pendingApprovals.some((approval) => approval.approval_id === approvalId)
+  );
+  const approvalSession =
+    existingState?.pendingApprovals.some((approval) => approval.approval_id === approvalId)
+      ? { key: requestedKey, state: existingState }
+      : matchingSession
+        ? { key: matchingSession[0], state: matchingSession[1] }
+        : null;
+  const key = approvalSession?.key ?? requestedKey;
+  const baseState = approvalSession?.state ?? existingState ?? getReplayState(key);
+  const replayState = decideApproval(baseState, approvalId, approved);
   replayStates.set(key, replayState);
   return replayState;
 }

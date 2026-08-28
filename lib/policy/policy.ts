@@ -14,7 +14,34 @@ export interface PolicyDecision {
   nextStatus: VehicleCase["status"];
 }
 
-export function decidePolicy(assessment: RiskAssessment): PolicyDecision {
+export function decidePolicy(assessment: RiskAssessment, currentCase?: VehicleCase): PolicyDecision {
+  const isCritical = assessment.safety_incident_risk_score >= 0.85;
+  const isLowConfidenceHighRisk = assessment.confidence === "low" && assessment.safety_incident_risk_score >= 0.65;
+  const isPersistentHighRisk =
+    assessment.risk_band === "High" && Boolean(currentCase && currentCase.current_risk >= 0.65);
+
+  if (isCritical || isLowConfidenceHighRisk) {
+    return {
+      recommendedAction: "Supervisor review request sent.",
+      authorityClass: "Urgent escalation required",
+      toolNames: ["notify_supervisor"],
+      shouldRequestApproval: false,
+      shouldCreateSafetyCase: false,
+      nextStatus: "escalated"
+    };
+  }
+
+  if (isPersistentHighRisk) {
+    return {
+      recommendedAction: "Zone advisory approval requested.",
+      authorityClass: "Human approval required",
+      toolNames: ["request_human_approval"],
+      shouldRequestApproval: true,
+      shouldCreateSafetyCase: false,
+      nextStatus: "pending_approval"
+    };
+  }
+
   switch (assessment.risk_band) {
     case "Low":
       return {
@@ -43,16 +70,7 @@ export function decidePolicy(assessment: RiskAssessment): PolicyDecision {
         shouldCreateSafetyCase: false,
         nextStatus: "monitoring"
       };
-    case "Persistent High":
-      return {
-        recommendedAction: "Zone advisory approval requested.",
-        authorityClass: "Human approval required",
-        toolNames: ["request_human_approval"],
-        shouldRequestApproval: true,
-        shouldCreateSafetyCase: false,
-        nextStatus: "pending_approval"
-      };
-    case "Critical / Low Confidence":
+    case "Critical":
       return {
         recommendedAction: "Supervisor review request sent.",
         authorityClass: "Urgent escalation required",

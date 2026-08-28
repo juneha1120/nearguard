@@ -36,7 +36,7 @@ const report: WorkerRiskReport = {
   description: "Poor visibility and workers crossing near the wharf.",
   extraction_confidence: "high",
   extraction_source: "gemini_generate_content",
-  model: "gemini-2.5-flash",
+  model: "gemini-3.1-flash-lite",
   extracted_context: {
     hazard_type: "visibility_issue",
     zone_id: "WHARF-A1",

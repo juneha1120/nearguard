@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { listLivePredictions, listLiveTelemetrySamples } from "@/lib/data/repository";
+import { listLiveTelemetrySamples } from "@/lib/data/repository";
 
 function csvRows() {
   const [headerLine, ...lines] = readFileSync("data/synthetic_training_data.csv", "utf8").trim().split(/\r?\n/);
@@ -13,6 +13,11 @@ function csvRows() {
 
 function average(values: number[]) {
   return values.reduce((total, value) => total + value, 0) / Math.max(values.length, 1);
+}
+
+function percentile(values: number[], percentileValue: number) {
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * percentileValue))] ?? 0;
 }
 
 describe("synthetic horizon dataset", () => {
@@ -58,20 +63,65 @@ describe("synthetic horizon dataset", () => {
     expect(prediction.assessment.evidence_authority).toBe("SYNTHETIC_DATA");
   });
 
-  it("exports trained-model predictions for routine live monitoring", () => {
+  it("exports trained-model predictions for model artifact inspection", () => {
     const payload = JSON.parse(readFileSync("models/routine_live_predictions.json", "utf8"));
     const prediction = payload.predictions[0];
 
     expect(payload.target).toBe("near_miss_within_next_15m");
     expect(payload.prediction_horizon).toBe("15m");
     expect(payload.predictions.length).toBeGreaterThan(1000);
-    expect(listLivePredictions()).toHaveLength(payload.predictions.length);
     expect(prediction).toHaveProperty("sample_id");
     expect(prediction).toHaveProperty("vehicle_id");
     expect(prediction).toHaveProperty("zone_id");
     expect(prediction.features).toHaveProperty("nearby_vehicle_count_50m");
     expect(prediction.assessment.prediction_horizon).toBe("15m");
     expect(prediction.assessment.evidence_authority).toBe("SYNTHETIC_DATA");
+  });
+
+  it("keeps routine live model artifacts at baseline Low risk", () => {
+    const payload = JSON.parse(readFileSync("models/routine_live_predictions.json", "utf8"));
+    const nonLowPredictions = payload.predictions.filter((prediction: any) => prediction.assessment.risk_band !== "Low");
+    const scores = payload.predictions.map((prediction: any) => prediction.assessment.safety_incident_risk_score);
+
+    expect(nonLowPredictions).toEqual([]);
+    expect(percentile(scores, 0.5)).toBeGreaterThanOrEqual(0.02);
+    expect(percentile(scores, 0.95)).toBeLessThan(0.18);
+    expect(Math.max(...scores)).toBeLessThan(0.4);
+  });
+
+  it("includes negative routine-like baseline rows in the training dataset", () => {
+    const rows = csvRows();
+    const baselineRows = rows.filter((row) => row.label_source === "SYNTHETIC_ROUTINE_LIVE_BASELINE");
+    const baselineLatentRisks = baselineRows.map((row) => Number(row.latent_synthetic_risk));
+
+    expect(baselineRows.length).toBeGreaterThan(1000);
+    expect(baselineRows.every((row) => row.near_miss_within_next_15m === "0")).toBe(true);
+    expect(baselineRows.some((row) => row.slow_down_zone_active === "True")).toBe(true);
+    expect(baselineRows.some((row) => row.restriction_level === "wharf")).toBe(true);
+    expect(baselineRows.some((row) => row.pedestrian_exposure === "high")).toBe(true);
+    expect(Math.min(...baselineLatentRisks)).toBeGreaterThanOrEqual(0.03);
+    expect(Math.max(...baselineLatentRisks)).toBeLessThanOrEqual(0.15);
+  });
+
+  it("adds adjacent low-signal variation without labeling routine baselines as unsafe", () => {
+    const rows = csvRows();
+    const baselineRows = rows.filter((row) => row.label_source === "SYNTHETIC_ROUTINE_LIVE_BASELINE");
+    const boundaryRows = rows.filter((row) => row.label_source === "SYNTHETIC_ROUTINE_LOW_SIGNAL_BOUNDARY");
+    const calibratedDistributionRows = rows.filter(
+      (row) => row.label_source === "SYNTHETIC_ROUTINE_LOW_SIGNAL_DISTRIBUTION_CALIBRATION"
+    );
+    const nearMissBoundaryRows = rows.filter(
+      (row) => row.label_source === "SYNTHETIC_ROUTINE_LOW_SIGNAL_NEAR_MISS_BOUNDARY"
+    );
+    const boundaryNegativeRows = boundaryRows.filter((row) => row.near_miss_within_next_15m === "0");
+
+    expect(baselineRows.every((row) => row.near_miss_within_next_15m === "0")).toBe(true);
+    expect(calibratedDistributionRows.length).toBeGreaterThan(nearMissBoundaryRows.length);
+    expect(calibratedDistributionRows.every((row) => row.near_miss_within_next_15m === "0")).toBe(true);
+    expect(nearMissBoundaryRows.every((row) => row.near_miss_within_next_15m === "1")).toBe(true);
+    expect(nearMissBoundaryRows.every((row) => row.matched_normal_window === "False")).toBe(true);
+    expect(boundaryNegativeRows.some((row) => row.slow_down_zone_active === "True")).toBe(true);
+    expect(boundaryNegativeRows.some((row) => row.nearest_vehicle_distance_m !== "999.0")).toBe(true);
   });
 
   it("exports contaminated-row exclusion counts in model metrics", () => {
@@ -100,16 +150,46 @@ describe("synthetic horizon dataset", () => {
     expect(wharfExposureRisk!).toBeGreaterThan(wharfStabilizedRisk!);
   });
 
+  it("learns High risk for compound intervention scenarios without scenario score overrides", () => {
+    const payload = JSON.parse(readFileSync("models/scenario_predictions.json", "utf8"));
+    const pm27Intervention = payload.predictions.find((item: any) => item.event_id === "pm27-003");
+    const wharfExposure = payload.predictions.find((item: any) => item.event_id === "wharf-002");
+    const telemetryUncertainty = payload.predictions.find((item: any) => item.event_id === "uncertain-001");
+    const trainingScript = readFileSync("scripts/train_model.py", "utf8");
+    const replayScript = readFileSync("lib/agent/replay.ts", "utf8");
+
+    expect(pm27Intervention.assessment.risk_band).toBe("High");
+    expect(wharfExposure.assessment.risk_band).toBe("High");
+    expect(telemetryUncertainty.assessment.risk_band).toBe("High");
+    expect(trainingScript).not.toMatch(/scripted_scores/);
+    expect(trainingScript).not.toMatch(/score = max\(score/);
+    expect(trainingScript).not.toMatch(/score = min\(score/);
+    expect(trainingScript).not.toMatch(/band = "High"/);
+    expect(replayScript).not.toMatch(/Math\.max\(prediction\.assessment\.safety_incident_risk_score/);
+  });
+
+  it("keeps the PPT slow-down-zone advisory aligned with the model score", () => {
+    const payload = JSON.parse(readFileSync("models/scenario_predictions.json", "utf8"));
+    const pptAdvisory = payload.predictions.find((item: any) => item.event_id === "ppt-002");
+    const pptStabilized = payload.predictions.find((item: any) => item.event_id === "ppt-003");
+
+    expect(pptAdvisory.assessment.safety_incident_risk_score).toBeGreaterThanOrEqual(0.4);
+    expect(pptAdvisory.assessment.safety_incident_risk_score).toBeLessThan(0.65);
+    expect(pptAdvisory.assessment.risk_band).toBe("Medium");
+    expect(pptStabilized.assessment.risk_band).toBe("Low");
+    expect(pptStabilized.assessment.top_risk_reasons[0]).toBe("Speed normalized below the zone limit.");
+  });
+
   it("frames the primary demo as compound telemetry risk instead of a speeding-only alert", () => {
     const payload = JSON.parse(readFileSync("models/scenario_predictions.json", "utf8"));
     const pm27 = payload.predictions.find((item: any) => item.event_id === "pm27-003");
 
     expect(pm27.features.speeding_ratio_10m).toBeLessThan(0.35);
     expect(pm27.assessment.top_risk_reasons[0]).toBe(
-      "Speed is staying close to the limit while rain and heavy traffic reduce stopping margin."
+      "Near-limit speed signal sustained with rain/heavy traffic context."
     );
     expect(pm27.assessment.top_risk_reasons[1]).toBe(
-      "Recent sharp turn or harsh braking suggests the driver may need more space."
+      "Sharp-turn/harsh-brake signal detected in the 10-minute driving pattern."
     );
     expect(pm27.assessment.top_risk_reasons.join(" ")).not.toMatch(/Speeding occurred/);
   });

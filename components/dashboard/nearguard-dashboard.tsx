@@ -55,7 +55,7 @@ import {
   type ScenarioMetadata,
   type ZoneRiskCard
 } from "@/components/dashboard/dashboard-utils";
-import { calculateZoneOperationalRisk, assessLiveVehicleNearMissRisk } from "@/lib/model/live-risk";
+import { calculateZoneOperationalRisk } from "@/lib/model/live-risk";
 import {
   applyWorkerReportToLiveSample,
   describeWorkerReportInfluence,
@@ -88,13 +88,12 @@ export function NearGuardDashboard() {
   const [rightPanelView, setRightPanelView] = useState<"assessment" | "report">("assessment");
   const [assessmentTab, setAssessmentTab] = useState<"action" | "timeline">("action");
   const [selectedLiveVehicleId, setSelectedLiveVehicleId] = useState<string | null>(null);
-  const [reportDescription, setReportDescription] = useState(
-    "Near the wharf, visibility around the container stack is poor and workers are crossing often."
-  );
+  const [reportDescription, setReportDescription] = useState("");
   const [workerReport, setWorkerReport] = useState<WorkerRiskReport | null>(null);
   const [isWorkerReportResolved, setIsWorkerReportResolved] = useState(false);
   const [isExtractingReport, setIsExtractingReport] = useState(false);
   const [reportExtractionError, setReportExtractionError] = useState<string | null>(null);
+  const replaySessionIdRef = useRef(`dashboard-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`);
   const replayRequestRef = useRef(0);
   const timerRef = useRef<number | null>(null);
   const liveTimerRef = useRef<number | null>(null);
@@ -106,7 +105,7 @@ export function NearGuardDashboard() {
     const response = await fetch("/api/replay/start", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ scenario_id: id })
+      body: JSON.stringify({ scenario_id: id, session_id: replaySessionIdRef.current })
     });
     const nextState = (await response.json()) as ReplayState;
     if (requestId !== replayRequestRef.current) return;
@@ -143,12 +142,16 @@ export function NearGuardDashboard() {
 
   async function step() {
     setIsPlaying(false);
-    const response = await fetch("/api/replay/step", { method: "POST" });
+    const response = await fetch("/api/replay/step", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: replaySessionIdRef.current })
+    });
     const nextState = (await response.json()) as ReplayState;
     setState(nextState);
-    if (nextState.currentEvent) {
-      setScenarioClockMs(new Date(nextState.currentEvent.timestamp).getTime());
-    }
+    const latestTrace = nextState.traceEvents.at(-1);
+    const latestScenarioTime = latestTrace?.timestamp ?? nextState.currentEvent?.timestamp ?? null;
+    if (latestScenarioTime) setScenarioClockMs(new Date(latestScenarioTime).getTime());
     if (nextState.isComplete) {
       setIsPlaying(false);
     }
@@ -156,7 +159,11 @@ export function NearGuardDashboard() {
 
   async function previous() {
     setIsPlaying(false);
-    const response = await fetch("/api/replay/previous", { method: "POST" });
+    const response = await fetch("/api/replay/previous", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: replaySessionIdRef.current })
+    });
     const nextState = (await response.json()) as ReplayState;
     setState(nextState);
     if (nextState.currentEvent) {
@@ -170,9 +177,20 @@ export function NearGuardDashboard() {
     const response = await fetch("/api/replay/approve", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ approval_id: approvalId, approved })
+      body: JSON.stringify({ approval_id: approvalId, approved, session_id: replaySessionIdRef.current })
     });
-    setState(await response.json());
+    const nextState = (await response.json()) as ReplayState;
+    setState(nextState);
+    const latestTrace = nextState.traceEvents.at(-1);
+    const latestScenarioTime = latestTrace?.timestamp ?? nextState.currentEvent?.timestamp ?? null;
+    if (latestScenarioTime) setScenarioClockMs(new Date(latestScenarioTime).getTime());
+    setIsPlaying(false);
+    if (nextState.isComplete) {
+      setIsPlaying(false);
+    }
+    if (approved) {
+      setAssessmentTab("timeline");
+    }
   }
 
   async function extractWorkerReport() {
@@ -299,7 +317,7 @@ export function NearGuardDashboard() {
         });
       })
       .catch(() => {
-        // The API route falls back to exported predictions; keep the previous tick if even that fails.
+        // Keep the previous tick if the required live inference service is unavailable.
       });
 
     return () => {
@@ -450,43 +468,53 @@ export function NearGuardDashboard() {
     if (isScenarioMode || !selectedLiveVehicle) return null;
     return latestLivePredictionByVehicle.get(selectedLiveVehicle.mover.vehicle_id) ?? null;
   }, [isScenarioMode, latestLivePredictionByVehicle, selectedLiveVehicle]);
-  const reportAdjustedLiveAssessment = useMemo(() => {
-    if (isScenarioMode || !activeWorkerReport || activeWorkerReport.extraction_confidence === "low" || !selectedLiveVehicle || !liveSignalSample) return null;
-    if (activeWorkerReport.zone_id && activeWorkerReport.zone_id !== selectedLiveVehicle.liveZone.zone_id) return null;
-    if (activeWorkerReport.vehicle_id && activeWorkerReport.vehicle_id !== selectedLiveVehicle.mover.vehicle_id) return null;
-    return assessLiveVehicleNearMissRisk(
-      [liveSignalSample],
-      liveSignalSample,
-      selectedLiveVehicle.liveZone,
-      selectedLiveVehicle.mover,
-      selectedLiveVehicle.zone
-    );
-  }, [activeWorkerReport, isScenarioMode, liveSignalSample, selectedLiveVehicle]);
   const liveVehicleAssessment = useMemo(() => {
-    if (reportAdjustedLiveAssessment) return reportAdjustedLiveAssessment;
     if (!liveVehiclePrediction) return null;
     return liveModelAssessment(liveVehiclePrediction);
-  }, [liveVehiclePrediction, reportAdjustedLiveAssessment]);
+  }, [liveVehiclePrediction]);
   const pendingApproval = state?.pendingApprovals.find((approval) => approval.status === "pending") ?? null;
+  const currentDecisionWindow = useMemo(() => {
+    if (!state || !currentEvent) return null;
+    const currentEventTime = new Date(currentEvent.timestamp).getTime();
+    const currentEventIndex = state.selectedScenario.events.findIndex((event) => event.event_id === currentEvent.event_id);
+    const nextDecisionEvent = state.selectedScenario.events.slice(currentEventIndex + 1).find(isDecisionPointEvent);
+    const nextDecisionTime = nextDecisionEvent ? new Date(nextDecisionEvent.timestamp).getTime() : Number.POSITIVE_INFINITY;
+
+    return { currentEventTime, nextDecisionTime };
+  }, [currentEvent, state]);
+  const currentDecisionToolCalls = useMemo(() => {
+    if (!state || !currentDecisionWindow) return [];
+
+    return state.toolCalls
+      .filter((tool) => {
+        const toolTime = new Date(tool.timestamp).getTime();
+        return toolTime >= currentDecisionWindow.currentEventTime && toolTime < currentDecisionWindow.nextDecisionTime;
+      })
+      .slice(-3);
+  }, [currentDecisionWindow, state]);
+  const accumulatedDecisionTraceEvents = useMemo(() => {
+    if (!state || !currentDecisionWindow) return [];
+
+    return state.traceEvents.filter((trace) => {
+      const traceTime = new Date(trace.timestamp).getTime();
+      return traceTime < currentDecisionWindow.nextDecisionTime;
+    });
+  }, [currentDecisionWindow, state]);
   const hasIntervention = Boolean(
     pendingApproval ||
-      state?.toolCalls.length ||
+      currentDecisionToolCalls.length ||
       (latestAssessment && ["High", "Persistent High", "Critical / Low Confidence"].includes(latestAssessment.risk_band))
   );
   const actionExplanation = useMemo(
     () => explainAction(selectedCase, latestAssessment, pendingApproval),
     [latestAssessment, pendingApproval, selectedCase]
   );
-  const latestDriverAdvisory =
-    state?.toolCalls
-      .slice()
-      .reverse()
-      .find((tool) => tool.tool_name === "notify_driver" && tool.status === "delivered") ?? null;
-  const assessmentStatusCopy = pendingApproval ? "Approval" : latestDriverAdvisory ? "Advisory sent" : selectedCase?.authority_class ?? "Idle";
+  const currentDecisionDriverAdvisory = currentDecisionToolCalls.find((tool) => tool.tool_name === "notify_driver" && tool.status === "delivered") ?? null;
+  const assessmentStatusCopy = pendingApproval ? "Approval" : currentDecisionDriverAdvisory ? "Advisory sent" : selectedCase?.authority_class ?? "Idle";
   const safetyCase = state?.safetyCases.at(-1) ?? null;
   const decisionTimeline = useMemo(
-    () => buildDecisionTimeline(state?.traceEvents ?? [], latestAssessment, currentEvent),
-    [currentEvent, latestAssessment, state?.traceEvents]
+    () => buildDecisionTimeline(accumulatedDecisionTraceEvents, latestAssessment, currentEvent),
+    [accumulatedDecisionTraceEvents, currentEvent, latestAssessment]
   );
   const signalUsesLiveVehicle = Boolean(liveVehicleAssessment);
   const signalVehicleId = currentEvent?.vehicle_id ?? selectedLiveVehicle?.mover.vehicle_id ?? "--";
@@ -627,6 +655,8 @@ export function NearGuardDashboard() {
                   const isSelectedVehicleZone =
                     Boolean(selectedLiveVehicleId) &&
                     Boolean(card.live?.prime_movers.some((mover) => mover.vehicle_id === selectedLiveVehicleId));
+                  const speedLimits = [...new Set((card.live?.prime_movers ?? []).map((mover) => mover.speed_limit))];
+                  const speedLimitLabel = speedLimits.length === 1 ? `Limit ${speedLimits[0]} km/h` : speedLimits.length > 1 ? "Mixed limits" : null;
 
                   return (
                     <article
@@ -639,10 +669,11 @@ export function NearGuardDashboard() {
                       <div>
                         <strong>{card.zone.zone_name}</strong>
                         <p className="small muted">
-                          {card.zone.zone_id} - {card.live?.active_prime_movers ?? 0} PMs
+                          {card.zone.zone_id} - {card.live?.active_prime_movers ?? 0} Prime Movers
                         </p>
                       </div>
                       <div className="zone-badge-stack">
+                        {speedLimitLabel ? <span className="zone-limit-badge">{speedLimitLabel}</span> : null}
                         {isReportEnrichedZone ? (
                           <span className="badge report">
                             <Sparkles size={13} /> Report enriched
@@ -665,7 +696,7 @@ export function NearGuardDashboard() {
                         Weather <strong>{card.live ? card.live.weather.replace("_", " ") : "--"}</strong>
                       </span>
                       <span className={restrictionSeverityClass(card.live?.restriction_level)}>
-                        Restriction <strong>{card.live?.restriction_level ?? "--"}</strong>
+                        Zone Rule <strong>{card.live?.restriction_level ?? "--"}</strong>
                       </span>
                       <span className={trafficSeverityClass(card.live?.pedestrian_exposure)}>
                         Pedestrian <strong>{card.live?.pedestrian_exposure ?? "--"}</strong>
@@ -704,7 +735,6 @@ export function NearGuardDashboard() {
                               <span>{mover.vehicle_id}</span>
                               <strong>{mover.speed} km/h</strong>
                               <small>
-                                limit {mover.speed_limit} km/h
                                 <em className={`state-tag ${eventSignalClass(mover.state)}`}>{mover.state}</em>
                               </small>
                             </button>
@@ -771,14 +801,14 @@ export function NearGuardDashboard() {
                 </div>
               </div>
 
-              <h3 className="section-title">Rolling Features</h3>
+              <h3 className="section-title">Recent Driving Pattern</h3>
               <div className="kv-grid compact rolling-feature-grid">
                 <div className={`kv signal-card ${speedSeverityClass(signalFeatures?.speed, signalFeatures?.speed_limit)}`}>
                   <span>Over Limit</span>
                   <strong>{signalFeatures ? `${signalFeatures.speed_over_limit} km/h` : "--"}</strong>
                 </div>
                 <div className={`kv signal-card ${scoreSeverityClass(signalFeatures?.speeding_ratio_10m)}`}>
-                  <span>Exposure 10m</span>
+                  <span>Over-limit 10 min</span>
                   <strong>{signalFeatures ? `${Math.round(signalFeatures.speeding_ratio_10m * 100)}%` : "--"}</strong>
                 </div>
                 <div className={`kv signal-card ${countSeverityClass(signalFeatures?.recent_harsh_brake_count_10m)}`}>
@@ -790,11 +820,11 @@ export function NearGuardDashboard() {
                   <strong>{signalFeatures?.recent_sharp_turn_count_10m ?? "--"}</strong>
                 </div>
                 <div className={`kv signal-card ${restrictionSeverityClass(signalFeatures?.restriction_level)}`}>
-                  <span>Restriction</span>
+                  <span>Zone Rule</span>
                   <strong>{signalFeatures?.restriction_level ?? "--"}</strong>
                 </div>
                 <div className={`kv signal-card ${trendSeverityClass(signalFeatures?.risk_trend)}`}>
-                  <span>Trend</span>
+                  <span>Risk Trend</span>
                   <strong>{signalFeatures?.risk_trend ?? "--"}</strong>
                 </div>
               </div>
@@ -809,11 +839,11 @@ export function NearGuardDashboard() {
                 >
                   <span>Nearest PM</span>
                   <strong>
-                    {signalFeatures?.interaction_features_available ? `${Math.round(signalFeatures.nearest_vehicle_distance_m)}m` : "--"}
+                    {signalFeatures?.interaction_features_available ? `${Math.round(signalFeatures.nearest_vehicle_distance_m)} m` : "--"}
                   </strong>
                 </div>
                 <div className={`kv signal-card ${countSeverityClass(signalFeatures?.nearby_vehicle_count_50m)}`}>
-                  <span>Within 50m</span>
+                  <span>Within 50 m</span>
                   <strong>{signalFeatures?.interaction_features_available ? signalFeatures.nearby_vehicle_count_50m : "--"}</strong>
                 </div>
                 <div
@@ -849,7 +879,7 @@ export function NearGuardDashboard() {
                   onClick={() => setRightPanelView("assessment")}
                   type="button"
                 >
-                  Risk Assessment
+                  AI Assessment
                 </button>
                 <button className={rightPanelView === "report" ? "active" : ""} onClick={() => setRightPanelView("report")} type="button">
                   Report Intelligence
@@ -862,7 +892,7 @@ export function NearGuardDashboard() {
                   <span>{isScenarioMode ? "Scenario" : "Mode"}</span>
                   <strong>{state?.selectedScenario.name ?? "Live monitoring"}</strong>
                 </div>
-                <div className="tab-bar" role="tablist" aria-label="Risk assessment details">
+                <div className="tab-bar" role="tablist" aria-label="AI assessment details">
                   <button className={assessmentTab === "action" ? "active" : ""} onClick={() => setAssessmentTab("action")} type="button">
                     Action
                   </button>
@@ -874,12 +904,12 @@ export function NearGuardDashboard() {
             ) : null}
             <div className="panel-body">
               {rightPanelView === "assessment" && assessmentTab === "action" ? (
-                <>
+                <div className="assessment-action-stack">
                   <div className="priority-action">
                     <div className="tool-row">
                       <div className="ai-card-kicker">
                         <Cpu size={14} />
-                        <span>Model Risk Evaluation</span>
+                        <span>Model Risk Signal</span>
                       </div>
                       <span className={`badge ${actionExplanation.statusClass}`}>
                         <FastForward size={14} />
@@ -925,12 +955,12 @@ export function NearGuardDashboard() {
                     ))}
                   </ul>
 
-                  <h3 className="section-title">Agent-Coordinated Actions</h3>
-                  {!state?.toolCalls.length ? (
-                    <div className="empty compact-empty">No tools called yet.</div>
+                  <h3 className="section-title">Action Log</h3>
+                  {!currentDecisionToolCalls.length ? (
+                    <div className="empty compact-empty">No actions for this decision.</div>
                   ) : (
                     <ul className="tool-list rationale-tools">
-                      {state.toolCalls.slice(-3).map((tool) => (
+                      {currentDecisionToolCalls.map((tool) => (
                         <li className="task-row" key={tool.tool_call_id}>
                           <div className="tool-row">
                             <strong>
@@ -947,7 +977,7 @@ export function NearGuardDashboard() {
                       ))}
                     </ul>
                   )}
-                </>
+                </div>
               ) : null}
 
               {rightPanelView === "report" ? (
@@ -962,7 +992,7 @@ export function NearGuardDashboard() {
                       id="worker-report-description"
                       value={reportDescription}
                       onChange={(event) => setReportDescription(event.target.value)}
-                      placeholder="e.g. Near wharf 3, visibility around container stack is poor and workers are crossing often."
+                      placeholder="Describe location, hazard, people/vehicles involved, conditions, and severity."
                       rows={4}
                     />
                     <button
@@ -1058,7 +1088,7 @@ export function NearGuardDashboard() {
               {rightPanelView === "assessment" && assessmentTab === "timeline" ? (
                 <>
                   <div className="tool-row">
-                    <strong>Decision & Action Timeline</strong>
+                    <strong>Decision Timeline</strong>
                     <span className="badge neutral">
                       <Layers size={13} />
                       {decisionTimeline.length > 0 ? `${decisionTimeline.length} entries` : "monitoring"}

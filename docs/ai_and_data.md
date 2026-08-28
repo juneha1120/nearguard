@@ -14,6 +14,7 @@ NearGuard uses synthetic data because real PSA production telemetry, reviewed ne
 - Preserve label provenance using `label_source`, `review_status` and `matched_normal_window`.
 - Keep scripted replay scenarios deterministic for demo reliability.
 - Use fixed random seeds for reproducible generated data and model artifacts.
+- Treat generated model artifacts as required runtime inputs; app and service startup should fail if they are missing or invalid.
 - Keep public PSA context and prototype assumptions separate.
 - Do not represent any generated event as a real PSA event, real driver behaviour or real incident record.
 
@@ -52,9 +53,9 @@ The MVP is synthetic, but each field still has a defined role. This avoids mixin
 | Scenario live zone telemetry | Scenario-specific live zone operating state aligned to replay. | `data/scenario_live_zone_telemetry/{scenario}.json` | Weather, yard traffic, access control, telemetry aggregation, approved pedestrian-density source. | Seconds to minutes. |
 | Scenario Prime Mover telemetry | Scenario-specific Prime Mover movement and data quality. | `data/scenario_prime_mover_telemetry/{scenario}.json` | Telematics, GPS/RTLS, vehicle system events. | Seconds. |
 | Derived features | Rolling windows and engineered context. | `scripts/train_model.py`, `lib/model/features.ts` | Feature service using approved window definitions. | Per evaluation snapshot. |
-| Worker report extraction | Optional LLM-derived context from worker-written observations. | `POST /api/worker-reports/extract` using Gemini when configured. | Reviewed worker reports or approved reporting systems. | On report submission. |
+| Worker report extraction | LLM-derived context from worker-written observations. | `POST /api/worker-reports/extract` using Gemini for ease of local setup. | Reviewed worker reports or approved reporting systems. | On report submission. |
 | Labels | Future outcome used for training. | Synthetic latent process in generated CSV. | Safety-reviewed incident or near-miss labels plus matched normal windows. | Batch dataset rebuild. |
-| Model output | Per-PM risk evidence. | `models/scenario_predictions.json`, `models/routine_live_predictions.json` and `.joblib` artifact. | Versioned approved model service or artifact. | Per event/snapshot. |
+| Model output | Per-PM risk evidence. | `models/scenario_predictions.json` for replay and `.joblib` served by the Python inference service for live monitoring. `models/routine_live_predictions.json` is retained for artifact inspection. | Versioned approved model service or artifact. | Per event/snapshot. |
 
 `VehicleEvent` remains the sparse decision-evidence replay input:
 
@@ -78,7 +79,7 @@ The MVP is synthetic, but each field still has a defined role. This avoids mixin
 | --- | --- |
 | `traffic_level`, `weather`, `restriction_level`, `slow_down_zone_active`, `pedestrian_exposure` | Dynamic operating-context fields. During scenario replay, the feature path overlays these fields from `data/scenario_live_zone_telemetry/{scenario}.json` before feature derivation. In production, the feature service should consume the latest approved operating-context stream. |
 
-`WorkerRiskReport` is optional LLM-derived context, not telemetry and not a label:
+`WorkerRiskReport` is LLM-derived context, not telemetry and not a label:
 
 | Field | Notes |
 | --- | --- |
@@ -110,7 +111,7 @@ The dashboard uses four checked-in demo data layers:
 | Scenario decision points | `data/scenario_decision_points/{scenario}.json` | Sparse threshold-relevant assessment anchors consumed by replay, risk assessment, policy and tool simulation. |
 | Scenario Prime Mover stream | `data/scenario_prime_mover_telemetry/{scenario}.json` | Dense 1-second primary Prime Mover telemetry for visual scenario playback between decision points. |
 | Scenario live zone stream | `data/scenario_live_zone_telemetry/{scenario}.json` | Dense 1-second dynamic zone risk/context telemetry aligned to the selected scenario. |
-| Model prediction artifacts | `models/scenario_predictions.json`, `models/routine_live_predictions.json` | Deterministic trained-model outputs used by scenario replay and routine live monitoring. |
+| Model prediction artifacts | `models/scenario_predictions.json`, `models/routine_live_predictions.json` | Deterministic trained-model outputs used for scenario replay and artifact inspection. Live monitoring uses the Python inference service. |
 
 Dense scenario telemetry is presentation/demo input. It makes the dashboard feel continuous; sparse decision points show when continuous scoring crosses a policy threshold or records stabilization.
 
@@ -121,11 +122,11 @@ Runtime risk terms are intentionally separate:
 | Zone Operational Risk | Dashboard risk value calculated from live zone telemetry fields such as traffic pressure, speed compliance, GPS quality, recent harsh-brake/sharp-turn counts, weather, restrictions and pedestrian exposure. It is not the vehicle ML model output. |
 | Vehicle Near-Miss Risk | Continuous trained-model assessment from Prime Mover telemetry, rolling-window features and current zone context. Routine monitoring calls the Python runtime inference service when available and falls back to exported predictions for demo reliability; scenario replay uses exported scenario predictions for repeatability. |
 | `safety_incident_risk_score` | ML model output: per-PM rolling synthetic near-miss risk assessment within the next 15 minutes. This score updates continuously, while interventions are opened only when policy thresholds are crossed. |
-| `risk_band` | Deterministic banding from model score, confidence and prior action state; policy thresholds use this band to decide intervention class. |
+| `risk_band` | Deterministic severity band from model score only: Low, Medium, High or Critical. Confidence and persistence are shown separately so the vehicle signal stays standardized across scenarios. |
 
 Live Monitoring calculates Zone Operational Risk from zone telemetry, then requests runtime trained-model inference for Vehicle Near-Miss Risk on each live telemetry tick. During scenario replay, dense scenario PM/zone telemetry keeps the display continuous while replay decision points use exported trained-model predictions for policy thresholds. The dashboard does not blend zone telemetry risk with vehicle model risk.
 
-Worker-report extraction is a separate optional enrichment path. The Gemini prompt requires exactly one delimited response line, asks the model to choose `zone_id` from known zones, uses the literal `unknown` for unavailable fields, limits operational notes and feature-impact hints, and normalizes unknown values to `null`. Descriptions shorter than 12 characters are downgraded to low confidence. Extracted context may support reviewed operating context later, but it cannot directly set `safety_incident_risk_score`, override confidence rules or authorize an intervention.
+Worker-report extraction is a separate context-enrichment path. The current implementation uses Gemini for ease of setup; the provider choice is not part of the safety claim. The prompt requires exactly one delimited response line, asks the model to choose `zone_id` from known zones, uses the literal `unknown` for unavailable fields, limits operational notes and feature-impact hints, and normalizes unknown values to `null`. Descriptions shorter than 12 characters are downgraded to low confidence. Extracted context may support reviewed operating context later, but it cannot directly set `safety_incident_risk_score`, override confidence rules or authorize an intervention.
 
 ## Rolling Features
 
@@ -211,9 +212,9 @@ The MVP trains a local scikit-learn tabular classifier:
 - Model: `HistGradientBoostingClassifier`.
 - Target: `near_miss_within_next_15m`.
 - Output: synthetic near-miss risk score, risk band, confidence, reasons, `prediction_horizon = 15m`, `evidence_authority = SYNTHETIC_DATA`.
-- Runtime: checked-in model artifact served by an optional Python inference service for live monitoring, plus exported scenario and routine live predictions for deterministic fallback/demo playback.
+- Runtime: checked-in model artifact served by the Python inference service for live monitoring, plus exported scenario predictions for deterministic replay.
 
-`data/synthetic_training_data.csv` is the model training/evaluation table. It is not the dashboard replay stream. Replay uses `data/scenario_decision_points/{scenario}.json` for decision-point anchors plus scenario-specific dense telemetry JSON for visual continuity; routine live monitoring uses the routine telemetry JSON and calls the runtime model service when available, with `models/routine_live_predictions.json` as a deterministic fallback.
+`data/synthetic_training_data.csv` is the model training/evaluation table. It is not the dashboard replay stream. Replay uses `data/scenario_decision_points/{scenario}.json` for decision-point anchors plus scenario-specific dense telemetry JSON for visual continuity; routine live monitoring uses the routine telemetry JSON and calls the runtime model service. `models/routine_live_predictions.json` is retained only as an exported model-check artifact, not as a live runtime source. `npm run model:check` enforces that generated artifacts exist before the app or model service starts.
 
 `HistGradientBoostingClassifier` is a decision-tree-family gradient boosting model. It does not react to one isolated event as a single rule. It learns from engineered rolling-window features and context so the MVP can demonstrate how weak signals combine over time.
 

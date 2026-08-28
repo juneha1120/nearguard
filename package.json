@@ -3,14 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "npm run model:check && next dev",
+    "build": "npm run model:check && next build",
+    "start": "npm run model:check && next start",
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "model:check": "node scripts/check_model_artifacts.mjs",
     "model:train": "python scripts/train_model.py",
-    "model:serve": "python scripts/inference_service.py"
+    "model:serve": "npm run model:check && python scripts/inference_service.py"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

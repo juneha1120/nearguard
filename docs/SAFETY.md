@@ -26,7 +26,7 @@ NearGuard separates evidence sources:
 | --- | --- |
 | Synthetic telemetry model score | `SYNTHETIC_DATA` |
 | Public PSA safety context | Public source context only |
-| Worker report extraction | Optional LLM-derived context only |
+| Worker report extraction | LLM-derived context only |
 | Policy thresholds and rule weights | Representative prototype assumptions |
 | Human approval in demo | Simulated approval |
 
@@ -40,7 +40,7 @@ Reaction-window and intervention-contamination handling are MVP-level bias contr
 
 Real-time vehicle-person interaction risk is not part of the MVP authority path. A future version may add deterministic distance, TTC, trajectory conflict and stopping-margin calculations only if approved person-position data is available.
 
-Optional Gemini worker-report extraction is not a safety authority. Missing API keys, extraction timeouts, provider errors and low-confidence extracted context must remain visible and must not be treated as resolved risk. Extracted context can support review or later enrichment only after deterministic policy and human oversight boundaries are preserved.
+Gemini-backed worker-report extraction is not a safety authority. Gemini is the current provider for ease of setup; another approved provider could fill the same bounded extraction role. Missing API keys, extraction timeouts, provider errors and low-confidence extracted context must remain visible and must not be treated as resolved risk. Extracted context can support review or later enrichment only after deterministic policy and human oversight boundaries are preserved.
 
 ## Production Validation Gate
 

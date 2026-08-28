@@ -11,12 +11,10 @@ const zones: ZoneRegistryEntry[] = [
 ];
 
 const originalGeminiApiKey = process.env.GEMINI_API_KEY;
-const originalGoogleApiKey = process.env.GOOGLE_API_KEY;
 const originalGeminiModel = process.env.GEMINI_REPORT_MODEL;
 
 afterEach(() => {
   process.env.GEMINI_API_KEY = originalGeminiApiKey;
-  process.env.GOOGLE_API_KEY = originalGoogleApiKey;
   process.env.GEMINI_REPORT_MODEL = originalGeminiModel;
 });
 
@@ -144,7 +142,6 @@ describe("worker report extraction", () => {
 
   it("fails before calling the network when GEMINI_API_KEY is missing", async () => {
     delete process.env.GEMINI_API_KEY;
-    delete process.env.GOOGLE_API_KEY;
     let called = false;
 
     await expect(

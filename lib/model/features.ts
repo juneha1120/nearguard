@@ -35,14 +35,14 @@ export function deriveFeatures(
   const allWindowEvents = [...recentEvents, event];
   const speedOverLimit = Math.max(0, event.speed - event.speed_limit);
   const previousRisk = vehicleCase?.current_risk ?? 0.12;
-  const recentHarshBrakeCount = recentEvents.filter((item) => item.event_type === "harsh_brake").length;
-  const recentSharpTurnCount = recentEvents.filter((item) => item.event_type === "sharp_turn").length;
   const speeds = allWindowEvents.map((item) => item.speed);
   const meanSpeed = speeds.reduce((total, value) => total + value, 0) / Math.max(speeds.length, 1);
   const speedStd = Math.sqrt(speeds.reduce((total, value) => total + (value - meanSpeed) ** 2, 0) / Math.max(speeds.length, 1));
   const lastThree = allWindowEvents.slice(-3);
   const speedDeltaLastThreeEvents = lastThree.length >= 2 ? lastThree.at(-1)!.speed - lastThree[0].speed : 0;
   const speedingEvents = allWindowEvents.filter((item) => item.speed > item.speed_limit).length;
+  const recentHarshBrakeCount = allWindowEvents.filter((item) => item.event_type === "harsh_brake").length;
+  const recentSharpTurnCount = allWindowEvents.filter((item) => item.event_type === "sharp_turn").length;
   const alertEvents = allWindowEvents.filter((item) => ["speeding", "harsh_brake", "sharp_turn", "stale_gps", "risk_persistent"].includes(item.event_type)).length;
   const hasPriorIntervention = vehicleCase?.status === "monitoring" || vehicleCase?.status === "pending_approval" || vehicleCase?.status === "escalated";
   const timeSinceLastIntervention = minutesSinceIntervention(event.timestamp, vehicleCase);

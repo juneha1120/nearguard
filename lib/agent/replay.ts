@@ -40,6 +40,21 @@ function trace(caseId: string, timestamp: string, event_type: TraceEvent["event_
   };
 }
 
+function addSeconds(timestamp: string, seconds: number) {
+  return new Date(new Date(timestamp).getTime() + seconds * 1000).toISOString();
+}
+
+function formatToolName(toolName: string) {
+  if (toolName === "notify_driver") return "Driver Advisory";
+  if (toolName === "notify_supervisor") return "Supervisor Notification";
+  if (toolName === "fallback_notify_supervisor") return "Fallback Supervisor Notification";
+  if (toolName === "request_human_approval") return "Approval Request";
+  if (toolName === "recommend_zone_advisory") return "Zone Advisory";
+  return toolName
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
 export function validateEvent(event: VehicleEvent): string[] {
   const errors: string[] = [];
   if (!event.event_id) errors.push("event_id is required");
@@ -137,7 +152,7 @@ function buildAssessment(state: ReplayState, event: VehicleEvent, vehicleCase: V
   }
   const isUncertainHumanReview =
     state.selectedScenario.scenario_id === "telemetry-uncertainty" && event.event_id !== "uncertain-003";
-  const score = isUncertainHumanReview ? Math.max(prediction.assessment.safety_incident_risk_score, 0.67) : prediction.assessment.safety_incident_risk_score;
+  const score = prediction.assessment.safety_incident_risk_score;
   const topRiskReasons =
     event.event_type === "speed_normalized"
       ? ["Speed normalized below the zone limit.", "Risk trend is decreasing.", ...prediction.assessment.top_risk_reasons].slice(0, 4)
@@ -161,7 +176,7 @@ function buildAssessment(state: ReplayState, event: VehicleEvent, vehicleCase: V
   };
 }
 
-function updateCase(vehicleCase: VehicleCase, assessment: RiskAssessment, event: VehicleEvent, decision = decidePolicy(assessment)): VehicleCase {
+function updateCase(vehicleCase: VehicleCase, assessment: RiskAssessment, event: VehicleEvent, decision = decidePolicy(assessment, vehicleCase)): VehicleCase {
   return {
     ...vehicleCase,
     previous_risk: vehicleCase.current_risk,
@@ -218,12 +233,12 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
   const zoneForFeatures = missingContext ? fallbackOperatingContext(fallbackZone, event.zone_id) : zoneContextForFeatures(state.selectedScenario, event, fallbackZone);
 
   if (missingContext) {
-    traceEvents.push(trace(vehicleCase.case_id, event.timestamp, "context_missing", "Zone context lookup unavailable; confidence will be reduced.", { zone_id: event.zone_id }));
+    traceEvents.push(trace(vehicleCase.case_id, addSeconds(event.timestamp, 1), "context_missing", "Zone context lookup unavailable; confidence will be reduced.", { zone_id: event.zone_id }));
   } else {
     traceEvents.push(
       trace(
         vehicleCase.case_id,
-        event.timestamp,
+        addSeconds(event.timestamp, 1),
         "context_enriched",
         `Zone context loaded: ${zoneForFeatures.zone_name}; latest dynamic telemetry applied where available.`,
         { zone: zoneForFeatures }
@@ -234,28 +249,28 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
   const processedEvents = state.selectedScenario.events.slice(0, state.currentEventIndex);
   const recentEvents = recentVehicleEvents(processedEvents, event);
   const latestFeatures = deriveFeatures(event, zoneForFeatures, recentEvents, vehicleCase);
-  traceEvents.push(trace(vehicleCase.case_id, event.timestamp, "features_derived", "Derived model features updated.", { latestFeatures }));
+  traceEvents.push(trace(vehicleCase.case_id, addSeconds(event.timestamp, 2), "features_derived", "Derived model features updated.", { latestFeatures }));
 
   const assessment = buildAssessment(state, event, vehicleCase);
   traceEvents.push(
     trace(
       vehicleCase.case_id,
-      event.timestamp,
+      addSeconds(event.timestamp, 3),
       "risk_assessed",
       `Continuous assessment returned ${assessment.safety_incident_risk_score.toFixed(2)} synthetic near-miss risk within next ${assessment.prediction_horizon}; policy maps ${assessment.risk_band} risk to the intervention threshold (${assessment.confidence} confidence).`,
       { assessment }
     )
   );
 
-  const decision = decidePolicy(assessment);
-  traceEvents.push(trace(vehicleCase.case_id, event.timestamp, "policy_decision", `Policy decision: ${decision.recommendedAction}`, { decision }));
+  const decision = decidePolicy(assessment, vehicleCase);
+  traceEvents.push(trace(vehicleCase.case_id, addSeconds(event.timestamp, 4), "policy_decision", `Policy decision: ${decision.recommendedAction}`, { decision }));
 
   let toolCalls: ToolCall[] = [...state.toolCalls];
   let approvals: ApprovalRequest[] = [...state.pendingApprovals];
   let updatedCase = updateCase(vehicleCase, assessment, event, decision);
 
   for (const toolName of decision.toolNames) {
-    const results = simulateTool(toolName, state.selectedScenario.scenario_id, updatedCase, event, assessment, toolCalls);
+    const results = simulateTool(toolName, state.selectedScenario.tool_outcomes, updatedCase, event, assessment, toolCalls);
     toolCalls = [...toolCalls, ...results];
     for (const result of results) {
       traceEvents.push(
@@ -263,7 +278,7 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
           updatedCase.case_id,
           result.timestamp,
           result.status === "failed" ? "tool_failure" : "tool_call",
-          result.status === "failed" ? `${result.tool_name} failed: ${result.error}` : `${result.tool_name} ${result.status}.`,
+          result.status === "failed" ? `${formatToolName(result.tool_name)} failed: ${result.error}.` : `${formatToolName(result.tool_name)} ${result.status}.`,
           { toolCall: result }
         )
       );
@@ -272,19 +287,21 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
 
   if (decision.shouldRequestApproval && !approvals.some((approval) => approval.case_id === updatedCase.case_id && approval.status === "pending")) {
     const approval = createApprovalRequest(updatedCase, assessment);
+    const approvalTool = toolCalls.find((tool) => tool.tool_name === "request_human_approval" && tool.case_id === updatedCase.case_id && tool.status === "pending");
     approvals = [...approvals, approval];
-    traceEvents.push(trace(updatedCase.case_id, event.timestamp, "approval_requested", "Approval requested for zone advisory.", { approval }));
+    const approvalRequestedTime = approvalTool ? addSeconds(approvalTool.timestamp, 1) : addSeconds(event.timestamp, 6);
+    traceEvents.push(trace(updatedCase.case_id, approvalRequestedTime, "approval_requested", "Approval requested for zone advisory.", { approval }));
   }
 
   if (assessment.risk_band === "Low" && event.event_type === "speed_normalized") {
     updatedCase = { ...updatedCase, status: "stabilized" };
-    traceEvents.push(trace(updatedCase.case_id, event.timestamp, "case_stabilized", "Risk reduced; case stabilized for continued monitoring.", {}));
+    traceEvents.push(trace(updatedCase.case_id, addSeconds(event.timestamp, 5), "case_stabilized", "Risk reduced; case stabilized for continued monitoring.", {}));
   }
 
   const activeCases = [...state.activeCases.filter((item) => item.case_id !== updatedCase.case_id), updatedCase];
   const nextIndex = state.currentEventIndex + 1;
 
-  return {
+  const nextState: ReplayState = {
     ...state,
     currentEventIndex: nextIndex,
     activeCases,
@@ -298,6 +315,13 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
     traceEvents: [...state.traceEvents, ...traceEvents],
     isComplete: nextIndex >= state.selectedScenario.events.length
   };
+
+  const pendingApproval = nextState.pendingApprovals.find((approval) => approval.status === "pending");
+  if (nextState.isComplete && pendingApproval) {
+    return decideApproval(nextState, pendingApproval.approval_id, true, "Simulated Safety Supervisor", addSeconds(event.timestamp, 12));
+  }
+
+  return nextState;
 }
 
 export function rewindReplay(inputState: ReplayState): ReplayState {
@@ -363,11 +387,11 @@ export function rewindReplay(inputState: ReplayState): ReplayState {
   };
 }
 
-export function decideApproval(inputState: ReplayState, approvalId: string, approved: boolean, approver = "Safety Supervisor"): ReplayState {
+export function decideApproval(inputState: ReplayState, approvalId: string, approved: boolean, approver = "Safety Supervisor", decisionTimeOverride?: string): ReplayState {
   const state = structuredClone(inputState) as ReplayState;
   const approval = state.pendingApprovals.find((item) => item.approval_id === approvalId);
   if (!approval || !state.latestRiskAssessment) return state;
-  const decisionTime = new Date().toISOString();
+  const decisionTime = decisionTimeOverride ?? (state.currentEvent ? addSeconds(state.currentEvent.timestamp, 12) : new Date().toISOString());
   const updatedApprovals: ApprovalRequest[] = state.pendingApprovals.map((item) =>
     item.approval_id === approvalId
       ? {
@@ -397,6 +421,8 @@ export function decideApproval(inputState: ReplayState, approvalId: string, appr
   let updatedCase = selectedCase;
 
   if (approved) {
+    const advisoryTime = addSeconds(decisionTime, 2);
+    const safetyCaseTime = addSeconds(decisionTime, 4);
     const advisoryTool: ToolCall = {
       tool_call_id: `tool-zone-advisory-${state.toolCalls.length + 1}`,
       case_id: selectedCase.case_id,
@@ -405,19 +431,20 @@ export function decideApproval(inputState: ReplayState, approvalId: string, appr
       status: "recommended",
       result: "Zone advisory recommendation recorded after approval.",
       error: null,
-      timestamp: decisionTime
+      timestamp: advisoryTime
     };
     const safetyCase = createSafetyCase(
       selectedCase,
       state.latestRiskAssessment,
-      state.traceEvents.slice(-6).map((item) => item.message)
+      state.traceEvents.slice(-6).map((item) => item.message),
+      safetyCaseTime
     );
-    updatedCase = { ...selectedCase, status: "escalated", pending_approval: false, updated_at: decisionTime };
+    updatedCase = { ...selectedCase, status: "escalated", pending_approval: false, updated_at: safetyCaseTime };
     toolCalls = [...toolCalls, advisoryTool];
     safetyCases = [...safetyCases, safetyCase];
     activeCases = state.activeCases.map((item) => (item.case_id === updatedCase.case_id ? updatedCase : item));
-    traceEvents.push(trace(selectedCase.case_id, decisionTime, "tool_call", "recommend_zone_advisory recommended.", { toolCall: advisoryTool }));
-    traceEvents.push(trace(selectedCase.case_id, decisionTime, "safety_case_created", `Safety case ${safetyCase.safety_case_id} created.`, { safetyCase }));
+    traceEvents.push(trace(selectedCase.case_id, advisoryTime, "tool_call", "recommend_zone_advisory recommended.", { toolCall: advisoryTool }));
+    traceEvents.push(trace(selectedCase.case_id, safetyCaseTime, "safety_case_created", `Safety case ${safetyCase.safety_case_id} created.`, { safetyCase }));
   } else {
     updatedCase = { ...selectedCase, status: "monitoring", pending_approval: false, updated_at: decisionTime };
     activeCases = state.activeCases.map((item) => (item.case_id === updatedCase.case_id ? updatedCase : item));
