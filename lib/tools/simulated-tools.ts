@@ -83,6 +83,7 @@ export function createReviewRequest(vehicleCase: VehicleCase, assessment: RiskAs
   return {
     review_id: `review-${assessment.assessment_id}`,
     case_id: vehicleCase.case_id,
+    requested_at: assessment.created_at,
     reason: assessment.uncertainty_reason ?? "Risk evidence requires human review.",
     evidence: [
       `Risk ${assessment.safety_incident_risk_score.toFixed(2)} (${assessment.risk_band}) with ${assessment.confidence} confidence.`,
@@ -99,6 +100,7 @@ export function createApprovalRequest(vehicleCase: VehicleCase, assessment: Risk
   return {
     approval_id: `approval-${vehicleCase.case_id}`,
     case_id: vehicleCase.case_id,
+    requested_at: assessment.created_at,
     requested_action: "Recommend zone advisory for nearby Prime Movers.",
     rationale: assessment.top_risk_reasons.join(" "),
     status: "pending",

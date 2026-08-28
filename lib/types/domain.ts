@@ -247,6 +247,7 @@ export interface ToolCall {
 export interface ReviewRequest {
   review_id: string;
   case_id: string;
+  requested_at?: string;
   reason: string;
   evidence: string[];
   status: ReviewStatus;
@@ -258,6 +259,7 @@ export interface ReviewRequest {
 export interface ApprovalRequest {
   approval_id: string;
   case_id: string;
+  requested_at?: string;
   requested_action: string;
   rationale: string;
   status: ApprovalStatus;

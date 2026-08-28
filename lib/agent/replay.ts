@@ -355,7 +355,15 @@ export function rewindReplay(inputState: ReplayState): ReplayState {
     .slice(0, inputState.currentEventIndex)
     .filter(isDecisionPointEvent).length;
   const targetDecisionPointCount = Math.max(0, processedDecisionPointCount - 1);
-  const retainedReviews = inputState.pendingReviews.filter((review) => review.status === "resolved");
+  const targetCutoff = inputState.selectedScenario.events
+    .slice(0, inputState.currentEventIndex)
+    .filter(isDecisionPointEvent)[targetDecisionPointCount - 1]?.timestamp;
+  const retainedReviews = inputState.pendingReviews.filter(
+    (review) =>
+      review.status === "resolved" &&
+      targetDecisionPointCount > 0 &&
+      (!targetCutoff || !review.requested_at || review.requested_at <= targetCutoff)
+  );
   const retainedReviewIds = new Set(retainedReviews.map((review) => review.review_id));
   const retainedApprovals = inputState.pendingApprovals.filter((approval) => approval.status !== "pending");
   const retainedApprovalIds = new Set(retainedApprovals.map((approval) => approval.approval_id));
@@ -442,7 +450,7 @@ export function decideReview(
   const review = state.pendingReviews.find((item) => item.review_id === reviewId);
   if (!review || review.status !== "pending") return state;
 
-  const decisionTime = new Date().toISOString();
+  const decisionTime = inputState.currentEvent?.timestamp ?? review.requested_at ?? new Date().toISOString();
   const updatedReviews: ReviewRequest[] = state.pendingReviews.map((item) =>
     item.review_id === reviewId
       ? { ...item, status: "resolved", reviewer, outcome, decision_time: decisionTime }
@@ -509,7 +517,7 @@ export function decideApproval(inputState: ReplayState, approvalId: string, appr
   const state = structuredClone(inputState) as ReplayState;
   const approval = state.pendingApprovals.find((item) => item.approval_id === approvalId);
   if (!approval || !state.latestRiskAssessment) return state;
-  const decisionTime = new Date().toISOString();
+  const decisionTime = inputState.currentEvent?.timestamp ?? approval.requested_at ?? new Date().toISOString();
   const updatedApprovals: ApprovalRequest[] = state.pendingApprovals.map((item) =>
     item.approval_id === approvalId
       ? {
