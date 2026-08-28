@@ -183,12 +183,22 @@ function zoneAdvisoryPolicyContext(
   );
   if (assessment.safety_incident_risk_score >= 0.65) elevatedVehicleIds.add(event.vehicle_id);
 
-  const elevatedVehicleCountInZone = [...elevatedVehicleIds].filter((vehicleId) => {
-    const latestVehicleEvent = processedEvents
-      .filter((candidate) => candidate.vehicle_id === vehicleId)
-      .at(-1);
-    return latestVehicleEvent?.zone_id === event.zone_id;
-  }).length;
+  const MAX_CORROBORATING_EVENT_AGE_MS = 30 * 60 * 1000;
+
+const elevatedVehicleCountInZone = [...elevatedVehicleIds].filter((vehicleId) => {
+  const latestVehicleEvent = processedEvents
+    .filter((candidate) => candidate.vehicle_id === vehicleId)
+    .at(-1);
+
+  if (!latestVehicleEvent || latestVehicleEvent.zone_id !== event.zone_id) {
+    return false;
+  }
+
+  const eventAgeMs =
+    Date.parse(event.timestamp) - Date.parse(latestVehicleEvent.timestamp);
+
+  return eventAgeMs >= 0 && eventAgeMs <= MAX_CORROBORATING_EVENT_AGE_MS;
+}).length;
 
   const sharedHazardContext =
     zoneForFeatures.traffic_level === "high" ||
