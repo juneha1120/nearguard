@@ -141,8 +141,11 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
   justify-content: flex-end;
+  min-width: max-content;
+  overflow: visible;
 }
 
 .select,
@@ -160,6 +163,7 @@ button:disabled {
 
 .select {
   padding: 0 12px;
+  flex: 0 0 auto;
   min-width: min(250px, 100%);
   background-color: var(--surface);
 }
@@ -170,7 +174,9 @@ button:disabled {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  flex: 0 0 auto;
   padding: 0 12px;
+  white-space: nowrap;
 }
 
 .primary-button {
@@ -1300,6 +1306,25 @@ button:disabled {
   padding: 12px;
 }
 
+.decision-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 8px;
+}
+
+.decision-reason {
+  display: inline-flex;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  padding: 5px 7px;
+}
+
 .priority-panel .panel-body {
   padding-top: 12px;
 }
@@ -1642,9 +1667,12 @@ button:disabled {
     overflow: visible;
   }
 
-  .topbar,
   .dashboard {
     min-width: 1180px;
+  }
+
+  .topbar {
+    min-width: max-content;
   }
 
   .dashboard {
@@ -1733,6 +1761,12 @@ button:disabled {
   .icon-button,
   .primary-button {
     width: 100%;
+  }
+
+  .controls {
+    align-items: stretch;
+    flex-direction: column;
+    overflow: visible;
   }
 
   .dashboard {

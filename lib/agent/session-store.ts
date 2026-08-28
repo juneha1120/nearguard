@@ -1,8 +1,9 @@
-import { advanceReplay, createInitialReplayState, decideApproval, rewindReplay } from "@/lib/agent/replay";
-import type { ReplayState } from "@/lib/types/domain";
+import { advanceReplay, createInitialReplayState, decideApproval, decideReview, rewindReplay } from "@/lib/agent/replay";
+import type { ReplayState, ReviewOutcome } from "@/lib/types/domain";
 
 const DEFAULT_REPLAY_SESSION_ID = "default";
-const replayStates = new Map<string, ReplayState>();
+const globalStore = globalThis as typeof globalThis & { __nearguardReplayStates?: Map<string, ReplayState> };
+const replayStates = (globalStore.__nearguardReplayStates ??= new Map<string, ReplayState>());
 
 function sessionKey(sessionId?: string) {
   return sessionId || DEFAULT_REPLAY_SESSION_ID;
@@ -35,6 +36,16 @@ export function stepReplay(sessionId?: string) {
 export function previousReplay(sessionId?: string) {
   const key = sessionKey(sessionId);
   const replayState = rewindReplay(getReplayState(key));
+  replayStates.set(key, replayState);
+  return replayState;
+}
+
+export function reviewReplay(reviewId: string, outcome: ReviewOutcome, sessionId?: string) {
+  const key = sessionKey(sessionId);
+  const current = getReplayState(key);
+  if (!current.pendingReviews.some((review) => review.review_id === reviewId && review.status === "pending")) return null;
+
+  const replayState = decideReview(current, reviewId, outcome);
   replayStates.set(key, replayState);
   return replayState;
 }

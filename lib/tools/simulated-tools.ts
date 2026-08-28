@@ -1,4 +1,15 @@
-import type { ApprovalRequest, RiskAssessment, SafetyCase, ScenarioToolOutcome, ToolCall, VehicleCase, VehicleEvent } from "@/lib/types/domain";
+import type {
+  ApprovalReasonCode,
+  ApprovalRequest,
+  ReviewReasonCode,
+  ReviewRequest,
+  RiskAssessment,
+  SafetyCase,
+  ScenarioToolOutcome,
+  ToolCall,
+  VehicleCase,
+  VehicleEvent
+} from "@/lib/types/domain";
 
 let toolCounter = 0;
 
@@ -91,12 +102,45 @@ export function simulateTool(
   ];
 }
 
-export function createApprovalRequest(vehicleCase: VehicleCase, assessment: RiskAssessment): ApprovalRequest {
+export function createReviewRequest(vehicleCase: VehicleCase, assessment: RiskAssessment, reasonCodes: ReviewReasonCode[] = []): ReviewRequest {
+  const evidence = [
+    assessment.confidence === "low" ? "Low-confidence signal." : null,
+    assessment.uncertainty_reason,
+    assessment.top_risk_reasons.find((reason) => /gps|context|quality|uncertain/i.test(reason))
+  ].filter((item): item is string => Boolean(item));
+
+  return {
+    review_id: `review-${assessment.assessment_id}`,
+    case_id: vehicleCase.case_id,
+    requested_at: assessment.created_at,
+    reason: "Check signal quality before changing the case level.",
+    reason_codes: reasonCodes.length ? [...new Set(reasonCodes)] : ["ELEVATED_RISK"],
+    evidence: evidence.length ? [...new Set(evidence)].slice(0, 3) : [`Risk ${assessment.safety_incident_risk_score.toFixed(2)} needs operator review.`],
+    status: "pending",
+    reviewer: null,
+    outcome: null,
+    decision_time: null
+  };
+}
+
+export function createApprovalRequest(
+  vehicleCase: VehicleCase,
+  assessment: RiskAssessment,
+  gateEvidence: string[] = [],
+  reasonCodes: ApprovalReasonCode[] = []
+): ApprovalRequest {
+  const rationale = [
+    "Persistent vehicle risk remained high after earlier response.",
+    ...gateEvidence
+  ];
+
   return {
     approval_id: `approval-${vehicleCase.case_id}`,
     case_id: vehicleCase.case_id,
-    requested_action: "Recommend zone advisory for nearby Prime Movers.",
-    rationale: assessment.top_risk_reasons.join(" "),
+    requested_at: assessment.created_at,
+    requested_action: "Approve zone advisory for nearby Prime Movers.",
+    reason_codes: [...new Set<ApprovalReasonCode>(["PERSISTENT_HIGH_RISK", ...reasonCodes])],
+    rationale: [...new Set(rationale)].slice(0, 3).join(" "),
     status: "pending",
     approver: null,
     decision_time: null

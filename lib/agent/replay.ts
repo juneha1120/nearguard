@@ -1,10 +1,15 @@
 import { getLatestScenarioZoneTelemetrySample, getScenario, getScenarioPrediction, getZone } from "@/lib/data/repository";
 import { deriveFeatures, recentVehicleEvents } from "@/lib/model/features";
+import { calculateZoneOperationalRisk } from "@/lib/model/live-risk";
 import { riskBandFor } from "@/lib/model/risk";
-import { decidePolicy } from "@/lib/policy/policy";
-import { createApprovalRequest, createSafetyCase, resetToolCounter, simulateTool } from "@/lib/tools/simulated-tools";
+import { decidePolicy, type ZoneAdvisoryPolicyContext } from "@/lib/policy/policy";
+import { createApprovalRequest, createReviewRequest, createSafetyCase, resetToolCounter, simulateTool } from "@/lib/tools/simulated-tools";
 import type {
+  ApprovalReasonCode,
   ApprovalRequest,
+  ReviewOutcome,
+  ReviewReasonCode,
+  ReviewRequest,
   ReplayState,
   RiskAssessment,
   Scenario,
@@ -29,6 +34,12 @@ function nextAssessmentId() {
   return `risk-${assessmentCounter.toString().padStart(4, "0")}`;
 }
 
+const REVIEW_ESCALATION_TOOL_PREFIX = "tool-review-escalation-";
+
+function dedupeTraces(events: TraceEvent[]) {
+  return [...new Map(events.map((event) => [event.trace_id, event])).values()];
+}
+
 function trace(caseId: string, timestamp: string, event_type: TraceEvent["event_type"], message: string, metadata = {}) {
   return {
     trace_id: nextTraceId(),
@@ -48,7 +59,7 @@ function formatToolName(toolName: string) {
   if (toolName === "notify_driver") return "Driver Advisory";
   if (toolName === "notify_supervisor") return "Supervisor Notification";
   if (toolName === "fallback_notify_supervisor") return "Fallback Supervisor Notification";
-  if (toolName === "request_human_approval") return "Approval Request";
+  if (toolName === "request_human_approval") return "Zone Action Approval";
   if (toolName === "recommend_zone_advisory") return "Zone Advisory";
   return toolName
     .replaceAll("_", " ")
@@ -81,6 +92,7 @@ export function createInitialReplayState(scenarioId?: string): ReplayState {
     latestFeatures: null,
     latestRiskAssessment: null,
     toolCalls: [],
+    pendingReviews: [],
     pendingApprovals: [],
     safetyCases: [],
     traceEvents: [],
@@ -176,6 +188,52 @@ function buildAssessment(state: ReplayState, event: VehicleEvent, vehicleCase: V
   };
 }
 
+function zoneAdvisoryPolicyContext(
+  state: ReplayState,
+  event: VehicleEvent,
+  assessment: RiskAssessment,
+  zoneForFeatures: ZoneContext
+): ZoneAdvisoryPolicyContext {
+  const dynamicZone = getLatestScenarioZoneTelemetrySample(state.selectedScenario.scenario_id, event.zone_id, event.timestamp);
+  const zoneOperationalRisk = dynamicZone
+    ? calculateZoneOperationalRisk({
+        ...dynamicZone,
+        updated_at: dynamicZone.timestamp,
+        prime_movers: []
+      })
+    : null;
+  const processedEvents = state.selectedScenario.events.slice(0, state.currentEventIndex + 1);
+  const elevatedVehicleIds = new Set(
+    state.activeCases.filter((item) => item.current_risk >= 0.65).map((item) => item.vehicle_id)
+  );
+  if (assessment.safety_incident_risk_score >= 0.65) elevatedVehicleIds.add(event.vehicle_id);
+
+  const maxCorroboratingEventAgeMs = 30 * 60 * 1000;
+  const elevatedVehicleCountInZone = [...elevatedVehicleIds].filter((vehicleId) => {
+    const latestVehicleEvent = processedEvents.filter((candidate) => candidate.vehicle_id === vehicleId).at(-1);
+    if (!latestVehicleEvent || latestVehicleEvent.zone_id !== event.zone_id) return false;
+
+    const eventAgeMs = Date.parse(event.timestamp) - Date.parse(latestVehicleEvent.timestamp);
+    return eventAgeMs >= 0 && eventAgeMs <= maxCorroboratingEventAgeMs;
+  }).length;
+  const sharedHazardContext =
+    zoneForFeatures.traffic_level === "high" ||
+    zoneForFeatures.weather !== "clear" ||
+    zoneForFeatures.restriction_level !== "normal" ||
+    zoneForFeatures.pedestrian_exposure !== "low";
+
+  return { zoneOperationalRisk, elevatedVehicleCountInZone, sharedHazardContext };
+}
+
+function reviewReasonCodes(event: VehicleEvent, assessment: RiskAssessment, missingContext: boolean): ReviewReasonCode[] {
+  const reasonCodes: ReviewReasonCode[] = [];
+  if (assessment.confidence === "low") reasonCodes.push("LOW_MODEL_CONFIDENCE");
+  if (event.gps_freshness === "stale") reasonCodes.push("STALE_GPS");
+  if (missingContext) reasonCodes.push("MISSING_ZONE_CONTEXT");
+  if (assessment.safety_incident_risk_score >= 0.65) reasonCodes.push("ELEVATED_RISK");
+  return [...new Set(reasonCodes)];
+}
+
 function updateCase(vehicleCase: VehicleCase, assessment: RiskAssessment, event: VehicleEvent, decision = decidePolicy(assessment, vehicleCase)): VehicleCase {
   return {
     ...vehicleCase,
@@ -262,12 +320,43 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
     )
   );
 
-  const decision = decidePolicy(assessment, vehicleCase);
+  const policyContext = zoneAdvisoryPolicyContext(state, event, assessment, zoneForFeatures);
+  const decision = decidePolicy(assessment, vehicleCase, policyContext);
   traceEvents.push(trace(vehicleCase.case_id, addSeconds(event.timestamp, 4), "policy_decision", `Policy decision: ${decision.recommendedAction}`, { decision }));
 
   let toolCalls: ToolCall[] = [...state.toolCalls];
+  let reviews: ReviewRequest[] = [...state.pendingReviews];
   let approvals: ApprovalRequest[] = [...state.pendingApprovals];
   let updatedCase = updateCase(vehicleCase, assessment, event, decision);
+
+  const pendingReviewForCase = reviews.find((review) => review.case_id === updatedCase.case_id && review.status === "pending");
+  const lastResolvedReview = reviews.filter((review) => review.case_id === updatedCase.case_id && review.status === "resolved").at(-1);
+  const humanEscalated = lastResolvedReview?.outcome === "escalate";
+  const humanKeptCaseOpen = humanEscalated || lastResolvedReview?.outcome === "insufficient_evidence";
+  if (pendingReviewForCase && (updatedCase.status === "monitoring" || updatedCase.status === "stabilized")) {
+    updatedCase = {
+      ...updatedCase,
+      status: "pending_review",
+      recommended_action: "Signal review is pending before this case can be stabilized."
+    };
+  } else if (humanEscalated && (updatedCase.status === "monitoring" || updatedCase.status === "stabilized")) {
+    updatedCase = {
+      ...updatedCase,
+      status: "escalated",
+      authority_class: "Case escalated",
+      recommended_action: "Signal review escalation stands; follow-up is pending."
+    };
+  } else if (humanKeptCaseOpen && updatedCase.status === "stabilized") {
+    updatedCase = {
+      ...updatedCase,
+      status: "monitoring",
+      authority_class: lastResolvedReview?.outcome === "insufficient_evidence" ? "Signal weak" : "Monitoring",
+      recommended_action:
+        lastResolvedReview?.outcome === "insufficient_evidence"
+          ? "Signal marked weak; keep the case open for better telemetry."
+          : "Case remains escalated after signal review."
+    };
+  }
 
   for (const toolName of decision.toolNames) {
     const results = simulateTool(toolName, state.selectedScenario.tool_outcomes, updatedCase, event, assessment, toolCalls);
@@ -285,8 +374,23 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
     }
   }
 
+  if (decision.shouldRequestReview && !reviews.some((review) => review.case_id === updatedCase.case_id && review.status === "pending")) {
+    const review = createReviewRequest(updatedCase, assessment, reviewReasonCodes(event, assessment, missingContext));
+    reviews = [...reviews, review];
+    traceEvents.push(
+      trace(
+        updatedCase.case_id,
+        addSeconds(event.timestamp, 7),
+        "review_requested",
+        "Signal review requested; zone action remains locked until approval.",
+        { review, review_id: review.review_id }
+      )
+    );
+  }
+
   if (decision.shouldRequestApproval && !approvals.some((approval) => approval.case_id === updatedCase.case_id && approval.status === "pending")) {
-    const approval = createApprovalRequest(updatedCase, assessment);
+    const approvalReasonCodes: ApprovalReasonCode[] = decision.zoneAdvisoryEvidence?.reasonCodes ?? [];
+    const approval = createApprovalRequest(updatedCase, assessment, decision.zoneAdvisoryEvidence?.reasons, approvalReasonCodes);
     const approvalTool = toolCalls.find((tool) => tool.tool_name === "request_human_approval" && tool.case_id === updatedCase.case_id && tool.status === "pending");
     approvals = [...approvals, approval];
     const approvalRequestedTime = approvalTool ? addSeconds(approvalTool.timestamp, 1) : addSeconds(event.timestamp, 6);
@@ -294,8 +398,23 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
   }
 
   if (assessment.risk_band === "Low" && event.event_type === "speed_normalized") {
-    updatedCase = { ...updatedCase, status: "stabilized" };
-    traceEvents.push(trace(updatedCase.case_id, addSeconds(event.timestamp, 5), "case_stabilized", "Risk reduced; case stabilized for continued monitoring.", {}));
+    if (pendingReviewForCase) {
+      traceEvents.push(
+        trace(updatedCase.case_id, addSeconds(event.timestamp, 5), "policy_decision", "Case not stabilized; signal review remains pending.", {
+          review_id: pendingReviewForCase.review_id
+        })
+      );
+    } else if (humanKeptCaseOpen) {
+      traceEvents.push(
+        trace(updatedCase.case_id, addSeconds(event.timestamp, 5), "policy_decision", `Case not stabilized; signal review outcome "${lastResolvedReview!.outcome!.replaceAll("_", " ")}" keeps the case open.`, {
+          review_id: lastResolvedReview!.review_id,
+          outcome: lastResolvedReview!.outcome
+        })
+      );
+    } else {
+      updatedCase = { ...updatedCase, status: "stabilized" };
+      traceEvents.push(trace(updatedCase.case_id, addSeconds(event.timestamp, 5), "case_stabilized", "Risk reduced; case stabilized for continued monitoring.", {}));
+    }
   }
 
   const activeCases = [...state.activeCases.filter((item) => item.case_id !== updatedCase.case_id), updatedCase];
@@ -311,6 +430,7 @@ export function advanceReplay(inputState: ReplayState): ReplayState {
     latestFeatures,
     latestRiskAssessment: assessment,
     toolCalls,
+    pendingReviews: reviews,
     pendingApprovals: approvals,
     traceEvents: [...state.traceEvents, ...traceEvents],
     isComplete: nextIndex >= state.selectedScenario.events.length
@@ -329,19 +449,33 @@ export function rewindReplay(inputState: ReplayState): ReplayState {
     .slice(0, inputState.currentEventIndex)
     .filter(isDecisionPointEvent).length;
   const targetDecisionPointCount = Math.max(0, processedDecisionPointCount - 1);
+  const targetCutoff = inputState.selectedScenario.events
+    .slice(0, inputState.currentEventIndex)
+    .filter(isDecisionPointEvent)[targetDecisionPointCount - 1]?.timestamp;
+  const retainedReviews = inputState.pendingReviews.filter(
+    (review) =>
+      review.status === "resolved" &&
+      targetDecisionPointCount > 0 &&
+      (!targetCutoff || !review.requested_at || review.requested_at <= targetCutoff)
+  );
+  const retainedReviewIds = new Set(retainedReviews.map((review) => review.review_id));
   const retainedApprovals = inputState.pendingApprovals.filter((approval) => approval.status !== "pending");
   const retainedApprovalIds = new Set(retainedApprovals.map((approval) => approval.approval_id));
-  const retainedToolCalls = inputState.toolCalls.filter((tool) => tool.tool_name === "recommend_zone_advisory");
+  const retainedToolCalls = inputState.toolCalls.filter(
+    (tool) => tool.tool_name === "recommend_zone_advisory" || tool.tool_call_id.startsWith(REVIEW_ESCALATION_TOOL_PREFIX)
+  );
   const retainedToolCallIds = new Set(retainedToolCalls.map((tool) => tool.tool_call_id));
   const retainedSafetyCaseIds = new Set(inputState.safetyCases.map((safetyCase) => safetyCase.safety_case_id));
   const retainedTraceEvents = inputState.traceEvents.filter((event) => {
     const metadata = event.metadata as {
+      review_id?: string;
       approval_id?: string;
       toolCall?: ToolCall;
       safetyCase?: { safety_case_id?: string };
     };
 
     return (
+      (metadata.review_id && retainedReviewIds.has(metadata.review_id)) ||
       (metadata.approval_id && retainedApprovalIds.has(metadata.approval_id)) ||
       (metadata.toolCall && retainedToolCallIds.has(metadata.toolCall.tool_call_id)) ||
       (metadata.safetyCase?.safety_case_id && retainedSafetyCaseIds.has(metadata.safetyCase.safety_case_id))
@@ -355,13 +489,23 @@ export function rewindReplay(inputState: ReplayState): ReplayState {
 
   const activeCases: VehicleCase[] = state.activeCases.map((vehicleCase) => {
     const decidedApproval = retainedApprovals.find((approval) => approval.case_id === vehicleCase.case_id);
-    if (!decidedApproval) return vehicleCase;
+    if (decidedApproval) {
+      return {
+        ...vehicleCase,
+        status: decidedApproval.status === "approved" ? "escalated" : "monitoring",
+        pending_approval: false,
+        updated_at: decidedApproval.decision_time ?? vehicleCase.updated_at
+      };
+    }
+
+    const decidedReview = retainedReviews.find((review) => review.case_id === vehicleCase.case_id);
+    if (!decidedReview) return vehicleCase;
 
     return {
       ...vehicleCase,
-      status: decidedApproval.status === "approved" ? "escalated" : "monitoring",
+      status: decidedReview.outcome === "escalate" ? "escalated" : "monitoring",
       pending_approval: false,
-      updated_at: decidedApproval.decision_time ?? vehicleCase.updated_at
+      updated_at: decidedReview.decision_time ?? vehicleCase.updated_at
     };
   });
   const selectedCase = state.selectedCase
@@ -372,6 +516,10 @@ export function rewindReplay(inputState: ReplayState): ReplayState {
     ...state,
     activeCases,
     selectedCase,
+    pendingReviews: [
+      ...state.pendingReviews.filter((review) => !retainedReviewIds.has(review.review_id)),
+      ...retainedReviews
+    ],
     pendingApprovals: [
       ...state.pendingApprovals.filter((approval) => !retainedApprovalIds.has(approval.approval_id)),
       ...retainedApprovals
@@ -381,9 +529,90 @@ export function rewindReplay(inputState: ReplayState): ReplayState {
       ...retainedToolCalls
     ],
     safetyCases: inputState.safetyCases,
-    traceEvents: [...state.traceEvents, ...retainedTraceEvents].sort(
+    traceEvents: dedupeTraces([...state.traceEvents, ...retainedTraceEvents]).sort(
       (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     )
+  };
+}
+
+export function decideReview(
+  inputState: ReplayState,
+  reviewId: string,
+  outcome: ReviewOutcome,
+  reviewer = "Safety Supervisor",
+  decisionTimeOverride?: string
+): ReplayState {
+  const state = structuredClone(inputState) as ReplayState;
+  const review = state.pendingReviews.find((item) => item.review_id === reviewId);
+  if (!review || review.status !== "pending") return state;
+
+  const decisionTime = decisionTimeOverride ?? (state.currentEvent ? addSeconds(state.currentEvent.timestamp, 12) : review.requested_at ?? new Date().toISOString());
+  const updatedReviews: ReviewRequest[] = state.pendingReviews.map((item) =>
+    item.review_id === reviewId
+      ? { ...item, status: "resolved", reviewer, outcome, decision_time: decisionTime }
+      : item
+  );
+  const targetCase = state.activeCases.find((item) => item.case_id === review.case_id) ?? state.selectedCase;
+  if (!targetCase) return { ...state, pendingReviews: updatedReviews };
+
+  const status: VehicleCase["status"] = outcome === "escalate" ? "escalated" : "monitoring";
+  const authorityClass =
+    outcome === "escalate"
+      ? "Case escalated"
+      : outcome === "insufficient_evidence"
+        ? "Signal weak"
+        : "Monitoring";
+  const recommendedAction =
+    outcome === "escalate"
+      ? "Case escalated after signal review; no zone action was approved."
+      : outcome === "insufficient_evidence"
+        ? "Signal marked weak; keep the case open for better telemetry."
+        : "Signal review complete; keep monitoring.";
+  const updatedCase: VehicleCase = {
+    ...targetCase,
+    status,
+    authority_class: authorityClass,
+    recommended_action: recommendedAction,
+    pending_approval: false,
+    updated_at: decisionTime
+  };
+  const activeCases = state.activeCases.map((item) => (item.case_id === updatedCase.case_id ? updatedCase : item));
+  const traceEvents = [
+    trace(
+      updatedCase.case_id,
+      decisionTime,
+      "review_decision",
+      `${reviewer} completed signal review: ${outcome.replaceAll("_", " ")}.`,
+      { review_id: reviewId, outcome }
+    )
+  ];
+
+  let toolCalls = state.toolCalls;
+  if (outcome === "escalate") {
+    const supervisorTime = addSeconds(decisionTime, 2);
+    const supervisorCall: ToolCall = {
+      tool_call_id: `${REVIEW_ESCALATION_TOOL_PREFIX}${reviewId}`,
+      case_id: updatedCase.case_id,
+      tool_name: "notify_supervisor",
+      arguments: { review_id: reviewId, outcome, reviewer },
+      status: "delivered",
+      result: "Supervisor notified to follow up on the escalated signal review.",
+      error: null,
+      timestamp: supervisorTime
+    };
+    toolCalls = [...toolCalls, supervisorCall];
+    traceEvents.push(
+      trace(updatedCase.case_id, supervisorTime, "tool_call", "Supervisor Notification delivered for signal review escalation.", { toolCall: supervisorCall })
+    );
+  }
+
+  return {
+    ...state,
+    selectedCase: state.selectedCase?.case_id === updatedCase.case_id ? updatedCase : state.selectedCase,
+    activeCases,
+    pendingReviews: updatedReviews,
+    toolCalls,
+    traceEvents: [...state.traceEvents, ...traceEvents]
   };
 }
 
@@ -439,14 +668,28 @@ export function decideApproval(inputState: ReplayState, approvalId: string, appr
       state.traceEvents.slice(-6).map((item) => item.message),
       safetyCaseTime
     );
-    updatedCase = { ...selectedCase, status: "escalated", pending_approval: false, updated_at: safetyCaseTime };
+    updatedCase = {
+      ...selectedCase,
+      status: "escalated",
+      authority_class: "Zone action approved",
+      recommended_action: "Zone advisory approved and recorded.",
+      pending_approval: false,
+      updated_at: safetyCaseTime
+    };
     toolCalls = [...toolCalls, advisoryTool];
     safetyCases = [...safetyCases, safetyCase];
     activeCases = state.activeCases.map((item) => (item.case_id === updatedCase.case_id ? updatedCase : item));
     traceEvents.push(trace(selectedCase.case_id, advisoryTime, "tool_call", "recommend_zone_advisory recommended.", { toolCall: advisoryTool }));
     traceEvents.push(trace(selectedCase.case_id, safetyCaseTime, "safety_case_created", `Safety case ${safetyCase.safety_case_id} created.`, { safetyCase }));
   } else {
-    updatedCase = { ...selectedCase, status: "monitoring", pending_approval: false, updated_at: decisionTime };
+    updatedCase = {
+      ...selectedCase,
+      status: "monitoring",
+      authority_class: "Zone action rejected",
+      recommended_action: "Zone advisory rejected; keep monitoring.",
+      pending_approval: false,
+      updated_at: decisionTime
+    };
     activeCases = state.activeCases.map((item) => (item.case_id === updatedCase.case_id ? updatedCase : item));
   }
 
