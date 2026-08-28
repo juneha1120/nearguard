@@ -34,6 +34,7 @@ html,
 body {
   margin: 0;
   height: 100%;
+  min-width: 360px;
   overflow: hidden;
   background: var(--bg);
   background-image: var(--bg-gradient);
@@ -95,7 +96,7 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 10px 18px;
+  padding: 10px clamp(10px, 1.05vw, 18px);
   border-bottom: 1px solid var(--line);
   background: rgba(13, 19, 34, 0.85);
   backdrop-filter: blur(12px);
@@ -159,7 +160,7 @@ button:disabled {
 
 .select {
   padding: 0 12px;
-  min-width: 250px;
+  min-width: min(250px, 100%);
   background-color: var(--surface);
 }
 
@@ -197,10 +198,10 @@ button:disabled {
   flex: 1;
   min-height: 0;
   margin: 0 auto;
-  padding: 10px 12px;
+  padding: clamp(8px, 0.7vw, 12px);
   display: grid;
-  grid-template-columns: minmax(620px, 1.15fr) 320px minmax(420px, 0.75fr);
-  gap: 12px;
+  grid-template-columns: minmax(520px, 1.2fr) minmax(280px, 0.58fr) minmax(340px, 0.74fr);
+  gap: clamp(8px, 0.7vw, 12px);
   align-items: stretch;
   overflow: hidden;
 }
@@ -218,7 +219,7 @@ button:disabled {
 }
 
 .panel-header {
-  padding: 10px 14px;
+  padding: 10px clamp(10px, 0.85vw, 14px);
   border-bottom: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
@@ -276,7 +277,7 @@ button:disabled {
 }
 
 .panel-body {
-  padding: 12px;
+  padding: clamp(10px, 0.8vw, 12px);
   min-height: 0;
   overflow: auto;
 }
@@ -378,7 +379,7 @@ button:disabled {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
-  padding: 10px;
+  padding: clamp(8px, 0.7vw, 10px);
   display: flex;
   flex-direction: column;
 }
@@ -642,7 +643,7 @@ button:disabled {
 .zone-live-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: repeat(2, 70px);
+  grid-template-rows: repeat(2, minmax(58px, 70px));
   gap: 3px;
 }
 
@@ -752,7 +753,7 @@ button:disabled {
   background: transparent;
   color: inherit;
   display: grid;
-  grid-template-columns: 64px 78px minmax(0, 1fr);
+  grid-template-columns: minmax(54px, 0.8fr) minmax(64px, 0.95fr) minmax(0, 1fr);
   align-items: center;
   gap: 5px;
   padding: 4px 7px;
@@ -1629,8 +1630,26 @@ button:disabled {
 }
 
 @media (max-width: 1480px) {
+  html,
+  body {
+    overflow: auto;
+    overflow-x: auto;
+  }
+
+  .app-shell {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .topbar,
   .dashboard {
-    grid-template-columns: minmax(0, 1fr) minmax(420px, 0.85fr);
+    min-width: 1180px;
+  }
+
+  .dashboard {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.75fr);
+    overflow: visible;
   }
 
   .live-dashboard-panel {
@@ -1638,7 +1657,55 @@ button:disabled {
   }
 
   .right-column {
-    grid-column: 1 / -1;
+    grid-column: auto;
+  }
+
+  .live-dashboard-panel,
+  .snapshot-column > .panel,
+  .right-column > .panel {
+    height: auto;
+  }
+
+  .live-dashboard-panel > .panel-body {
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+
+  .live-monitor {
+    height: auto;
+  }
+
+  .zone-risk-board {
+    flex: 0 0 auto;
+    grid-template-rows: repeat(2, minmax(230px, auto));
+    overflow: visible;
+  }
+
+  .zone-live-card {
+    min-height: 230px;
+  }
+}
+
+@media (max-width: 1120px) {
+  .dashboard {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.75fr);
+  }
+
+  .right-column {
+    grid-column: auto;
+  }
+
+  .snapshot-column,
+  .right-column {
+    display: flex;
+  }
+
+  .live-dashboard-panel > .panel-body {
+    overflow: visible;
+  }
+
+  .zone-risk-board {
+    grid-template-rows: repeat(2, minmax(230px, auto));
   }
 }
 
@@ -1658,6 +1725,7 @@ button:disabled {
   .topbar {
     align-items: flex-start;
     flex-direction: column;
+    min-width: 0;
   }
 
   .controls,
@@ -1669,6 +1737,7 @@ button:disabled {
 
   .dashboard {
     grid-template-columns: 1fr;
+    min-width: 0;
     padding: 8px;
     overflow: visible;
   }
