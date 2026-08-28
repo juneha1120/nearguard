@@ -6,6 +6,7 @@ import type {
   LiveTelemetrySample,
   LiveZoneSnapshot,
   ReplayState,
+  ReviewRequest,
   RiskAssessment,
   RiskBand,
   ScenarioTelemetrySample,
@@ -431,7 +432,7 @@ export function explainAction(
   }
 
   return {
-    title: pendingApproval ? "Zone advisory approval requested." : selectedCase.recommended_action,
+    title: pendingApproval ? "Zone action approval requested." : selectedCase.recommended_action,
     rationale: [
       `Risk band ${assessment.risk_band}; score ${assessment.safety_incident_risk_score.toFixed(2)}; confidence ${assessment.confidence}.`,
       ...assessment.top_risk_reasons.slice(0, 3).map(operationsRiskReason)
@@ -445,8 +446,8 @@ export function toolRationale(tool: ToolCall, assessment: RiskAssessment | null)
   if (tool.tool_name === "notify_driver") return `Driver advisory delivered for ${riskLabel}.`;
   if (tool.tool_name === "notify_supervisor") return `Supervisor notification delivered for ${riskLabel}.`;
   if (tool.tool_name === "fallback_notify_supervisor") return "Fallback notification was sent because the primary supervisor notification timed out.";
-  if (tool.tool_name === "request_human_approval") return "Human approval was requested because the policy does not allow stronger zone intervention automatically.";
-  if (tool.tool_name === "recommend_zone_advisory") return "Zone advisory was recorded after human approval.";
+  if (tool.tool_name === "request_human_approval") return "Zone action approval was requested because policy requires an operator decision.";
+  if (tool.tool_name === "recommend_zone_advisory") return "Zone advisory was recorded after approval.";
   return `Tool was called as part of the ${assessment?.risk_band ?? "current"} policy response.`;
 }
 
@@ -454,7 +455,7 @@ export function toolLabel(toolName: string) {
   if (toolName === "notify_driver") return "Driver Advisory";
   if (toolName === "notify_supervisor") return "Supervisor Notification";
   if (toolName === "fallback_notify_supervisor") return "Fallback Supervisor Notification";
-  if (toolName === "request_human_approval") return "Approval Request";
+  if (toolName === "request_human_approval") return "Zone Action Approval";
   if (toolName === "recommend_zone_advisory") return "Zone Advisory";
   return toolName
     .replaceAll("_", " ")
@@ -481,10 +482,14 @@ export function traceLabel(eventType: TraceEvent["event_type"]) {
       return "Tool Call";
     case "tool_failure":
       return "Tool Failure";
+    case "review_requested":
+      return "Signal Review";
+    case "review_decision":
+      return "Signal Review Decision";
     case "approval_requested":
-      return "Human Approval Request";
+      return "Zone Action Approval";
     case "approval_decision":
-      return "Human Approval Decision";
+      return "Zone Approval Decision";
     case "safety_case_created":
       return "Safety Case Record";
     case "case_stabilized":
@@ -505,6 +510,8 @@ export function traceCategoryClass(eventType: TraceEvent["event_type"]) {
     case "risk_assessed":
       return "medium";
     case "policy_decision":
+    case "review_requested":
+    case "review_decision":
     case "approval_requested":
     case "approval_decision":
       return "high";
@@ -518,6 +525,49 @@ export function traceCategoryClass(eventType: TraceEvent["event_type"]) {
     default:
       return "neutral";
   }
+}
+
+export function summarizeReviewRequest(review: ReviewRequest) {
+  const reasonLabels = new Map<ReviewRequest["reason_codes"][number], string>([
+    ["LOW_MODEL_CONFIDENCE", "Model confidence is low."],
+    ["STALE_GPS", "Location signal is degraded."],
+    ["MISSING_ZONE_CONTEXT", "Zone context needs confirmation."],
+    ["ELEVATED_RISK", "Risk is elevated."]
+  ]);
+  const reasons = review.reason_codes.map((code) => reasonLabels.get(code)).filter((item): item is string => Boolean(item));
+
+  return {
+    title: "Review case signal?",
+    reasons: reasons.length ? [...new Set(reasons)].slice(0, 2) : ["Risk is elevated, but the signal needs confirmation."]
+  };
+}
+
+export function summarizeApprovalRequest(approval: ApprovalRequest) {
+  const reasonLabels = new Map<ApprovalRequest["reason_codes"][number], string>([
+    ["PERSISTENT_HIGH_RISK", "Vehicle risk stayed high after earlier response."],
+    ["ZONE_RISK_CORROBORATED", "Zone risk confirms the vehicle alert."],
+    ["MULTIPLE_ELEVATED_VEHICLES", "Multiple Prime Movers are elevated in this area."]
+  ]);
+  const reasons = approval.reason_codes.map((code) => reasonLabels.get(code)).filter((item): item is string => Boolean(item));
+
+  return {
+    title: "Approve zone advisory?",
+    reasons: reasons.length ? [...new Set(reasons)].slice(0, 2) : ["This action affects nearby Prime Movers, so it needs approval."]
+  };
+}
+
+export function actionLogStatus(tool: ToolCall, state: ReplayState | null) {
+  if (tool.status === "failed") return { label: "Failed", className: "critical", failed: true };
+  if (tool.tool_name === "request_human_approval") {
+    const approval = state?.pendingApprovals.find((item) => item.case_id === tool.case_id);
+    if (approval?.status === "approved") return { label: "Approved", className: "low", failed: false };
+    if (approval?.status === "rejected") return { label: "Rejected", className: "critical", failed: true };
+    return { label: "Awaiting Approval", className: "medium", failed: false };
+  }
+  if (tool.tool_name === "recommend_zone_advisory") return { label: "Recorded", className: "low", failed: false };
+  if (tool.tool_name === "notify_driver") return { label: "Sent", className: "low", failed: false };
+  if (tool.tool_name === "notify_supervisor" || tool.tool_name === "fallback_notify_supervisor") return { label: "Notified", className: "low", failed: false };
+  return { label: tool.status, className: "low", failed: false };
 }
 
 export function buildDecisionTimeline(
@@ -536,6 +586,8 @@ export function buildDecisionTimeline(
     "policy_decision",
     "tool_call",
     "tool_failure",
+    "review_requested",
+    "review_decision",
     "approval_requested",
     "approval_decision",
     "safety_case_created",

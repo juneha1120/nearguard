@@ -1,7 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { advanceReplay, createInitialReplayState, decideApproval, isDecisionPointEvent, rewindReplay, validateEvent } from "@/lib/agent/replay";
+import { advanceReplay, createInitialReplayState, decideApproval, decideReview, isDecisionPointEvent, rewindReplay, validateEvent } from "@/lib/agent/replay";
 import { scenarios } from "@/lib/data/repository";
-import type { ReplayState } from "@/lib/types/domain";
+import type { ReplayState, ReviewRequest, ToolCall } from "@/lib/types/domain";
+
+function resolvedEscalation(caseId: string): ReviewRequest {
+  return {
+    review_id: `review-${caseId}-prior`,
+    case_id: caseId,
+    requested_at: "2026-08-19T09:14:50+08:00",
+    reason: "Prior evidence review escalated by a supervisor.",
+    evidence: ["Prior review evidence."],
+    status: "resolved",
+    reviewer: "Safety Supervisor",
+    outcome: "escalate",
+    decision_time: "2026-08-19T09:14:50+08:00"
+  };
+}
 
 function runScenario(scenarioId: string): ReplayState {
   let state = createInitialReplayState(scenarioId);
@@ -36,6 +50,8 @@ describe("agent replay", () => {
     expect(state.toolCalls.some((tool) => tool.tool_name === "fallback_notify_supervisor" && tool.status === "delivered")).toBe(true);
 
     expect(state.pendingApprovals.some((approval) => approval.status === "approved")).toBe(true);
+    expect(state.pendingApprovals.find((approval) => approval.status === "approved")?.rationale).toMatch(/Zone operational risk/);
+    expect(state.pendingApprovals.find((approval) => approval.status === "approved")?.reason_codes).toContain("ZONE_RISK_CORROBORATED");
     expect(state.toolCalls.some((tool) => tool.tool_name === "recommend_zone_advisory")).toBe(true);
     expect(state.safetyCases).toHaveLength(1);
     expect(state.traceEvents.some((trace) => trace.event_type === "safety_case_created")).toBe(true);
@@ -55,6 +71,8 @@ describe("agent replay", () => {
     expect(approved.selectedScenario.scenario_id).toBe("pm27-persistent-high-risk");
     expect(approved.currentEvent?.event_id).toBe("pm27-004");
     expect(approved.pendingApprovals.find((item) => item.approval_id === approval!.approval_id)?.status).toBe("approved");
+    expect(approved.selectedCase?.authority_class).toBe("Zone action approved");
+    expect(approved.selectedCase?.recommended_action).toBe("Zone advisory approved and recorded.");
     expect(approved.safetyCases).toHaveLength(1);
     expect(safetyCaseTrace?.timestamp).toBe(new Date(new Date(approved.currentEvent!.timestamp).getTime() + 16_000).toISOString());
   });
@@ -131,11 +149,154 @@ describe("agent replay", () => {
     expect(state.latestRiskAssessment?.top_risk_reasons.join(" ")).toMatch(/Speed normalized/);
   });
 
-  it("handles telemetry uncertainty with low confidence and human review", () => {
-    const state = runScenario("telemetry-uncertainty");
+  it("handles telemetry uncertainty with signal review separate from zone approval", () => {
+    let state = runScenario("telemetry-uncertainty");
     expect(state.traceEvents.some((trace) => trace.event_type === "context_missing")).toBe(true);
-    expect(state.traceEvents.some((trace) => trace.message.includes("Supervisor review request sent"))).toBe(true);
+    expect(state.traceEvents.some((trace) => trace.event_type === "review_requested")).toBe(true);
     expect(state.toolCalls.some((tool) => tool.tool_name === "notify_supervisor")).toBe(true);
+    expect(state.pendingApprovals).toHaveLength(0);
+
+    const review = state.pendingReviews.find((item) => item.status === "pending");
+    expect(review).toBeDefined();
+    expect(review?.reason_codes).toEqual(expect.arrayContaining(["LOW_MODEL_CONFIDENCE", "STALE_GPS", "MISSING_ZONE_CONTEXT"]));
+    expect(state.selectedCase?.status).toBe("pending_review");
+
+    state = decideReview(state, review!.review_id, "insufficient_evidence", "Safety Supervisor");
+
+    expect(state.pendingReviews.find((item) => item.review_id === review!.review_id)?.outcome).toBe("insufficient_evidence");
+    expect(state.selectedCase?.status).toBe("monitoring");
+    expect(state.toolCalls.some((tool) => tool.tool_name === "recommend_zone_advisory")).toBe(false);
+    expect(state.safetyCases).toHaveLength(0);
+    expect(state.traceEvents.some((trace) => trace.event_type === "review_decision")).toBe(true);
+  });
+
+  it("does not stabilize a case that human review left unresolved", () => {
+    let state = createInitialReplayState("telemetry-uncertainty");
+    state = advanceReplay(state);
+    const review = state.pendingReviews.find((item) => item.status === "pending");
+    state = decideReview(state, review!.review_id, "insufficient_evidence");
+
+    state = advanceReplay(state);
+
+    expect(state.selectedCase?.status).toBe("monitoring");
+    expect(state.selectedCase?.authority_class).toBe("Signal weak");
+    expect(state.selectedCase?.recommended_action).toBe("Signal marked weak; keep the case open for better telemetry.");
+    expect(state.traceEvents.some((trace) => trace.event_type === "case_stabilized")).toBe(false);
+  });
+
+  it("sends one supervisor signal when human review escalates, without authorizing any action", () => {
+    let state = createInitialReplayState("telemetry-uncertainty");
+    state = advanceReplay(state);
+    const supervisorCallsBefore = state.toolCalls.filter((tool) => tool.tool_name === "notify_supervisor").length;
+    const review = state.pendingReviews.find((item) => item.status === "pending");
+
+    state = decideReview(state, review!.review_id, "escalate");
+
+    expect(state.selectedCase?.status).toBe("escalated");
+    expect(state.toolCalls.filter((tool) => tool.tool_name === "notify_supervisor")).toHaveLength(supervisorCallsBefore + 1);
+    expect(
+      state.traceEvents.some(
+        (trace) => trace.event_type === "tool_call" && (trace.metadata as { toolCall?: ToolCall }).toolCall?.tool_name === "notify_supervisor"
+      )
+    ).toBe(true);
+    expect(state.toolCalls.some((tool) => tool.tool_name === "recommend_zone_advisory")).toBe(false);
+    expect(state.pendingApprovals).toHaveLength(0);
+    expect(state.safetyCases).toHaveLength(0);
+  });
+
+  it("keeps an escalated case escalated and does not repeat the supervisor signal", () => {
+    let state = createInitialReplayState("telemetry-uncertainty");
+    state = advanceReplay(state);
+    const review = state.pendingReviews.find((item) => item.status === "pending");
+    state = decideReview(state, review!.review_id, "escalate");
+    const supervisorCalls = state.toolCalls.filter((tool) => tool.tool_name === "notify_supervisor").length;
+
+    state = advanceReplay(state);
+    expect(state.selectedCase?.status).toBe("escalated");
+    expect(state.traceEvents.some((trace) => trace.event_type === "case_stabilized")).toBe(false);
+
+    state = decideReview(state, review!.review_id, "escalate");
+    expect(state.toolCalls.filter((tool) => tool.tool_name === "notify_supervisor")).toHaveLength(supervisorCalls);
+    expect(state.selectedCase?.status).toBe("escalated");
+  });
+
+  it("keeps the escalation supervisor tool call after rewinding", () => {
+    let state = createInitialReplayState("telemetry-uncertainty");
+    state = advanceReplay(state);
+    const review = state.pendingReviews.find((item) => item.status === "pending");
+    state = decideReview(state, review!.review_id, "escalate");
+    const escalationCall = state.toolCalls.find((tool) => tool.tool_call_id.startsWith("tool-review-escalation-"));
+    expect(escalationCall).toBeDefined();
+    state = advanceReplay(state);
+
+    const rewinded = rewindReplay(state);
+
+    expect(rewinded.toolCalls.filter((tool) => tool.tool_call_id === escalationCall!.tool_call_id)).toHaveLength(1);
+    const toolCallIds = rewinded.toolCalls.map((tool) => tool.tool_call_id);
+    expect(new Set(toolCallIds).size).toBe(toolCallIds.length);
+    expect(rewinded.traceEvents.some((trace) => trace.event_type === "review_decision")).toBe(true);
+    expect(
+      rewinded.traceEvents.filter(
+        (trace) => (trace.metadata as { toolCall?: ToolCall }).toolCall?.tool_call_id === escalationCall!.tool_call_id
+      )
+    ).toHaveLength(1);
+  });
+
+  it("lets a pending_approval policy transition win over a sticky human review escalation", () => {
+    let state = createInitialReplayState("pm27-persistent-high-risk");
+    state = advanceReplay(state);
+    state = advanceReplay(state);
+    const caseId = state.selectedCase!.case_id;
+    state = {
+      ...state,
+      pendingReviews: [resolvedEscalation(caseId)],
+      activeCases: state.activeCases.map((item) => (item.case_id === caseId ? { ...item, status: "escalated" } : item))
+    };
+
+    state = advanceReplay(state);
+
+    expect(state.currentEvent?.event_id).toBe("pm27-004");
+    expect(state.selectedCase?.status).toBe("pending_approval");
+    expect(state.pendingApprovals.some((approval) => approval.status === "pending")).toBe(true);
+  });
+
+  it("lets a pending_review policy transition win over a sticky human review escalation", () => {
+    let state = createInitialReplayState("telemetry-uncertainty");
+    state = { ...state, pendingReviews: [resolvedEscalation("case-PM-09")] };
+
+    state = advanceReplay(state);
+
+    expect(state.latestRiskAssessment?.risk_band).toBe("High");
+    expect(state.selectedCase?.case_id).toBe("case-PM-09");
+    expect(state.selectedCase?.status).toBe("pending_review");
+  });
+
+  it("still stabilizes once human review returns the case to monitoring", () => {
+    let state = createInitialReplayState("telemetry-uncertainty");
+    state = advanceReplay(state);
+    const review = state.pendingReviews.find((item) => item.status === "pending");
+    state = decideReview(state, review!.review_id, "continue_monitoring");
+
+    state = advanceReplay(state);
+
+    expect(state.selectedCase?.status).toBe("stabilized");
+    expect(state.traceEvents.some((trace) => trace.event_type === "case_stabilized")).toBe(true);
+  });
+
+  it("preserves review traces once when rewinding past a resolved review", () => {
+    let state = createInitialReplayState("telemetry-uncertainty");
+    state = advanceReplay(state);
+    const review = state.pendingReviews.find((item) => item.status === "pending");
+    state = decideReview(state, review!.review_id, "continue_monitoring");
+    state = advanceReplay(state);
+
+    const rewinded = rewindReplay(state);
+
+    expect(rewinded.traceEvents.filter((trace) => trace.event_type === "review_requested")).toHaveLength(1);
+    expect(rewinded.traceEvents.filter((trace) => trace.event_type === "review_decision")).toHaveLength(1);
+    const traceIds = rewinded.traceEvents.map((trace) => trace.trace_id);
+    expect(new Set(traceIds).size).toBe(traceIds.length);
+    expect(rewinded.pendingReviews.find((item) => item.review_id === review!.review_id)?.status).toBe("resolved");
   });
 
   it("keeps trace events chronological", () => {

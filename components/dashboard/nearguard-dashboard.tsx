@@ -23,6 +23,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   bandClass,
   baselineZoneRiskLevel,
+  actionLogStatus,
   buildDecisionTimeline,
   buildScenarioLiveSample,
   closingSeverityClass,
@@ -41,6 +42,8 @@ import {
   scoreSeverityClass,
   scoreSeverityLabel,
   speedSeverityClass,
+  summarizeApprovalRequest,
+  summarizeReviewRequest,
   timeLabel,
   toolLabel,
   toolRationale,
@@ -65,6 +68,7 @@ import type {
   LivePrediction,
   LiveTelemetrySample,
   ReplayState,
+  ReviewOutcome,
   ScenarioTelemetrySample,
   ScenarioZoneTelemetrySample,
   WorkerRiskReport,
@@ -171,6 +175,22 @@ export function NearGuardDashboard() {
     } else {
       setScenarioClockMs(nextState.selectedScenario.events[0] ? new Date(nextState.selectedScenario.events[0].timestamp).getTime() : null);
     }
+  }
+
+  async function reviewEvidence(reviewId: string, outcome: ReviewOutcome) {
+    const response = await fetch("/api/replay/review", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ review_id: reviewId, outcome, session_id: replaySessionIdRef.current })
+    });
+    if (!response.ok) return;
+
+    const nextState = (await response.json()) as ReplayState;
+    setState(nextState);
+    const latestTrace = nextState.traceEvents.at(-1);
+    const latestScenarioTime = latestTrace?.timestamp ?? nextState.currentEvent?.timestamp ?? null;
+    if (latestScenarioTime) setScenarioClockMs(new Date(latestScenarioTime).getTime());
+    setIsPlaying(false);
   }
 
   async function approve(approvalId: string, approved: boolean) {
@@ -472,7 +492,16 @@ export function NearGuardDashboard() {
     if (!liveVehiclePrediction) return null;
     return liveModelAssessment(liveVehiclePrediction);
   }, [liveVehiclePrediction]);
+  const pendingReview = state?.pendingReviews.find((review) => review.status === "pending") ?? null;
   const pendingApproval = state?.pendingApprovals.find((approval) => approval.status === "pending") ?? null;
+  const latestReviewForSelectedCase =
+    state?.pendingReviews
+      .filter((review) => review.case_id === selectedCase?.case_id && review.status === "resolved")
+      .sort((a, b) => new Date(b.decision_time ?? b.requested_at ?? 0).getTime() - new Date(a.decision_time ?? a.requested_at ?? 0).getTime())[0] ?? null;
+  const latestApprovalForSelectedCase =
+    state?.pendingApprovals
+      .filter((approval) => approval.case_id === selectedCase?.case_id && approval.status !== "pending")
+      .sort((a, b) => new Date(b.decision_time ?? b.requested_at ?? 0).getTime() - new Date(a.decision_time ?? a.requested_at ?? 0).getTime())[0] ?? null;
   const currentDecisionWindow = useMemo(() => {
     if (!state || !currentEvent) return null;
     const currentEventTime = new Date(currentEvent.timestamp).getTime();
@@ -501,16 +530,35 @@ export function NearGuardDashboard() {
     });
   }, [currentDecisionWindow, state]);
   const hasIntervention = Boolean(
-    pendingApproval ||
+    pendingReview ||
+      pendingApproval ||
       currentDecisionToolCalls.length ||
-      (latestAssessment && ["High", "Persistent High", "Critical / Low Confidence"].includes(latestAssessment.risk_band))
+      (latestAssessment && ["High", "Critical"].includes(latestAssessment.risk_band))
   );
   const actionExplanation = useMemo(
     () => explainAction(selectedCase, latestAssessment, pendingApproval),
     [latestAssessment, pendingApproval, selectedCase]
   );
+  const reviewSummary = useMemo(() => (pendingReview ? summarizeReviewRequest(pendingReview) : null), [pendingReview]);
+  const approvalSummary = useMemo(() => (pendingApproval ? summarizeApprovalRequest(pendingApproval) : null), [pendingApproval]);
   const currentDecisionDriverAdvisory = currentDecisionToolCalls.find((tool) => tool.tool_name === "notify_driver" && tool.status === "delivered") ?? null;
-  const assessmentStatusCopy = pendingApproval ? "Approval" : currentDecisionDriverAdvisory ? "Advisory sent" : selectedCase?.authority_class ?? "Idle";
+  const assessmentStatusCopy = pendingReview
+    ? "Signal Review"
+    : pendingApproval
+      ? "Zone Approval"
+      : latestApprovalForSelectedCase?.status === "approved"
+        ? "Zone Approved"
+        : latestApprovalForSelectedCase?.status === "rejected"
+          ? "Zone Rejected"
+          : latestReviewForSelectedCase?.outcome === "escalate"
+            ? "Case Escalated"
+            : latestReviewForSelectedCase?.outcome === "insufficient_evidence"
+              ? "Signal Weak"
+              : latestReviewForSelectedCase?.outcome === "continue_monitoring"
+                ? "Signal Accepted"
+                : currentDecisionDriverAdvisory
+                  ? "Advisory sent"
+                  : selectedCase?.authority_class ?? "Idle";
   const safetyCase = state?.safetyCases.at(-1) ?? null;
   const decisionTimeline = useMemo(
     () => buildDecisionTimeline(accumulatedDecisionTraceEvents, latestAssessment, currentEvent),
@@ -551,7 +599,7 @@ export function NearGuardDashboard() {
           <div className="brand-mark">NG</div>
           <div>
             <h1>NearGuard</h1>
-            <p>Human-in-the-loop Prime Mover Safety Risk</p>
+            <p>AI Prime Mover Safety Agent</p>
           </div>
         </div>
         <div className="controls">
@@ -598,7 +646,6 @@ export function NearGuardDashboard() {
           <section className="scenario-modal" role="dialog" aria-modal="true" aria-labelledby="scenario-modal-title">
             <span className="scenario-modal-kicker">Scenario selected</span>
             <h2 id="scenario-modal-title">{introScenario.name}</h2>
-            <p>{introScenario.description}</p>
             <ul>
               {introScenario.highlights.map((highlight) => (
                 <li key={highlight}>{highlight}</li>
@@ -924,17 +971,68 @@ export function NearGuardDashboard() {
                     </div>
                   </div>
 
+                  <h3 className="section-title">Signal Review</h3>
+                  {pendingReview ? (
+                    <div className="approval priority-approval">
+                      <div className="approval-step">
+                        <span>REVIEW</span>
+                        <strong>Case signal</strong>
+                      </div>
+                      <strong>{reviewSummary?.title}</strong>
+                      <div className="decision-reasons">
+                        {reviewSummary?.reasons.map((item) => (
+                          <span className="decision-reason" key={item}>
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                      <p className="small muted">Choose the next case handling step. Zone actions stay locked.</p>
+                      <div className="approval-actions">
+                        <button
+                          className="primary-button"
+                          title="Use the current signal for normal monitoring; no escalation or zone action."
+                          onClick={() => reviewEvidence(pendingReview.review_id, "continue_monitoring")}
+                        >
+                          <ClipboardCheck size={16} /> Accept Signal
+                        </button>
+                        <button
+                          className="icon-button"
+                          title="Raise the case for follow-up without approving a zone action."
+                          onClick={() => reviewEvidence(pendingReview.review_id, "escalate")}
+                        >
+                          Escalate Case
+                        </button>
+                        <button
+                          className="icon-button"
+                          title="Mark the signal as too weak and keep the case open for stronger telemetry or zone context."
+                          onClick={() => reviewEvidence(pendingReview.review_id, "insufficient_evidence")}
+                        >
+                          Mark Signal Weak
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="empty compact-empty">No signal review pending.</div>
+                  )}
+
+                  <h3 className="section-title">Zone Action</h3>
                   {pendingApproval ? (
                     <div className="approval priority-approval">
                       <div className="approval-step">
-                        <span>1 / 1</span>
-                        <strong>Human approval</strong>
+                        <span>APPROVAL</span>
+                        <strong>Zone advisory</strong>
                       </div>
-                      <strong>{pendingApproval.requested_action}</strong>
-                      <p className="small muted">{pendingApproval.rationale}</p>
+                      <strong>{approvalSummary?.title}</strong>
+                      <div className="decision-reasons">
+                        {approvalSummary?.reasons.map((item) => (
+                          <span className="decision-reason" key={item}>
+                            {item}
+                          </span>
+                        ))}
+                      </div>
                       <div className="approval-actions">
                         <button className="primary-button" onClick={() => approve(pendingApproval.approval_id, true)}>
-                          <ClipboardCheck size={16} /> Approve
+                          <ClipboardCheck size={16} /> Approve Zone Action
                         </button>
                         <button className="icon-button" onClick={() => approve(pendingApproval.approval_id, false)}>
                           Reject
@@ -942,7 +1040,7 @@ export function NearGuardDashboard() {
                       </div>
                     </div>
                   ) : (
-                    <div className="empty compact-empty">No pending approval.</div>
+                    <div className="empty compact-empty">No zone action awaiting approval.</div>
                   )}
 
                   <h3 className="section-title">Policy Rationale</h3>
@@ -960,21 +1058,25 @@ export function NearGuardDashboard() {
                     <div className="empty compact-empty">No actions for this decision.</div>
                   ) : (
                     <ul className="tool-list rationale-tools">
-                      {currentDecisionToolCalls.map((tool) => (
-                        <li className="task-row" key={tool.tool_call_id}>
-                          <div className="tool-row">
-                            <strong>
-                              <span className={`task-status-dot ${tool.status === "failed" ? "failed" : "complete"}`} />
-                              {toolLabel(tool.tool_name)}
-                            </strong>
-                            <span className={`badge ${tool.status === "failed" ? "critical" : "low"}`}>
-                              {tool.status === "failed" ? <AlertTriangle size={13} /> : <CheckCircle2 size={13} />}
-                              {tool.status}
-                            </span>
-                          </div>
-                          <p className="small">{toolRationale(tool, latestAssessment)}</p>
-                        </li>
-                      ))}
+                      {currentDecisionToolCalls.map((tool) => {
+                        const displayStatus = actionLogStatus(tool, state);
+
+                        return (
+                          <li className="task-row" key={tool.tool_call_id}>
+                            <div className="tool-row">
+                              <strong>
+                                <span className={`task-status-dot ${displayStatus.failed ? "failed" : "complete"}`} />
+                                {toolLabel(tool.tool_name)}
+                              </strong>
+                              <span className={`badge ${displayStatus.className}`}>
+                                {displayStatus.failed ? <AlertTriangle size={13} /> : <CheckCircle2 size={13} />}
+                                {displayStatus.label}
+                              </span>
+                            </div>
+                            <p className="small">{toolRationale(tool, latestAssessment)}</p>
+                          </li>
+                        );
+                      })}
                     </ul>
                   )}
                 </div>
