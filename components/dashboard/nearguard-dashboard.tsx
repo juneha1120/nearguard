@@ -15,7 +15,6 @@ import {
   Play,
   RefreshCw,
   ShieldAlert,
-  Sparkles,
   StepBack,
   StepForward
 } from "lucide-react";
@@ -82,6 +81,14 @@ type StatusNotice = {
   message: string;
 };
 
+type WorkerReportStatus = "pending" | "applied" | "rejected" | "resolved";
+
+type WorkerReportRecord = {
+  report: WorkerRiskReport;
+  status: WorkerReportStatus;
+  reviewedAt: string | null;
+};
+
 async function fetchJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const response = await fetch(input, init);
   const payload = (await response.json().catch(() => null)) as { error?: string } | null;
@@ -95,6 +102,46 @@ async function fetchJson<T>(input: RequestInfo | URL, init?: RequestInit): Promi
 
 function errorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
+}
+
+function reportStatusCopy(record: WorkerReportRecord | null, applicationState: ReturnType<typeof workerReportApplicationState>) {
+  if (!record) return "No report extracted";
+  if (record.status === "applied") return "Applied";
+  if (record.status === "rejected") return "Rejected";
+  if (record.status === "resolved") return "Resolved";
+  if (applicationState === "held_for_review") return "Needs review";
+  if (applicationState === "missing_zone") return "Zone missing";
+  if (applicationState === "zone_not_in_view") return "Zone not in view";
+  if (applicationState === "no_model_change") return "No score update";
+  return "Awaiting approval";
+}
+
+function reportBadgeClass(record: WorkerReportRecord | null) {
+  if (!record) return "neutral";
+  if (record.status === "applied") return "low";
+  if (record.status === "rejected") return "critical";
+  if (record.status === "resolved") return "neutral";
+  return confidenceSeverityClass(record.report.extraction_confidence);
+}
+
+function formatReportStatus(status: WorkerReportStatus) {
+  return status.replace("_", " ");
+}
+
+function reportZoneReviewCopy(applicationState: ReturnType<typeof workerReportApplicationState>) {
+  if (applicationState === "held_for_review") return "Held for review";
+  if (applicationState === "missing_zone") return "Zone not extracted";
+  if (applicationState === "zone_not_in_view") return "Zone not in current view";
+  if (applicationState === "no_model_change") return "No score update";
+  return "No current zone match";
+}
+
+function formatRiskChange(before: number, after: number) {
+  const precision = before.toFixed(2) === after.toFixed(2) && before !== after ? 3 : 2;
+  return {
+    before: before.toFixed(precision),
+    after: after.toFixed(precision)
+  };
 }
 
 export function NearGuardDashboard() {
@@ -115,8 +162,7 @@ export function NearGuardDashboard() {
   const [assessmentTab, setAssessmentTab] = useState<"action" | "timeline">("action");
   const [selectedLiveVehicleId, setSelectedLiveVehicleId] = useState<string | null>(null);
   const [reportDescription, setReportDescription] = useState("");
-  const [workerReport, setWorkerReport] = useState<WorkerRiskReport | null>(null);
-  const [isWorkerReportResolved, setIsWorkerReportResolved] = useState(false);
+  const [workerReportHistory, setWorkerReportHistory] = useState<WorkerReportRecord[]>([]);
   const [isExtractingReport, setIsExtractingReport] = useState(false);
   const [reportExtractionError, setReportExtractionError] = useState<string | null>(null);
   const [dashboardNotice, setDashboardNotice] = useState<StatusNotice | null>(null);
@@ -270,13 +316,34 @@ export function NearGuardDashboard() {
       if (!payload.report) {
         throw new Error(payload.error ?? "Worker report extraction failed.");
       }
-      setWorkerReport(payload.report);
-      setIsWorkerReportResolved(false);
+      setWorkerReportHistory((history) => [
+        {
+          report: payload.report!,
+          status: "pending",
+          reviewedAt: null
+        },
+        ...history
+      ]);
+      setReportDescription("");
     } catch (error) {
       setReportExtractionError(error instanceof Error ? error.message : "Worker report extraction failed.");
     } finally {
       setIsExtractingReport(false);
     }
+  }
+
+  function updateReportStatus(reportId: string, status: WorkerReportStatus) {
+    setWorkerReportHistory((history) =>
+      history.map((record) =>
+        record.report.report_id === reportId
+          ? {
+              ...record,
+              status,
+              reviewedAt: new Date().toISOString()
+            }
+          : record
+      )
+    );
   }
 
   useEffect(() => {
@@ -451,13 +518,22 @@ export function NearGuardDashboard() {
       state?.selectedScenario
     ]
   );
-  const activeWorkerReport = isWorkerReportResolved ? null : workerReport;
+  const currentReportRecord = workerReportHistory[0] ?? null;
+  const activeReportRecord = workerReportHistory.find((record) => record.status === "applied") ?? null;
+  const activeWorkerReport = activeReportRecord?.report ?? null;
   const workerReportState = useMemo(() => workerReportApplicationState(liveSample, activeWorkerReport), [activeWorkerReport, liveSample]);
   const enrichedLiveSample = useMemo(() => applyWorkerReportToLiveSample(liveSample, activeWorkerReport), [activeWorkerReport, liveSample]);
-  const workerReportZoneRisk = useMemo(() => {
-    if (!activeWorkerReport?.zone_id) return null;
-    const baselineZone = liveSample?.zones.find((zone) => zone.zone_id === activeWorkerReport.zone_id) ?? null;
-    const enrichedZone = enrichedLiveSample?.zones.find((zone) => zone.zone_id === activeWorkerReport.zone_id) ?? null;
+  const currentReportApplicationState = useMemo(
+    () => workerReportApplicationState(liveSample, currentReportRecord?.report ?? null),
+    [currentReportRecord?.report, liveSample]
+  );
+  const currentReportZoneRisk = useMemo(() => {
+    if (currentReportApplicationState !== "applied") return null;
+    const report = currentReportRecord?.report ?? null;
+    if (!report?.zone_id) return null;
+    const baselineZone = liveSample?.zones.find((zone) => zone.zone_id === report.zone_id) ?? null;
+    const previewSample = applyWorkerReportToLiveSample(liveSample, report);
+    const enrichedZone = previewSample?.zones.find((zone) => zone.zone_id === report.zone_id) ?? null;
     if (!baselineZone || !enrichedZone) return null;
 
     const before = calculateZoneOperationalRisk(baselineZone);
@@ -467,25 +543,14 @@ export function NearGuardDashboard() {
       after,
       delta: Number((after - before).toFixed(3))
     };
-  }, [activeWorkerReport, enrichedLiveSample, liveSample]);
-  const workerReportInfluencedFeatures = useMemo(
-    () => describeWorkerReportInfluence(liveSample, activeWorkerReport),
-    [activeWorkerReport, liveSample]
+  }, [currentReportApplicationState, currentReportRecord?.report, liveSample]);
+  const currentReportInfluencedFeatures = useMemo(
+    () => describeWorkerReportInfluence(liveSample, currentReportRecord?.report ?? null),
+    [currentReportRecord?.report, liveSample]
   );
-  const workerReportStateCopy = isWorkerReportResolved && workerReport
-    ? "Resolved"
-    : {
-        empty: "No report extracted",
-        applied: "Applied to zone risk",
-        held_for_review: "Held for review",
-        missing_zone: "Zone not extracted",
-        zone_not_in_view: "Zone not in current view"
-      }[workerReportState];
-  const workerReportBadgeClass = isWorkerReportResolved
-    ? "neutral"
-    : workerReport
-      ? confidenceSeverityClass(workerReport.extraction_confidence)
-      : "neutral";
+  const currentReportRiskDisplay = currentReportZoneRisk ? formatRiskChange(currentReportZoneRisk.before, currentReportZoneRisk.after) : null;
+  const workerReportStateCopy = reportStatusCopy(currentReportRecord, currentReportApplicationState);
+  const workerReportBadgeClass = reportBadgeClass(currentReportRecord);
   const liveSignalSample = useMemo(() => {
     if (isScenarioMode) return enrichedLiveSample;
     if (!livePredictionSampleId) return enrichedLiveSample;
@@ -757,7 +822,6 @@ export function NearGuardDashboard() {
               </div>
               <div className="zone-risk-board">
                 {zoneRiskCards.map((card) => {
-                  const isReportEnrichedZone = workerReportState === "applied" && workerReport?.zone_id === card.zone.zone_id;
                   const isSelectedVehicleZone =
                     Boolean(selectedLiveVehicleId) &&
                     Boolean(card.live?.prime_movers.some((mover) => mover.vehicle_id === selectedLiveVehicleId));
@@ -767,8 +831,8 @@ export function NearGuardDashboard() {
                   return (
                     <article
                       className={`zone-live-card ${card.className} ${card.zone.zone_id === currentEvent?.zone_id ? "current" : ""} ${
-                        isReportEnrichedZone ? "report-enriched" : ""
-                      } ${isSelectedVehicleZone ? "selected-vehicle-zone" : ""}`}
+                        isSelectedVehicleZone ? "selected-vehicle-zone" : ""
+                      }`}
                       key={card.zone.zone_id}
                     >
                     <div className="zone-live-top">
@@ -780,11 +844,6 @@ export function NearGuardDashboard() {
                       </div>
                       <div className="zone-badge-stack">
                         {speedLimitLabel ? <span className="zone-limit-badge">{speedLimitLabel}</span> : null}
-                        {isReportEnrichedZone ? (
-                          <span className="badge report">
-                            <Sparkles size={13} /> Report enriched
-                          </span>
-                        ) : null}
                         <span className={`badge ${card.className}`}>{card.level}</span>
                       </div>
                     </div>
@@ -1169,7 +1228,7 @@ export function NearGuardDashboard() {
                         <AlertTriangle size={15} /> {reportExtractionError}
                       </div>
                     ) : null}
-                    {workerReport ? (
+                    {currentReportRecord ? (
                       <div className="report-result">
                         <div className="tool-row">
                           <strong>
@@ -1177,71 +1236,109 @@ export function NearGuardDashboard() {
                           </strong>
                           <span className={`badge ${workerReportBadgeClass}`}>{workerReportStateCopy}</span>
                         </div>
-                        <div className="context-card-source">
-                          <span>Field Worker Safety Note</span>
-                          <strong>{workerReport.extracted_context.operational_note.length} chars</strong>
+                        <p className="report-note">{currentReportRecord.report.extracted_context.operational_note}</p>
+                        <div className="report-summary-row">
+                          <span>{currentReportRecord.report.extracted_context.hazard_type.replaceAll("_", " ")}</span>
+                          <span>{currentReportRecord.report.extracted_context.zone_id ?? "zone unknown"}</span>
+                          <span>{currentReportRecord.report.extraction_confidence} confidence</span>
+                          <span>{currentReportRecord.report.extracted_context.reported_severity} severity</span>
                         </div>
-                        <div className="report-flow">
-                          <span>
-                            Report <strong>{workerReport.extraction_confidence} confidence</strong>
-                          </span>
-                          <span>
-                            Inputs <strong>{workerReportInfluencedFeatures.length} changed</strong>
-                          </span>
-                          <span>
-                            Zone Risk{" "}
-                            <strong>
-                              {workerReportZoneRisk ? `${workerReportZoneRisk.before.toFixed(2)} -> ${workerReportZoneRisk.after.toFixed(2)}` : "--"}
-                            </strong>
-                          </span>
-                        </div>
-                        <div className="report-context-grid">
-                          <span>
-                            Hazard <strong>{workerReport.extracted_context.hazard_type.replaceAll("_", " ")}</strong>
-                          </span>
-                          <span>
-                            Zone <strong>{workerReport.extracted_context.zone_id ?? "--"}</strong>
-                          </span>
-                          <span>
-                            Vehicle <strong>{workerReport.extracted_context.vehicle_id ?? "--"}</strong>
-                          </span>
-                          <span>
-                            Severity <strong>{workerReport.extracted_context.reported_severity}</strong>
-                          </span>
-                        </div>
-                        <p className="small">{workerReport.extracted_context.operational_note}</p>
-                        <div className="report-actions">
-                          <button
-                            className={isWorkerReportResolved ? "primary-button" : "icon-button"}
-                            type="button"
-                            onClick={() => setIsWorkerReportResolved((resolved) => !resolved)}
-                          >
-                            {isWorkerReportResolved ? "Reopen report" : "Resolve report"}
-                          </button>
-                        </div>
-                        {workerReportInfluencedFeatures.length ? (
-                          <div className="report-input-list">
-                            {workerReportInfluencedFeatures.map((feature) => (
-                              <div key={feature.field}>
-                                <span>{feature.label}</span>
-                                <strong>
-                                  {feature.before} {"->"} {feature.after}
-                                </strong>
+                        <div className="report-change-board">
+                          {currentReportZoneRisk ? (
+                            <div className="report-change-tile">
+                              <div>
+                                <span>{currentReportRecord.status === "applied" ? "Applied Zone Risk" : "Potential Zone Risk"}</span>
+                                <strong>{currentReportRecord.report.extracted_context.zone_id ?? "Unknown zone"}</strong>
                               </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="empty compact-empty">No zone inputs changed.</div>
-                        )}
-                        <div className="zone-flag-row">
-                          {workerReport.extracted_context.model_feature_impacts.map((impact) => (
-                            <em key={impact}>{impact.replaceAll("_", " ")}</em>
+                              <div className="report-change-values">
+                                <em>{currentReportRiskDisplay?.before}</em>
+                                <span aria-hidden="true">-&gt;</span>
+                                <em>{currentReportRiskDisplay?.after}</em>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="report-change-tile muted">
+                              <div>
+                                <span>Zone Risk</span>
+                                <strong>{reportZoneReviewCopy(currentReportApplicationState)}</strong>
+                              </div>
+                            </div>
+                          )}
+                          {currentReportInfluencedFeatures.map((feature) => (
+                            <div className="report-change-tile" key={feature.field}>
+                              <div>
+                                <span>{feature.label}</span>
+                                <strong>{currentReportRecord.report.extracted_context.zone_id ?? "Unknown zone"}</strong>
+                              </div>
+                              <div className="report-change-values">
+                                <em>{feature.before}</em>
+                                <span aria-hidden="true">-&gt;</span>
+                                <em>{feature.after}</em>
+                              </div>
+                            </div>
                           ))}
+                          {!currentReportZoneRisk && currentReportInfluencedFeatures.length === 0 ? (
+                            <div className="empty compact-empty">No supported zone-risk variables changed. Keep as history or reject.</div>
+                          ) : null}
+                        </div>
+                        <div className="report-actions">
+                          {currentReportRecord.status === "pending" ? (
+                            <>
+                              <button
+                                className="primary-button"
+                                type="button"
+                                onClick={() => updateReportStatus(currentReportRecord.report.report_id, "applied")}
+                                disabled={currentReportApplicationState !== "applied"}
+                              >
+                                <ClipboardCheck size={16} /> Apply to Zone Risk
+                              </button>
+                              <button
+                                className="icon-button"
+                                type="button"
+                                onClick={() => updateReportStatus(currentReportRecord.report.report_id, "rejected")}
+                              >
+                                Reject
+                              </button>
+                            </>
+                          ) : null}
+                          {currentReportRecord.status === "applied" ? (
+                            <button
+                              className="icon-button"
+                              type="button"
+                              onClick={() => updateReportStatus(currentReportRecord.report.report_id, "resolved")}
+                            >
+                              Resolve report
+                            </button>
+                          ) : null}
                         </div>
                       </div>
                     ) : (
                       <div className="empty compact-empty">No worker report ingested yet.</div>
                     )}
+                    {workerReportHistory.length ? (
+                      <div className="report-history">
+                        <h3 className="section-title">Report History</h3>
+                        {workerReportHistory.map((record) => (
+                          <div className="report-history-row" key={record.report.report_id}>
+                            <div>
+                              <strong>{record.report.extracted_context.zone_id ?? "Unknown zone"}</strong>
+                              <span>{record.report.extracted_context.hazard_type.replaceAll("_", " ")}</span>
+                            </div>
+                            <span className={`badge ${reportBadgeClass(record)}`}>{formatReportStatus(record.status)}</span>
+                            {record.status === "applied" ? (
+                              <button className="icon-button" type="button" onClick={() => updateReportStatus(record.report.report_id, "resolved")}>
+                                Resolve
+                              </button>
+                            ) : null}
+                            {record.status === "resolved" ? (
+                              <button className="icon-button" type="button" onClick={() => updateReportStatus(record.report.report_id, "applied")}>
+                                Reopen
+                              </button>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 </>
               ) : null}

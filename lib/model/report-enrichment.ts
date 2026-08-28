@@ -19,6 +19,30 @@ const severityPressureFloor = {
   high: 0.75
 } as const;
 
+const weatherRank = {
+  clear: 0,
+  rain: 1,
+  heavy_rain: 2
+} as const;
+
+const restrictionRank = {
+  normal: 0,
+  caution: 1,
+  restricted: 2,
+  wharf: 3
+} as const;
+
+const pedestrianExposureRank = {
+  low: 0,
+  medium: 1,
+  high: 2
+} as const;
+
+function higherRiskValue<T extends string>(current: T, reported: T | null, rank: Record<T, number>) {
+  if (!reported) return current;
+  return rank[reported] > rank[current] ? reported : current;
+}
+
 function enrichZoneWithReport(zone: LiveZoneSnapshot, report: WorkerRiskReport): LiveZoneSnapshot {
   const context = report.extracted_context;
   const trafficPressureFromReport = context.traffic_level ? trafficPressureByLevel[context.traffic_level] : 0;
@@ -27,9 +51,9 @@ function enrichZoneWithReport(zone: LiveZoneSnapshot, report: WorkerRiskReport):
   return {
     ...zone,
     traffic_pressure: Math.max(zone.traffic_pressure, trafficPressureFromReport, severityPressure),
-    weather: context.weather ?? zone.weather,
-    restriction_level: context.restriction_level ?? zone.restriction_level,
-    pedestrian_exposure: context.pedestrian_exposure ?? zone.pedestrian_exposure
+    weather: higherRiskValue(zone.weather, context.weather, weatherRank),
+    restriction_level: higherRiskValue(zone.restriction_level, context.restriction_level, restrictionRank),
+    pedestrian_exposure: higherRiskValue(zone.pedestrian_exposure, context.pedestrian_exposure, pedestrianExposureRank)
   };
 }
 
@@ -37,7 +61,9 @@ export function workerReportApplicationState(sample: LiveTelemetrySample | null,
   if (!report) return "empty" as const;
   if (report.extraction_confidence === "low") return "held_for_review" as const;
   if (!report.zone_id) return "missing_zone" as const;
-  if (!sample?.zones.some((zone) => zone.zone_id === report.zone_id)) return "zone_not_in_view" as const;
+  const baselineZone = sample?.zones.find((zone) => zone.zone_id === report.zone_id);
+  if (!baselineZone) return "zone_not_in_view" as const;
+  if (!describeWorkerReportInfluenceForZone(baselineZone, report).length) return "no_model_change" as const;
   return "applied" as const;
 }
 
@@ -65,6 +91,10 @@ export function describeWorkerReportInfluence(
   const baselineZone = sample.zones.find((zone) => zone.zone_id === report.zone_id);
   if (!baselineZone) return [];
 
+  return describeWorkerReportInfluenceForZone(baselineZone, report);
+}
+
+function describeWorkerReportInfluenceForZone(baselineZone: LiveZoneSnapshot, report: WorkerRiskReport): WorkerReportInfluencedFeature[] {
   const enrichedZone = enrichZoneWithReport(baselineZone, report);
   const fields: WorkerReportInfluencedFeature[] = [];
 

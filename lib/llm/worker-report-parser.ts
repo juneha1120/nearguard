@@ -30,6 +30,14 @@ function plainText(value: string) {
     .trim();
 }
 
+function isVagueSafetyReport(description: string, context: WorkerReportExtractedContext) {
+  const text = plainText(description).toLowerCase();
+  const words = text.split(/\s+/).filter(Boolean);
+  const vagueUnsafePhrase = /\b(something|thing|things|stuff|issue)\b.*\bunsafe\b|\bunsafe\b.*\b(something|thing|things|stuff|issue)\b/.test(text);
+
+  return words.length < 8 || (context.hazard_type === "other" && context.model_feature_impacts.length === 0 && vagueUnsafePhrase);
+}
+
 function nestedExtraction(value: unknown): ReportExtraction {
   if (typeof value !== "object" || value === null) {
     throw new Error("Report extraction is not an object.");
@@ -56,20 +64,21 @@ function nestedExtraction(value: unknown): ReportExtraction {
 
 function normalizeExtraction(extraction: ReportExtraction, description: string): ReportExtraction {
   const context = extraction.extracted_context;
+  const normalizedContext = {
+    ...context,
+    zone_id: nullIfUnknown(context.zone_id),
+    vehicle_id: nullIfUnknown(context.vehicle_id),
+    pedestrian_exposure: nullIfUnknown(context.pedestrian_exposure) as WorkerReportExtractedContext["pedestrian_exposure"],
+    traffic_level: nullIfUnknown(context.traffic_level) as WorkerReportExtractedContext["traffic_level"],
+    weather: nullIfUnknown(context.weather) as WorkerReportExtractedContext["weather"],
+    restriction_level: nullIfUnknown(context.restriction_level) as WorkerReportExtractedContext["restriction_level"],
+    operational_note: String(context.operational_note ?? "").slice(0, 180),
+    model_feature_impacts: Array.isArray(context.model_feature_impacts) ? context.model_feature_impacts.slice(0, 4).map(String) : []
+  };
 
   return {
-    extracted_context: {
-      ...context,
-      zone_id: nullIfUnknown(context.zone_id),
-      vehicle_id: nullIfUnknown(context.vehicle_id),
-      pedestrian_exposure: nullIfUnknown(context.pedestrian_exposure) as WorkerReportExtractedContext["pedestrian_exposure"],
-      traffic_level: nullIfUnknown(context.traffic_level) as WorkerReportExtractedContext["traffic_level"],
-      weather: nullIfUnknown(context.weather) as WorkerReportExtractedContext["weather"],
-      restriction_level: nullIfUnknown(context.restriction_level) as WorkerReportExtractedContext["restriction_level"],
-      operational_note: String(context.operational_note ?? "").slice(0, 180),
-      model_feature_impacts: Array.isArray(context.model_feature_impacts) ? context.model_feature_impacts.slice(0, 4).map(String) : []
-    },
-    extraction_confidence: description.trim().length < 12 ? "low" : extraction.extraction_confidence
+    extracted_context: normalizedContext,
+    extraction_confidence: isVagueSafetyReport(description, normalizedContext) ? "low" : extraction.extraction_confidence
   };
 }
 
@@ -127,6 +136,8 @@ function buildReportPrompt(description: string, reporterRole: string, zones: Zon
       "Choose zone_id from known_zones only. If the report says wharf, choose the known zone whose name or id contains wharf. If it says yard or terminal link, match the closest known zone name/id. Use unknown only when no known zone is supported by the report.",
     unknown_values:
       "For unavailable fields use the literal string unknown, except reported_severity and extraction_confidence which must be low, medium, or high.",
+    confidence_policy:
+      "Use low extraction_confidence for vague reports with no specific hazard, vehicle, condition, or actionable model feature. Do not infer high confidence from generic phrases such as something looks unsafe.",
     allowed_values:
       "hazard_type: visibility_issue, pedestrian_exposure, speeding_pattern, weather_condition, traffic_congestion, gps_quality, route_obstruction, unsafe_manoeuvre, other. exposure/traffic/severity/confidence: low, medium, high. weather: clear, rain, heavy_rain, unknown. restriction_level: normal, caution, restricted, wharf, unknown.",
     report: plainText(description),

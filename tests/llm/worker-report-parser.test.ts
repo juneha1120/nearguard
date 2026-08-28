@@ -123,6 +123,23 @@ describe("worker report extraction", () => {
     expect(report.extracted_context.weather).toBe("heavy_rain");
   });
 
+  it("downgrades vague unsafe reports to low confidence", async () => {
+    process.env.GEMINI_API_KEY = "gemini-key";
+    const fetchImpl = async () =>
+      geminiResponse(
+        "hazard_type=other|zone_id=WHARF-C4|vehicle_id=unknown|pedestrian_exposure=unknown|traffic_level=unknown|weather=unknown|restriction_level=unknown|reported_severity=medium|operational_note=Something looks unsafe near the yard.|model_feature_impacts=|extraction_confidence=high"
+      );
+
+    const report = await extractWorkerRiskReportWithGemini({
+      description: "Something looks unsafe near the yard.",
+      reporterRole: "worker",
+      zones,
+      fetchImpl: fetchImpl as typeof fetch
+    });
+
+    expect(report.extraction_confidence).toBe("low");
+  });
+
   it("auto-selects Gemini", async () => {
     process.env.GEMINI_API_KEY = "gemini-key";
     const fetchImpl = async () =>

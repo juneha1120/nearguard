@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { calculateZoneOperationalRisk } from "@/lib/model/live-risk";
-import { applyWorkerReportToLiveSample, describeWorkerReportInfluence } from "@/lib/model/report-enrichment";
+import { applyWorkerReportToLiveSample, describeWorkerReportInfluence, workerReportApplicationState } from "@/lib/model/report-enrichment";
 import type { LiveTelemetrySample, LiveZoneSnapshot, WorkerRiskReport } from "@/lib/types/domain";
 
 const zone: LiveZoneSnapshot = {
@@ -77,5 +77,54 @@ describe("worker report enrichment", () => {
       { field: "weather", label: "Weather", before: "clear", after: "rain" },
       { field: "restriction_level", label: "Restriction", before: "normal", after: "wharf" }
     ]);
+  });
+
+  it("does not offer application when no modeled zone variable changes", () => {
+    const unchangedReport: WorkerRiskReport = {
+      ...report,
+      extracted_context: {
+        ...report.extracted_context,
+        hazard_type: "gps_quality",
+        pedestrian_exposure: null,
+        traffic_level: null,
+        weather: null,
+        restriction_level: null,
+        reported_severity: "low",
+        model_feature_impacts: []
+      }
+    };
+
+    expect(workerReportApplicationState(sample, unchangedReport)).toBe("no_model_change");
+    expect(applyWorkerReportToLiveSample(sample, unchangedReport)).toBe(sample);
+    expect(describeWorkerReportInfluence(sample, unchangedReport)).toEqual([]);
+  });
+
+  it("does not downgrade existing zone context from a worker report", () => {
+    const elevatedSample: LiveTelemetrySample = {
+      ...sample,
+      zones: [
+        {
+          ...zone,
+          weather: "rain",
+          restriction_level: "caution",
+          pedestrian_exposure: "medium",
+          traffic_pressure: 0.7
+        }
+      ]
+    };
+    const downgradeReport: WorkerRiskReport = {
+      ...report,
+      extracted_context: {
+        ...report.extracted_context,
+        pedestrian_exposure: "low",
+        traffic_level: "low",
+        weather: "clear",
+        restriction_level: "normal",
+        reported_severity: "low"
+      }
+    };
+
+    expect(workerReportApplicationState(elevatedSample, downgradeReport)).toBe("no_model_change");
+    expect(applyWorkerReportToLiveSample(elevatedSample, downgradeReport)).toBe(elevatedSample);
   });
 });

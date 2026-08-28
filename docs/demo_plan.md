@@ -110,7 +110,43 @@ Expected behaviour:
 
 ## Worker Report Mention
 
-Worker daily potential-risk reports are implemented as a Gemini-backed extraction endpoint for ease of setup, not as the risk-scoring authority. In the pitch, present this as a context-enrichment workflow: worker-written safety observations can be parsed into structured zone or vehicle context, but the MVP remains telematics-first and no report directly triggers disruptive action without policy checks and human approval.
+Worker daily potential-risk reports are implemented as a Gemini-backed extraction endpoint for ease of setup, not as the risk-scoring authority. In the pitch, present this as a context-enrichment workflow: worker-written safety observations can be parsed into structured zone context, previewed as original-to-updated risk variables and then approved or rejected by a human. The MVP remains telematics-first: a report cannot downgrade existing operational context, cannot apply when no supported risk variable changes and does not directly trigger disruptive action without policy checks and human approval.
+
+Current Report Intelligence behavior to show:
+
+- The parsed note is saved in report history.
+- The current report starts as `Awaiting approval`, `Needs review` or `No score update`.
+- Supported changes render as zone-style tiles with `original -> updated` values.
+- `Apply to Zone Risk` is enabled only when the report changes a supported modeled zone variable.
+- Vague or unsupported reports stay reviewable but do not create a fake score update.
+
+Strong test prompts for the demo:
+
+```text
+During the 09:10 yard walk, several workers were crossing near WHARF-C4 while PM traffic continued through light rain. Visibility around the container stack was poor and drivers had limited stopping space.
+```
+
+Expected shape: `pedestrian exposure`, `WHARF-C4`, high confidence, Potential Zone Risk increases, Traffic pressure increases and Weather changes from clear to rain.
+
+```text
+At PPT-LINK-25, Prime Movers were moving through heavy traffic near the slow-down zone. Drivers were braking late and the area looked congested.
+```
+
+Expected shape: `traffic congestion`, `PPT-LINK-25`, high confidence, Potential Zone Risk increases and Traffic pressure increases.
+
+```text
+Near PPT-LINK-25, the lane was crowded with PMs entering from both directions. Traffic looked heavy and workers were close to the edge of the active route.
+```
+
+Expected shape: `traffic congestion` or `pedestrian exposure`, `PPT-LINK-25`, high confidence, Potential Zone Risk increases, Traffic pressure increases and Pedestrian exposure may increase.
+
+Uncertainty prompt to show responsible handling:
+
+```text
+A worker mentioned the area near the yard felt unsafe, but did not provide the exact zone, hazard, or vehicle details.
+```
+
+Expected shape: `Needs review`, low confidence, no supported zone-risk variable changes and no enabled apply action.
 
 ## Judge Question Defenses
 
