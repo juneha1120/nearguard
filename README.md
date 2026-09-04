@@ -1,8 +1,10 @@
 # NearGuard
 
-NearGuard is a local hackathon MVP for Prime Mover safety incident risk prevention. It replays synthetic telematics scenarios, uses a local scikit-learn risk model pipeline, runs an agentic safety loop, simulates tool calls and approvals, and shows an auditable supervisor dashboard.
+NearGuard is a human-in-the-loop safety agent prototype for Prime Mover operations in port and logistics environments. It replays synthetic telematics scenarios, uses a local scikit-learn risk model pipeline, runs an agentic safety loop, simulates tool calls and approvals, and shows an auditable supervisor dashboard.
 
 The model uses rolling telemetry windows and context to estimate synthetic near-miss risk within the next 15 minutes; it is not a single-event alert or a validated production accident predictor.
+
+The project originated from the PSA Code Sprint 2.0 "Agentic AI in Action" challenge. It remains related to PSA through public port-safety context and Prime Mover operating themes, but it was not shortlisted and is not affiliated with, endorsed by, or connected to PSA operational systems.
 
 ## Prerequisites
 

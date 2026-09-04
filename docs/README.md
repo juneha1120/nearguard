@@ -1,6 +1,8 @@
 # NearGuard Docs
 
-NearGuard is a hackathon MVP for PSA Code Sprint 2.0: an agentic AI safety system for Prime Mover operations. It observes synthetic telematics history, predicts synthetic near-miss risk within a future horizon, coordinates simulated tools, keeps humans in control for disruptive actions and records an auditable execution trace.
+NearGuard is a human-in-the-loop safety agent prototype for Prime Mover operations in port and logistics environments. It observes synthetic telematics history, predicts synthetic near-miss risk within a future horizon, coordinates simulated tools, keeps humans in control for disruptive actions and records an auditable execution trace.
+
+The project originated from the PSA Code Sprint 2.0 "Agentic AI in Action" challenge. It remains grounded in public PSA port-safety context, but it was not shortlisted and is not affiliated with, endorsed by, or connected to PSA operational systems.
 
 ## Reading Order
 
@@ -11,9 +13,9 @@ NearGuard is a hackathon MVP for PSA Code Sprint 2.0: an agentic AI safety syste
 5. `SAFETY.md` - hard safety boundaries, evidence authority, prototype assumptions and production validation gate.
 6. `demo_plan.md` - demo flow, required screens, scripted trace and slide outline.
 
-## Hackathon Fit
+## Agentic AI Fit
 
-NearGuard is designed to satisfy the Code Sprint expectation that an agentic AI solution should:
+NearGuard demonstrates an agentic safety workflow that can:
 
 - analyze an input event or state change
 - determine an appropriate course of action
